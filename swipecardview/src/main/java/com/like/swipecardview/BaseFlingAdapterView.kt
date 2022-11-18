@@ -5,8 +5,8 @@ import android.util.AttributeSet
 import android.widget.Adapter
 import android.widget.AdapterView
 
-abstract class BaseFlingAdapterView<T : Adapter>(context: Context?, attrs: AttributeSet?, defStyle: Int) :
-    AdapterView<T>(context, attrs, defStyle) {
+abstract class BaseFlingAdapterView<T : Adapter>(context: Context, attrs: AttributeSet?, defStyle: Int, defStyleRes: Int) :
+    AdapterView<T>(context, attrs, defStyle, defStyleRes) {
     var heightMeasureSpec = 0
         private set
     var widthMeasureSpec = 0

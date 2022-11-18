@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFlingAdapterView.onFlingListener,
+public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFlingAdapterView.OnFlingListener,
         SwipeFlingAdapterView.OnItemClickListener, View.OnClickListener {
 
     int [] headerIcons = {
@@ -68,7 +68,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
         swipeView = (SwipeFlingAdapterView) findViewById(R.id.swipe_view);
         if (swipeView != null) {
-            swipeView.setIsNeedSwipe(true);
+            swipeView.setNeedSwipe(true);
             swipeView.setFlingListener(this);
             swipeView.setOnItemClickListener(this);
 
