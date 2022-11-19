@@ -17,16 +17,16 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Use with caution dinausaurs might appear!
  */
 class FlingCardListener(
-    private val frame: View,
-    private val dataObject: Any?,
+    private val cardView: View,
+    private val data: Any?,
     private val rotationDegrees: Float,
-    private val mFlingListener: FlingListener
+    private val flingListener: FlingListener
 ) : OnTouchListener {
-    private val objectX: Float = frame.x
-    private val objectY: Float = frame.y
-    private val objectH: Int = frame.width
-    private val objectW: Int = frame.height
-    private val parentWidth: Int = (frame.parent as ViewGroup).width
+    private val objectX: Float = cardView.x
+    private val objectY: Float = cardView.y
+    private val objectH: Int = cardView.width
+    private val objectW: Int = cardView.height
+    private val parentWidth: Int = (cardView.parent as ViewGroup).width
     private val halfWidth: Float = objectW / 2f
 
     private var aPosX = 0f
@@ -35,7 +35,7 @@ class FlingCardListener(
     private var aDownTouchY = 0f
 
     // The active pointer is the one currently moving our object.
-    private var mActivePointerId = INVALID_POINTER_ID
+    private var activePointerId = INVALID_POINTER_ID
     private var touchPosition = 0
 
     private var isAnimationRunning = AtomicBoolean(false)
@@ -79,11 +79,11 @@ class FlingCardListener(
         }
     private val animRun: Runnable = object : Runnable {
         override fun run() {
-            mFlingListener.onScroll(scale, 0f)
+            flingListener.onScroll(scale, 0f)
             if (scale > 0 && !resetAnimCanceled) {
                 scale -= 0.1f
                 if (scale < 0) scale = 0f
-                frame.postDelayed(this, animDuration / 20L)
+                cardView.postDelayed(this, animDuration / 20L)
             }
         }
     }
@@ -94,22 +94,22 @@ class FlingCardListener(
                 MotionEvent.ACTION_DOWN -> {
 
                     // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
-                    frame.animate().setListener(null)
-                    frame.animate().cancel()
+                    cardView.animate().setListener(null)
+                    cardView.animate().cancel()
                     resetAnimCanceled = true
 
                     // Save the ID of this pointer
-                    mActivePointerId = event.getPointerId(0)
-                    val x = event.getX(mActivePointerId)
-                    val y = event.getY(mActivePointerId)
+                    activePointerId = event.getPointerId(0)
+                    val x = event.getX(activePointerId)
+                    val y = event.getY(activePointerId)
 
                     // Remember where we started
                     aDownTouchX = x
                     aDownTouchY = y
                     // to prevent an initial jump of the magnifier, aposX and aPosY must
                     // have the values from the magnifier frame
-                    aPosX = frame.x
-                    aPosY = frame.y
+                    aPosX = cardView.x
+                    aPosY = cardView.y
                     touchPosition = if (y < objectH / 2) {
                         TOUCH_ABOVE
                     } else {
@@ -122,17 +122,17 @@ class FlingCardListener(
                     val pointerIndex = event.action and
                             MotionEvent.ACTION_POINTER_INDEX_MASK shr MotionEvent.ACTION_POINTER_INDEX_SHIFT
                     val pointerId = event.getPointerId(pointerIndex)
-                    if (pointerId == mActivePointerId) {
+                    if (pointerId == activePointerId) {
                         // This was our active pointer going up. Choose a new
                         // active pointer and adjust accordingly.
                         val newPointerIndex = if (pointerIndex == 0) 1 else 0
-                        mActivePointerId = event.getPointerId(newPointerIndex)
+                        activePointerId = event.getPointerId(newPointerIndex)
                     }
                 }
                 MotionEvent.ACTION_MOVE -> {
 
                     // Find the index of the active pointer and fetch its position
-                    val pointerIndexMove = event.findPointerIndex(mActivePointerId)
+                    val pointerIndexMove = event.findPointerIndex(activePointerId)
                     val xMove = event.getX(pointerIndexMove)
                     val yMove = event.getY(pointerIndexMove)
 
@@ -154,18 +154,18 @@ class FlingCardListener(
 
                     // in this area would be code for doing something with the view as the frame moves.
                     if (isNeedSwipe) {
-                        frame.x = aPosX
-                        frame.y = aPosY
-                        frame.rotation = rotation
-                        mFlingListener.onScroll(scrollProgress, scrollXProgressPercent)
+                        cardView.x = aPosX
+                        cardView.y = aPosY
+                        cardView.rotation = rotation
+                        flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                     }
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     //mActivePointerId = INVALID_POINTER_ID;
                     val pointerCount = event.pointerCount
-                    val activePointerId = Math.min(mActivePointerId, pointerCount - 1)
+                    val activePointerId = Math.min(activePointerId, pointerCount - 1)
                     aTouchUpX = event.getX(activePointerId)
-                    mActivePointerId = INVALID_POINTER_ID
+                    this.activePointerId = INVALID_POINTER_ID
                     resetCardViewOnStack(event)
                 }
             }
@@ -181,18 +181,18 @@ class FlingCardListener(
             if (movedBeyondLeftBorder()) {
                 // Left Swipe
                 exitWithAnimation(true, getExitPoint(-objectW), duration.toLong())
-                mFlingListener.onScroll(1f, -1.0f)
+                flingListener.onScroll(1f, -1.0f)
             } else if (movedBeyondRightBorder()) {
                 // Right Swipe
                 exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
-                mFlingListener.onScroll(1f, 1.0f)
+                flingListener.onScroll(1f, 1.0f)
             } else {
                 val absMoveXDistance = Math.abs(aPosX - objectX)
                 val absMoveYDistance = Math.abs(aPosY - objectY)
                 if (absMoveXDistance < 4 && absMoveYDistance < 4) {
-                    mFlingListener.onClick(event, frame, dataObject)
+                    flingListener.onClick(event, cardView, data)
                 } else {
-                    frame.animate()
+                    cardView.animate()
                         .setDuration(animDuration.toLong())
                         .setInterpolator(OvershootInterpolator(1.5f))
                         .x(objectX)
@@ -200,7 +200,7 @@ class FlingCardListener(
                         .rotation(0f)
                         .start()
                     scale = scrollProgress
-                    frame.postDelayed(animRun, 0)
+                    cardView.postDelayed(animRun, 0)
                     resetAnimCanceled = false
                 }
                 aPosX = 0f
@@ -210,7 +210,7 @@ class FlingCardListener(
             }
         } else {
             val distanceX = Math.abs(aTouchUpX - aDownTouchX)
-            if (distanceX < 4) mFlingListener.onClick(event, frame, dataObject)
+            if (distanceX < 4) flingListener.onClick(event, cardView, data)
         }
         return false
     }
@@ -238,7 +238,7 @@ class FlingCardListener(
             } else {
                 parentWidth + rotationWidthOffset
             }
-            frame.animate()
+            cardView.animate()
                 .setDuration(duration)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitX)
@@ -247,11 +247,11 @@ class FlingCardListener(
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         if (isLeft) {
-                            mFlingListener.onCardExited()
-                            mFlingListener.leftExit(dataObject)
+                            flingListener.onCardExited()
+                            flingListener.leftExit(data)
                         } else {
-                            mFlingListener.onCardExited()
-                            mFlingListener.rightExit(dataObject)
+                            flingListener.onCardExited()
+                            flingListener.rightExit(data)
                         }
                         isAnimationRunning.set(false)
                     }
