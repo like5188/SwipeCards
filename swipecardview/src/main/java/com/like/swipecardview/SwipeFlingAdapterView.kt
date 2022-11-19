@@ -23,7 +23,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     private var mInLayout = false
     private var mActiveCard: View? = null
 
-    private var lastObjectInStack = 0
+    private var topViewIndex = 0
     private var initTop = 0
     private var initLeft = 0
 
@@ -59,8 +59,8 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         if (adapterCount == 0) {
             removeAndAddToCache(0)
         } else {
-            val topCard = getChildAt(lastObjectInStack)
-            if (mActiveCard != null && topCard == mActiveCard) {
+            val topView = getChildAt(topViewIndex)
+            if (mActiveCard != null && topView == mActiveCard) {
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
@@ -103,7 +103,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             mAdapter?.getView(index, item, this)?.let {
                 if (it.visibility != GONE) {
                     makeAndAddView(it, index)
-                    lastObjectInStack = index
+                    topViewIndex = index
                 }
             }
             index++
@@ -177,33 +177,32 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         if (childCount <= 0) {
             return
         }
-        mActiveCard = getChildAt(lastObjectInStack)
+        mActiveCard = getChildAt(topViewIndex)
         if (mActiveCard != null && flingListener != null) {
-            flingCardListener = FlingCardListener(mActiveCard, mAdapter?.getItem(0),
-                rotationDegrees, object : FlingListener {
-                    override fun onCardExited() {
-                        removeViewInLayout(mActiveCard)
-                        mActiveCard = null
-                        flingListener?.removeFirstObjectInAdapter()
-                    }
+            flingCardListener = FlingCardListener(mActiveCard, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
+                override fun onCardExited() {
+                    removeViewInLayout(mActiveCard)
+                    mActiveCard = null
+                    flingListener?.removeFirstObjectInAdapter()
+                }
 
-                    override fun leftExit(dataObject: Any) {
-                        flingListener?.onLeftCardExit(dataObject)
-                    }
+                override fun leftExit(dataObject: Any) {
+                    flingListener?.onLeftCardExit(dataObject)
+                }
 
-                    override fun rightExit(dataObject: Any) {
-                        flingListener?.onRightCardExit(dataObject)
-                    }
+                override fun rightExit(dataObject: Any) {
+                    flingListener?.onRightCardExit(dataObject)
+                }
 
-                    override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
-                        if (onItemClickListener != null) onItemClickListener!!.onItemClicked(event, v, dataObject)
-                    }
+                override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
+                    if (onItemClickListener != null) onItemClickListener!!.onItemClicked(event, v, dataObject)
+                }
 
-                    override fun onScroll(progress: Float, scrollXProgress: Float) {
-                        adjustChildrenOfUnderTopView(progress)
-                        flingListener?.onScroll(progress, scrollXProgress)
-                    }
-                })
+                override fun onScroll(progress: Float, scrollXProgress: Float) {
+                    adjustChildrenOfUnderTopView(progress)
+                    flingListener?.onScroll(progress, scrollXProgress)
+                }
+            })
             // 设置是否支持左右滑
             flingCardListener?.setIsNeedSwipe(isNeedSwipe)
             mActiveCard?.setOnTouchListener(flingCardListener)
@@ -216,14 +215,14 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             var i: Int
             var multiple: Int
             if (count == 2) {
-                i = lastObjectInStack - 1
+                i = topViewIndex - 1
                 multiple = 1
             } else {
-                i = lastObjectInStack - 2
+                i = topViewIndex - 2
                 multiple = 2
             }
             val rate = Math.abs(scrollRate)
-            while (i < lastObjectInStack) {
+            while (i < topViewIndex) {
                 val underTopView = getChildAt(i)
                 val offset = (yOffsetStep * (multiple - rate)).toInt()
                 underTopView.offsetTopAndBottom(offset - underTopView.top + initTop)
