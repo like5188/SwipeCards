@@ -19,12 +19,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 ) : BaseFlingAdapterView<T>(context, attrs, defStyle, defStyleRes) {
     private val viewCaches = mutableListOf<View?>()
     private var mAdapter: T? = null
-    private val mDataSetObserver: AdapterDataSetObserver by lazy {
+    private val adapterDataSetObserver: AdapterDataSetObserver by lazy {
         AdapterDataSetObserver()
     }
-    private var mInLayout = false
-    private var mTopView: View? = null
-
+    private var inLayout = false
+    private var topView: View? = null
     private var topViewIndex = 0
     private var initTop = 0
     private var initLeft = 0
@@ -44,11 +43,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     var onItemClickListener: OnItemClickListener? = null
 
     override fun getSelectedView(): View? {
-        return mTopView
+        return topView
     }
 
     override fun requestLayout() {
-        if (!mInLayout) {
+        if (!inLayout) {
             super.requestLayout()
         }
     }
@@ -56,13 +55,13 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         val adapter = mAdapter ?: return
-        mInLayout = true
+        inLayout = true
         val adapterCount = adapter.count
         if (adapterCount == 0) {
             removeAndAddToCache(0)
         } else {
             val topView = getChildAt(topViewIndex)
-            if (mTopView != null && topView == mTopView) {
+            if (this.topView != null && topView == this.topView) {
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
@@ -71,9 +70,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 setTopView()
             }
         }
-        mInLayout = false
+        inLayout = false
         if (initTop == 0 && initLeft == 0) {
-            mTopView?.apply {
+            topView?.apply {
                 initTop = this.top
                 initLeft = this.left
             }
@@ -176,11 +175,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
      * Set the top view and add the fling listener
      */
     private fun setTopView() {
-        mTopView = getChildAt(topViewIndex)?.also { view ->
+        topView = getChildAt(topViewIndex)?.also { view ->
             flingCardListener = FlingCardListener(view, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
                 override fun onCardExited() {
                     removeViewInLayout(view)
-                    mTopView = null
+                    topView = null
                     onFlingListener?.removeFirstObjectInAdapter()
                 }
 
@@ -264,9 +263,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     override fun setAdapter(adapter: T) {
-        mAdapter?.unregisterDataSetObserver(mDataSetObserver)
+        mAdapter?.unregisterDataSetObserver(adapterDataSetObserver)
         mAdapter = adapter
-        mAdapter?.registerDataSetObserver(mDataSetObserver)
+        mAdapter?.registerDataSetObserver(adapterDataSetObserver)
     }
 
     override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
