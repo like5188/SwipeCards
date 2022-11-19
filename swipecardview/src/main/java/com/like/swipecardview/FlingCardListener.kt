@@ -143,8 +143,8 @@ class FlingCardListener(
                     aPosY += dy
 
                     // calculate the rotation degrees
-                    val distObjectX = aPosX - cardViewX
-                    var rotation = rotationDegrees * 2f * distObjectX / parentWidth
+                    val disX = aPosX - cardViewX
+                    var rotation = rotationDegrees * 2f * disX / parentWidth
                     if (touchPosition == TOUCH_BELOW) {
                         rotation = -rotation
                     }
