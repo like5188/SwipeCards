@@ -276,7 +276,7 @@ public class FlingCardListener implements View.OnTouchListener {
                 .setInterpolator(new LinearInterpolator())
                 .translationX(exitX)
                 .translationY(exitY)
-                //.rotation(isLeft ? -BASE_ROTATION_DEGREES:BASE_ROTATION_DEGREES)
+                .rotation(isLeft ? -BASE_ROTATION_DEGREES:BASE_ROTATION_DEGREES)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
