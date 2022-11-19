@@ -21,11 +21,12 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     private var mDataSetObserver: AdapterDataSetObserver? = null
     private var mInLayout = false
     private var mActiveCard: View? = null
-    private var flingCardListener: FlingCardListener? = null
 
     private var lastObjectInStack = 0
     private var initTop = 0
     private var initLeft = 0
+
+    private var flingCardListener: FlingCardListener? = null
 
     //缩放层叠效果
     var yOffsetStep = 100 // view叠加垂直偏移量的步长
@@ -34,12 +35,10 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     var maxVisible = 4 // 值建议最小为4
     var minAdapterStack = 6
     var rotationDegrees = 6f // 旋转角度
+    var needSwipe: Boolean = true // 支持左右滑
 
     var flingListener: OnFlingListener? = null
     var onItemClickListener: OnItemClickListener? = null
-
-    // 支持左右滑
-    var needSwipe: Boolean = true
 
     override fun getSelectedView(): View? {
         return mActiveCard
@@ -70,14 +69,14 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             }
         }
         mInLayout = false
-        if (initTop == 0 && initLeft == 0 && mActiveCard != null) {
-            initTop = mActiveCard!!.top
-            initLeft = mActiveCard!!.left
+        if (initTop == 0 && initLeft == 0) {
+            mActiveCard?.apply {
+                initTop = this.top
+                initLeft = this.left
+            }
         }
         if (adapterCount < minAdapterStack) {
-            if (flingListener != null) {
-                flingListener!!.onAdapterAboutToEmpty(adapterCount)
-            }
+            flingListener?.onAdapterAboutToEmpty(adapterCount)
         }
     }
 
@@ -98,10 +97,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 item = cacheItems[0]
                 cacheItems.remove(item)
             }
-            val newUnderChild = mAdapter!!.getView(index, item, this)
-            if (newUnderChild.visibility != GONE) {
-                makeAndAddView(newUnderChild, index)
-                lastObjectInStack = index
+            mAdapter?.getView(index, item, this)?.let {
+                if (it.visibility != GONE) {
+                    makeAndAddView(it, index)
+                    lastObjectInStack = index
+                }
             }
             index++
         }
@@ -135,15 +135,13 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         val absoluteGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection)
         val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
         val childLeft: Int = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
-            Gravity.CENTER_HORIZONTAL -> (width + paddingLeft - paddingRight - w) / 2 +
-                    lp.leftMargin - lp.rightMargin
+            Gravity.CENTER_HORIZONTAL -> (width + paddingLeft - paddingRight - w) / 2 + lp.leftMargin - lp.rightMargin
             Gravity.END -> width + paddingRight - w - lp.rightMargin
             Gravity.START -> paddingLeft + lp.leftMargin
             else -> paddingLeft + lp.leftMargin
         }
         val childTop: Int = when (verticalGravity) {
-            Gravity.CENTER_VERTICAL -> (height + paddingTop - paddingBottom - h) / 2 +
-                    lp.topMargin - lp.bottomMargin
+            Gravity.CENTER_VERTICAL -> (height + paddingTop - paddingBottom - h) / 2 + lp.topMargin - lp.bottomMargin
             Gravity.BOTTOM -> height - paddingBottom - h - lp.bottomMargin
             Gravity.TOP -> paddingTop + lp.topMargin
             else -> paddingTop + lp.topMargin
@@ -191,93 +189,83 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
      * Set the top view and add the fling listener
      */
     private fun setTopView() {
-        if (childCount > 0) {
-            mActiveCard = getChildAt(lastObjectInStack)
-            if (mActiveCard != null && flingListener != null) {
-                flingCardListener = FlingCardListener(mActiveCard, mAdapter!!.getItem(0),
-                    rotationDegrees, object : FlingListener {
-                        override fun onCardExited() {
-                            removeViewInLayout(mActiveCard)
-                            mActiveCard = null
-                            flingListener!!.removeFirstObjectInAdapter()
-                        }
-
-                        override fun leftExit(dataObject: Any) {
-                            flingListener!!.onLeftCardExit(dataObject)
-                        }
-
-                        override fun rightExit(dataObject: Any) {
-                            flingListener!!.onRightCardExit(dataObject)
-                        }
-
-                        override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
-                            if (onItemClickListener != null) onItemClickListener!!.onItemClicked(event, v, dataObject)
-                        }
-
-                        override fun onScroll(progress: Float, scrollXProgress: Float) {
-//                                Log.e("Log", "onScroll " + progress);
-                            adjustChildrenOfUnderTopView(progress)
-                            flingListener!!.onScroll(progress, scrollXProgress)
-                        }
-                    })
-                // 设置是否支持左右滑
-                flingCardListener!!.setIsNeedSwipe(needSwipe)
-                mActiveCard!!.setOnTouchListener(flingCardListener)
-            }
+        if (childCount <= 0) {
+            return
         }
-    }
+        mActiveCard = getChildAt(lastObjectInStack)
+        if (mActiveCard != null && flingListener != null) {
+            flingCardListener = FlingCardListener(mActiveCard, mAdapter?.getItem(0),
+                rotationDegrees, object : FlingListener {
+                    override fun onCardExited() {
+                        removeViewInLayout(mActiveCard)
+                        mActiveCard = null
+                        flingListener?.removeFirstObjectInAdapter()
+                    }
 
-    @Throws(NullPointerException::class)
-    fun getTopCardListener(): FlingCardListener {
-        if (flingCardListener == null) {
-            throw NullPointerException("flingCardListener is null")
+                    override fun leftExit(dataObject: Any) {
+                        flingListener?.onLeftCardExit(dataObject)
+                    }
+
+                    override fun rightExit(dataObject: Any) {
+                        flingListener?.onRightCardExit(dataObject)
+                    }
+
+                    override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
+                        if (onItemClickListener != null) onItemClickListener!!.onItemClicked(event, v, dataObject)
+                    }
+
+                    override fun onScroll(progress: Float, scrollXProgress: Float) {
+                        adjustChildrenOfUnderTopView(progress)
+                        flingListener?.onScroll(progress, scrollXProgress)
+                    }
+                })
+            // 设置是否支持左右滑
+            flingCardListener?.setIsNeedSwipe(needSwipe)
+            mActiveCard?.setOnTouchListener(flingCardListener)
         }
-        return flingCardListener!!
     }
 
     /**
      * click to swipe left
      */
     fun swipeLeft() {
-        getTopCardListener().selectLeft()
+        flingCardListener?.selectLeft()
     }
 
     fun swipeLeft(duration: Int) {
-        getTopCardListener().selectLeft(duration.toLong())
+        flingCardListener?.selectLeft(duration.toLong())
     }
 
     /**
      * click to swipe right
      */
     fun swipeRight() {
-        getTopCardListener().selectRight()
+        flingCardListener?.selectRight()
     }
 
     fun swipeRight(duration: Int) {
-        getTopCardListener().selectRight(duration.toLong())
+        flingCardListener?.selectRight(duration.toLong())
     }
 
     override fun getAdapter(): T? {
         return mAdapter
     }
 
-
     override fun setAdapter(adapter: T) {
         if (mAdapter != null && mDataSetObserver != null) {
-            mAdapter!!.unregisterDataSetObserver(mDataSetObserver)
+            mAdapter?.unregisterDataSetObserver(mDataSetObserver)
             mDataSetObserver = null
         }
         mAdapter = adapter
         if (mAdapter != null && mDataSetObserver == null) {
             mDataSetObserver = AdapterDataSetObserver()
-            mAdapter!!.registerDataSetObserver(mDataSetObserver)
+            mAdapter?.registerDataSetObserver(mDataSetObserver)
         }
     }
 
-    override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams? {
+    override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
         return FrameLayout.LayoutParams(context, attrs)
     }
-
 
     private inner class AdapterDataSetObserver : DataSetObserver() {
         override fun onChanged() {
@@ -288,7 +276,6 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             requestLayout()
         }
     }
-
 
     interface OnItemClickListener {
         fun onItemClicked(event: MotionEvent?, v: View?, dataObject: Any?)
