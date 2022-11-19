@@ -164,7 +164,6 @@ class FlingCardListener(
                     }
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    //mActivePointerId = INVALID_POINTER_ID;
                     val pointerCount = event.pointerCount
                     val activePointerId = Math.min(activePointerId, pointerCount - 1)
                     upX = event.getX(activePointerId)
