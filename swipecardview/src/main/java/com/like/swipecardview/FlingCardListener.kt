@@ -31,8 +31,8 @@ class FlingCardListener(
 
     private var aPosX = 0f
     private var aPosY = 0f
-    private var aDownTouchX = 0f
-    private var aDownTouchY = 0f
+    private var downX = 0f
+    private var downY = 0f
 
     // The active pointer is the one currently moving our object.
     private var activePointerId = INVALID_POINTER_ID
@@ -106,10 +106,9 @@ class FlingCardListener(
                     val y = event.getY(activePointerId)
 
                     // Remember where we started
-                    aDownTouchX = x
-                    aDownTouchY = y
-                    // to prevent an initial jump of the magnifier, aposX and aPosY must
-                    // have the values from the magnifier frame
+                    downX = x
+                    downY = y
+                    // to prevent an initial jump of the magnifier, aposX and aPosY must have the values from the magnifier cardView
                     aPosX = cardView.x
                     aPosY = cardView.y
                     touchPosition = if (y < cardViewHeight / 2) {
@@ -140,8 +139,8 @@ class FlingCardListener(
 
                     // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
                     // Calculate the distance moved
-                    val dx = xMove - aDownTouchX
-                    val dy = yMove - aDownTouchY
+                    val dx = xMove - downX
+                    val dy = yMove - downY
 
                     // Move the frame
                     aPosX += dx
@@ -207,11 +206,11 @@ class FlingCardListener(
                 }
                 aPosX = 0f
                 aPosY = 0f
-                aDownTouchX = 0f
-                aDownTouchY = 0f
+                downX = 0f
+                downY = 0f
             }
         } else {
-            val distanceX = Math.abs(aTouchUpX - aDownTouchX)
+            val distanceX = Math.abs(aTouchUpX - downX)
             if (distanceX < 4) flingListener.onClick(event, cardView, data)
         }
         return false
