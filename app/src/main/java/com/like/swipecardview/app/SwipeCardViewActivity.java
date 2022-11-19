@@ -98,11 +98,11 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
     }
 
     @Override
-    public void onLeftCardExit(Object dataObject) {
+    public void onExitFromLeft(Object dataObject) {
     }
 
     @Override
-    public void onRightCardExit(Object dataObject) {
+    public void onExitFromRight(Object dataObject) {
     }
 
     @Override

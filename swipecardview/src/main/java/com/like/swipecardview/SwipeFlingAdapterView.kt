@@ -185,11 +185,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 }
 
                 override fun leftExit(dataObject: Any) {
-                    flingListener?.onLeftCardExit(dataObject)
+                    flingListener?.onExitFromLeft(dataObject)
                 }
 
                 override fun rightExit(dataObject: Any) {
-                    flingListener?.onRightCardExit(dataObject)
+                    flingListener?.onExitFromRight(dataObject)
                 }
 
                 override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
@@ -286,8 +286,8 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 
     interface OnFlingListener {
         fun removeFirstObjectInAdapter()
-        fun onLeftCardExit(dataObject: Any?)
-        fun onRightCardExit(dataObject: Any?)
+        fun onExitFromLeft(dataObject: Any?)
+        fun onExitFromRight(dataObject: Any?)
         fun onAdapterAboutToEmpty(itemsInAdapter: Int)
         fun onScroll(progress: Float, scrollXProgress: Float)
     }
