@@ -19,24 +19,23 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : BaseFlingAdapterView<T>(context, attrs, defStyle, defStyleRes) {
     private val cacheItems = mutableListOf<View?>()
-
-    //缩放层叠效果
-    private var yOffsetStep = 0 // view叠加垂直偏移量的步长
-    private val scaleStep = 0.08f // view叠加缩放的步长
-
-    private var maxVisible = 4 // 值建议最小为4
-    private var minAdapterStack = 6
-    private var rotationDegrees = 2f // 旋转角度
-    private var lastObjectInStack = 0
-
     private var mAdapter: T? = null
     private var mDataSetObserver: AdapterDataSetObserver? = null
     private var mInLayout = false
     private var mActiveCard: View? = null
     private var flingCardListener: FlingCardListener? = null
 
+    private var lastObjectInStack = 0
     private var initTop = 0
     private var initLeft = 0
+
+    //缩放层叠效果
+    var yOffsetStep = 0 // view叠加垂直偏移量的步长
+    val scaleStep = 0.08f // view叠加缩放的步长
+
+    var maxVisible = 4 // 值建议最小为4
+    var minAdapterStack = 6
+    var rotationDegrees = 2f // 旋转角度
 
     var flingListener: OnFlingListener? = null
     var onItemClickListener: OnItemClickListener? = null
@@ -251,14 +250,6 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             throw NullPointerException("flingCardListener is null")
         }
         return flingCardListener!!
-    }
-
-    fun setMaxVisible(MAX_VISIBLE: Int) {
-        this.maxVisible = MAX_VISIBLE
-    }
-
-    fun setMinStackInAdapter(MIN_ADAPTER_STACK: Int) {
-        this.minAdapterStack = MIN_ADAPTER_STACK
     }
 
     /**
