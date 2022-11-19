@@ -94,12 +94,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun removeAndAddToCache(remain: Int) {
-        var view: View?
-        val i = 0
-        while (i < childCount - remain) {
-            view = getChildAt(i)
-            removeViewInLayout(view)
-            cacheItems.add(view)
+        while (childCount - remain > 0) {
+            getChildAt(0)?.apply {
+                removeViewInLayout(this)
+                cacheItems.add(this)
+            }
         }
     }
 
