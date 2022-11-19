@@ -38,7 +38,6 @@ class FlingCardListener(
     private var touchPosition = 0
 
     private var isAnimationRunning = false
-    private val MAX_COS = Math.cos(Math.toRadians(45.0)).toFloat()
 
     // 支持左右滑
     var isNeedSwipe = true
@@ -83,7 +82,7 @@ class FlingCardListener(
             if (scale > 0 && !resetAnimCanceled) {
                 scale -= 0.1f
                 if (scale < 0) scale = 0f
-                frame.postDelayed(this, (animDuration / 20).toLong())
+                frame.postDelayed(this, animDuration / 20L)
             }
         }
     }
@@ -322,6 +321,7 @@ class FlingCardListener(
         private const val INVALID_POINTER_ID = -1
         private const val TOUCH_ABOVE = 0
         private const val TOUCH_BELOW = 1
+        private val MAX_COS = Math.cos(Math.toRadians(45.0)).toFloat()
     }
 
 }
