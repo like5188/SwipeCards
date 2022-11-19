@@ -37,6 +37,9 @@ class FlingCardListener(
     private var downX = 0f
     private var downY = 0f
 
+    // 手指抬起时的坐标
+    private var upX = 0f
+
     // The active pointer is the one currently moving our object.
     private var activePointerId = INVALID_POINTER_ID
 
@@ -47,7 +50,7 @@ class FlingCardListener(
 
     // 支持左右滑
     var isNeedSwipe = true
-    private var aTouchUpX = 0f
+
     private val animDuration = 300
     private var scale = 0f
 
@@ -164,7 +167,7 @@ class FlingCardListener(
                     //mActivePointerId = INVALID_POINTER_ID;
                     val pointerCount = event.pointerCount
                     val activePointerId = Math.min(activePointerId, pointerCount - 1)
-                    aTouchUpX = event.getX(activePointerId)
+                    upX = event.getX(activePointerId)
                     this.activePointerId = INVALID_POINTER_ID
                     resetCardViewOnStack(event)
                 }
@@ -209,7 +212,7 @@ class FlingCardListener(
                 downY = 0f
             }
         } else {
-            val distanceX = Math.abs(aTouchUpX - downX)
+            val distanceX = Math.abs(upX - downX)
             if (distanceX < 4) flingListener.onClick(event, cardView, data)
         }
         return false
