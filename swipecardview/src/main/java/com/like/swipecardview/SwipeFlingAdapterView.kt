@@ -35,7 +35,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     var maxVisible = 4 // 值建议最小为4
     var minAdapterStack = 6
     var rotationDegrees = 6f // 旋转角度
-    var needSwipe: Boolean = true // 支持左右滑
+    var isNeedSwipe: Boolean = true // 支持左右滑
 
     var flingListener: OnFlingListener? = null
     var onItemClickListener: OnItemClickListener? = null
@@ -220,7 +220,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                     }
                 })
             // 设置是否支持左右滑
-            flingCardListener?.setIsNeedSwipe(needSwipe)
+            flingCardListener?.setIsNeedSwipe(isNeedSwipe)
             mActiveCard?.setOnTouchListener(flingCardListener)
         }
     }
