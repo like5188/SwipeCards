@@ -17,18 +17,16 @@ import android.view.animation.OvershootInterpolator
  */
 class FlingCardListener(
     private val frame: View,
-    itemAtPosition: Any?,
-    rotation_degrees: Float,
+    private val dataObject: Any?,
+    private val rotationDegrees: Float,
     private val mFlingListener: FlingListener
 ) : OnTouchListener {
-    private val objectX: Float
-    private val objectY: Float
-    private val objectH: Int
-    private val objectW: Int
-    private val parentWidth: Int
-    private val dataObject: Any?
-    private val halfWidth: Float
-    private var BASE_ROTATION_DEGREES: Float
+    private val objectX: Float = frame.x
+    private val objectY: Float = frame.y
+    private val objectH: Int = frame.width
+    private val objectW: Int = frame.height
+    private val parentWidth: Int = (frame.parent as ViewGroup).width
+    private val halfWidth: Float = objectW / 2f
     private var aPosX = 0f
     private var aPosY = 0f
     private var aDownTouchX = 0f
@@ -45,7 +43,7 @@ class FlingCardListener(
     private val MAX_COS = Math.cos(Math.toRadians(45.0)).toFloat()
 
     // 支持左右滑
-    private var isNeedSwipe = true
+    var isNeedSwipe = true
     private var aTouchUpX = 0f
     private val animDuration = 300
     private var scale = 0f
@@ -55,19 +53,41 @@ class FlingCardListener(
      */
     private var resetAnimCanceled = false
 
-    init {
-        objectX = frame.x
-        objectY = frame.y
-        objectW = frame.width
-        objectH = frame.height
-        halfWidth = objectW / 2f
-        dataObject = itemAtPosition
-        parentWidth = (frame.parent as ViewGroup).width
-        BASE_ROTATION_DEGREES = rotation_degrees
-    }
+    /**
+     * When the object rotates it's width becomes bigger.
+     * The maximum width is at 45 degrees.
+     *
+     * The below method calculates the width offset of the rotation.
+     *
+     */
+    private val rotationWidthOffset: Float
+        private get() = objectW / MAX_COS - objectW
 
-    fun setIsNeedSwipe(isNeedSwipe: Boolean) {
-        this.isNeedSwipe = isNeedSwipe
+    private val scrollProgress: Float
+        private get() {
+            val dx = aPosX - objectX
+            val dy = aPosY - objectY
+            val dis = Math.abs(dx) + Math.abs(dy)
+            return Math.min(dis, 400f) / 400f
+        }
+    private val scrollXProgressPercent: Float
+        private get() = if (movedBeyondLeftBorder()) {
+            -1f
+        } else if (movedBeyondRightBorder()) {
+            1f
+        } else {
+            val zeroToOneValue = (aPosX + halfWidth - leftBorder()) / (rightBorder() - leftBorder())
+            zeroToOneValue * 2f - 1f
+        }
+    private val animRun: Runnable = object : Runnable {
+        override fun run() {
+            mFlingListener.onScroll(scale, 0f)
+            if (scale > 0 && !resetAnimCanceled) {
+                scale = scale - 0.1f
+                if (scale < 0) scale = 0f
+                frame.postDelayed(this, (animDuration / 20).toLong())
+            }
+        }
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
@@ -76,7 +96,7 @@ class FlingCardListener(
                 MotionEvent.ACTION_DOWN -> {
 
                     // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
-                    frame!!.animate().setListener(null)
+                    frame.animate().setListener(null)
                     frame.animate().cancel()
                     resetAnimCanceled = true
 
@@ -129,14 +149,14 @@ class FlingCardListener(
 
                     // calculate the rotation degrees
                     val distObjectX = aPosX - objectX
-                    var rotation = BASE_ROTATION_DEGREES * 2f * distObjectX / parentWidth
+                    var rotation = rotationDegrees * 2f * distObjectX / parentWidth
                     if (touchPosition == TOUCH_BELOW) {
                         rotation = -rotation
                     }
 
                     // in this area would be code for doing something with the view as the frame moves.
                     if (isNeedSwipe) {
-                        frame!!.x = aPosX
+                        frame.x = aPosX
                         frame.y = aPosY
                         frame.rotation = rotation
                         mFlingListener.onScroll(scrollProgress, scrollXProgressPercent)
@@ -157,23 +177,6 @@ class FlingCardListener(
         return true
     }
 
-    private val scrollProgress: Float
-        private get() {
-            val dx = aPosX - objectX
-            val dy = aPosY - objectY
-            val dis = Math.abs(dx) + Math.abs(dy)
-            return Math.min(dis, 400f) / 400f
-        }
-    private val scrollXProgressPercent: Float
-        private get() = if (movedBeyondLeftBorder()) {
-            -1f
-        } else if (movedBeyondRightBorder()) {
-            1f
-        } else {
-            val zeroToOneValue = (aPosX + halfWidth - leftBorder()) / (rightBorder() - leftBorder())
-            zeroToOneValue * 2f - 1f
-        }
-
     private fun resetCardViewOnStack(event: MotionEvent): Boolean {
         if (isNeedSwipe) {
             val duration = 200
@@ -191,7 +194,7 @@ class FlingCardListener(
                 if (absMoveXDistance < 4 && absMoveYDistance < 4) {
                     mFlingListener.onClick(event, frame, dataObject)
                 } else {
-                    frame!!.animate()
+                    frame.animate()
                         .setDuration(animDuration.toLong())
                         .setInterpolator(OvershootInterpolator(1.5f))
                         .x(objectX)
@@ -214,17 +217,6 @@ class FlingCardListener(
         return false
     }
 
-    private val animRun: Runnable = object : Runnable {
-        override fun run() {
-            mFlingListener.onScroll(scale, 0f)
-            if (scale > 0 && !resetAnimCanceled) {
-                scale = scale - 0.1f
-                if (scale < 0) scale = 0f
-                frame.postDelayed(this, (animDuration / 20).toLong())
-            }
-        }
-    }
-
     private fun movedBeyondLeftBorder(): Boolean {
         return aPosX + halfWidth < leftBorder()
     }
@@ -233,28 +225,27 @@ class FlingCardListener(
         return aPosX + halfWidth > rightBorder()
     }
 
-    fun leftBorder(): Float {
+    private fun leftBorder(): Float {
         return parentWidth / 4f
     }
 
-    fun rightBorder(): Float {
+    private fun rightBorder(): Float {
         return 3 * parentWidth / 4f
     }
 
-    fun onSelected(isLeft: Boolean, exitY: Float, duration: Long) {
+    private fun onSelected(isLeft: Boolean, exitY: Float, duration: Long) {
         isAnimationRunning = true
-        val exitX: Float
-        exitX = if (isLeft) {
+        val exitX: Float = if (isLeft) {
             -objectW - rotationWidthOffset
         } else {
             parentWidth + rotationWidthOffset
         }
-        frame!!.animate()
+        frame.animate()
             .setDuration(duration)
             .setInterpolator(LinearInterpolator())
             .translationX(exitX)
             .translationY(exitY)
-            .rotation(if (isLeft) -BASE_ROTATION_DEGREES else BASE_ROTATION_DEGREES)
+            .rotation(if (isLeft) -rotationDegrees else rotationDegrees)
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     if (isLeft) {
@@ -311,7 +302,7 @@ class FlingCardListener(
     }
 
     private fun getExitRotation(isLeft: Boolean): Float {
-        var rotation = BASE_ROTATION_DEGREES * 2f * (parentWidth - objectX) / parentWidth
+        var rotation = rotationDegrees * 2f * (parentWidth - objectX) / parentWidth
         if (touchPosition == TOUCH_BELOW) {
             rotation = -rotation
         }
@@ -319,20 +310,6 @@ class FlingCardListener(
             rotation = -rotation
         }
         return rotation
-    }
-
-    /**
-     * When the object rotates it's width becomes bigger.
-     * The maximum width is at 45 degrees.
-     *
-     * The below method calculates the width offset of the rotation.
-     *
-     */
-    private val rotationWidthOffset: Float
-        private get() = objectW / MAX_COS - objectW
-
-    fun setRotationDegrees(degrees: Float) {
-        BASE_ROTATION_DEGREES = degrees
     }
 
     interface FlingListener {

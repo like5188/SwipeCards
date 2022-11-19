@@ -200,10 +200,10 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                     adjustChildrenUnderTopView(progress)
                     onFlingListener?.onScroll(progress, scrollXProgress)
                 }
-            }).apply {
+            }).also {
                 // 设置是否支持左右滑
-                setIsNeedSwipe(isNeedSwipe)
-                view.setOnTouchListener(this)
+                it.isNeedSwipe = isNeedSwipe
+                view.setOnTouchListener(it)
             }
         }
     }
