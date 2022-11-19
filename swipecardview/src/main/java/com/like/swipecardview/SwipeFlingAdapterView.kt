@@ -80,6 +80,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
+    /**
+     * 保留指定数量的视图，其它的移除并存入缓存中
+     */
     private fun removeAndAddToCache(remain: Int) {
         while (childCount - remain > 0) {
             getChildAt(0)?.apply {
