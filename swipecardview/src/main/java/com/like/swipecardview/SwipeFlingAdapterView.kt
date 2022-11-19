@@ -1,9 +1,7 @@
 package com.like.swipecardview
 
-import android.annotation.TargetApi
 import android.content.Context
 import android.database.DataSetObserver
-import android.os.Build
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
@@ -30,27 +28,18 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     private var initLeft = 0
 
     //缩放层叠效果
-    var yOffsetStep = 0 // view叠加垂直偏移量的步长
-    val scaleStep = 0.08f // view叠加缩放的步长
+    var yOffsetStep = 100 // view叠加垂直偏移量的步长
+    var scaleStep = 0.08f // view叠加缩放的步长
 
     var maxVisible = 4 // 值建议最小为4
     var minAdapterStack = 6
-    var rotationDegrees = 2f // 旋转角度
+    var rotationDegrees = 6f // 旋转角度
 
     var flingListener: OnFlingListener? = null
     var onItemClickListener: OnItemClickListener? = null
 
     // 支持左右滑
     var needSwipe: Boolean = true
-
-    init {
-        val a = context.obtainStyledAttributes(attrs, R.styleable.SwipeFlingAdapterView, defStyle, defStyleRes)
-        maxVisible = a.getInt(R.styleable.SwipeFlingAdapterView_max_visible, maxVisible)
-        minAdapterStack = a.getInt(R.styleable.SwipeFlingAdapterView_min_adapter_stack, minAdapterStack)
-        rotationDegrees = a.getFloat(R.styleable.SwipeFlingAdapterView_rotation_degrees, rotationDegrees)
-        yOffsetStep = a.getDimensionPixelOffset(R.styleable.SwipeFlingAdapterView_y_offset_step, 0)
-        a.recycle()
-    }
 
     override fun getSelectedView(): View? {
         return mActiveCard
@@ -102,23 +91,22 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun layoutChildren(startingIndex: Int, adapterCount: Int) {
-        var startingIndex = startingIndex
-        while (startingIndex < Math.min(adapterCount, maxVisible)) {
+        var index = startingIndex
+        while (index < Math.min(adapterCount, maxVisible)) {
             var item: View? = null
             if (cacheItems.size > 0) {
                 item = cacheItems[0]
                 cacheItems.remove(item)
             }
-            val newUnderChild = mAdapter!!.getView(startingIndex, item, this)
+            val newUnderChild = mAdapter!!.getView(index, item, this)
             if (newUnderChild.visibility != GONE) {
-                makeAndAddView(newUnderChild, startingIndex)
-                lastObjectInStack = startingIndex
+                makeAndAddView(newUnderChild, index)
+                lastObjectInStack = index
             }
-            startingIndex++
+            index++
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private fun makeAndAddView(child: View, index: Int) {
         val lp = child.layoutParams as FrameLayout.LayoutParams
         addViewInLayout(child, 0, lp, true)
@@ -144,20 +132,16 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         if (gravity == -1) {
             gravity = Gravity.TOP or Gravity.START
         }
-        var layoutDirection = 0
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) layoutDirection = getLayoutDirection()
         val absoluteGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection)
         val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
-        val childLeft: Int
-        val childTop: Int
-        childLeft = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
+        val childLeft: Int = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
             Gravity.CENTER_HORIZONTAL -> (width + paddingLeft - paddingRight - w) / 2 +
                     lp.leftMargin - lp.rightMargin
             Gravity.END -> width + paddingRight - w - lp.rightMargin
             Gravity.START -> paddingLeft + lp.leftMargin
             else -> paddingLeft + lp.leftMargin
         }
-        childTop = when (verticalGravity) {
+        val childTop: Int = when (verticalGravity) {
             Gravity.CENTER_VERTICAL -> (height + paddingTop - paddingBottom - h) / 2 +
                     lp.topMargin - lp.bottomMargin
             Gravity.BOTTOM -> height - paddingBottom - h - lp.bottomMargin
@@ -171,8 +155,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun adjustChildView(child: View, index: Int) {
         if (index > -1 && index < maxVisible) {
-            val multiple: Int
-            multiple = if (index > 2) 2 else index
+            val multiple: Int = if (index > 2) 2 else index
             child.offsetTopAndBottom(yOffsetStep * multiple)
             child.scaleX = 1 - scaleStep * multiple
             child.scaleY = 1 - scaleStep * multiple
