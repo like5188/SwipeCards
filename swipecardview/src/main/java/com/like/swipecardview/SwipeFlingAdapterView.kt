@@ -95,8 +95,8 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    private fun layoutChildren(startingIndex: Int, adapterCount: Int) {
-        var index = startingIndex
+    private fun layoutChildren(startIndex: Int, adapterCount: Int) {
+        var index = startIndex
         while (index < Math.min(adapterCount, maxVisible)) {
             var view: View? = null
             if (viewCaches.isNotEmpty()) {
