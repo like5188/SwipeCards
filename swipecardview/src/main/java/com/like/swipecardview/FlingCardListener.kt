@@ -138,7 +138,7 @@ class FlingCardListener(
                     val dx = xMove - downX
                     val dy = yMove - downY
 
-                    // Move the frame
+                    // Move the cardView
                     aPosX += dx
                     aPosY += dy
 
@@ -149,7 +149,7 @@ class FlingCardListener(
                         rotation = -rotation
                     }
 
-                    // in this area would be code for doing something with the view as the frame moves.
+                    // in this area would be code for doing something with the view as the cardView moves.
                     if (isNeedSwipe) {
                         cardView.x = aPosX
                         cardView.y = aPosY
