@@ -122,8 +122,7 @@ class FlingCardListener(
                     val pointerIndex = event.action and MotionEvent.ACTION_POINTER_INDEX_MASK shr MotionEvent.ACTION_POINTER_INDEX_SHIFT
                     val pointerId = event.getPointerId(pointerIndex)
                     if (pointerId == activePointerId) {
-                        // This was our active pointer going up. Choose a new
-                        // active pointer and adjust accordingly.
+                        // This was our active pointer going up. Choose a new active pointer and adjust accordingly.
                         val newPointerIndex = if (pointerIndex == 0) 1 else 0
                         activePointerId = event.getPointerId(newPointerIndex)
                     }
