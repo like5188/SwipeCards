@@ -19,7 +19,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 ) : BaseFlingAdapterView<T>(context, attrs, defStyle, defStyleRes) {
     private val cacheItems = mutableListOf<View?>()
     private var mAdapter: T? = null
-    private var mDataSetObserver: AdapterDataSetObserver? = null
+    private val mDataSetObserver: AdapterDataSetObserver by lazy {
+        AdapterDataSetObserver()
+    }
     private var mInLayout = false
     private var mActiveCard: View? = null
 
@@ -259,15 +261,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     override fun setAdapter(adapter: T) {
-        if (mAdapter != null && mDataSetObserver != null) {
-            mAdapter?.unregisterDataSetObserver(mDataSetObserver)
-            mDataSetObserver = null
-        }
+        mAdapter?.unregisterDataSetObserver(mDataSetObserver)
         mAdapter = adapter
-        if (mAdapter != null && mDataSetObserver == null) {
-            mDataSetObserver = AdapterDataSetObserver()
-            mAdapter?.registerDataSetObserver(mDataSetObserver)
-        }
+        mAdapter?.registerDataSetObserver(mDataSetObserver)
     }
 
     override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {

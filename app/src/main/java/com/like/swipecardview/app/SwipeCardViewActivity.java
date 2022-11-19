@@ -107,9 +107,9 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
     @Override
     public void onAdapterAboutToEmpty(int itemsInAdapter) {
-//        if (itemsInAdapter == 3) {
-//            loadData();
-//        }
+        if (itemsInAdapter == 0) {
+            loadData();
+        }
     }
 
     @Override
