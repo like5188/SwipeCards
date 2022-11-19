@@ -36,6 +36,8 @@ class FlingCardListener(
 
     // The active pointer is the one currently moving our object.
     private var activePointerId = INVALID_POINTER_ID
+
+    // 触摸的位置。参考 TOUCH_ABOVE、TOUCH_BELOW
     private var touchPosition = 0
 
     private var isAnimationRunning = AtomicBoolean(false)
