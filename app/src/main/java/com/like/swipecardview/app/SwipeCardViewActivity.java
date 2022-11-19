@@ -107,9 +107,9 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
     @Override
     public void onAdapterAboutToEmpty(int itemsInAdapter) {
-        if (itemsInAdapter == 3) {
-            loadData();
-        }
+//        if (itemsInAdapter == 3) {
+//            loadData();
+//        }
     }
 
     @Override
@@ -135,7 +135,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
             protected List<Talent> doInBackground(Void... params) {
                 ArrayList<Talent> list = new ArrayList<>(10);
                 Talent talent;
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < 6; i++) {
                     talent = new Talent();
                     talent.headerIcon = headerIcons[i % headerIcons.length];
                     talent.nickname = names[ran.nextInt(names.length-1)];
