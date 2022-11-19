@@ -174,14 +174,10 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
      * Set the top view and add the fling listener
      */
     private fun setTopView() {
-        if (childCount <= 0) {
-            return
-        }
-        mActiveCard = getChildAt(topViewIndex)
-        if (mActiveCard != null && flingListener != null) {
-            flingCardListener = FlingCardListener(mActiveCard, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
+        mActiveCard = getChildAt(topViewIndex)?.also { view ->
+            flingCardListener = FlingCardListener(view, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
                 override fun onCardExited() {
-                    removeViewInLayout(mActiveCard)
+                    removeViewInLayout(view)
                     mActiveCard = null
                     flingListener?.removeFirstObjectInAdapter()
                 }
@@ -202,10 +198,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                     adjustChildrenOfUnderTopView(progress)
                     flingListener?.onScroll(progress, scrollXProgress)
                 }
-            })
-            // 设置是否支持左右滑
-            flingCardListener?.setIsNeedSwipe(isNeedSwipe)
-            mActiveCard?.setOnTouchListener(flingCardListener)
+            }).apply {
+                // 设置是否支持左右滑
+                setIsNeedSwipe(isNeedSwipe)
+                view.setOnTouchListener(this)
+            }
         }
     }
 
