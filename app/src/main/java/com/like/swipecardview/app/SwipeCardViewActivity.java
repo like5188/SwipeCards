@@ -89,7 +89,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
 
     @Override
-    public void onItemClicked(MotionEvent event, View v, Object dataObject) {
+    public void onItemClick(MotionEvent event, View v, Object dataObject) {
     }
 
     @Override

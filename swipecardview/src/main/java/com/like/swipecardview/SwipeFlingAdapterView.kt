@@ -193,7 +193,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 }
 
                 override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
-                    if (onItemClickListener != null) onItemClickListener!!.onItemClicked(event, v, dataObject)
+                    if (onItemClickListener != null) onItemClickListener!!.onItemClick(event, v, dataObject)
                 }
 
                 override fun onScroll(progress: Float, scrollXProgress: Float) {
@@ -281,7 +281,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     interface OnItemClickListener {
-        fun onItemClicked(event: MotionEvent?, v: View?, dataObject: Any?)
+        fun onItemClick(event: MotionEvent?, v: View?, dataObject: Any?)
     }
 
     interface OnFlingListener {
