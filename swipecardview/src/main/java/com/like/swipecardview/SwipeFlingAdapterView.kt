@@ -22,12 +22,12 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 
     //缩放层叠效果
     private var yOffsetStep = 0 // view叠加垂直偏移量的步长
-    private val SCALE_STEP = 0.08f // view叠加缩放的步长
+    private val scaleStep = 0.08f // view叠加缩放的步长
 
-    private var MAX_VISIBLE = 4 // 值建议最小为4
-    private var MIN_ADAPTER_STACK = 6
-    private var ROTATION_DEGREES = 2f // 旋转角度
-    private var LAST_OBJECT_IN_STACK = 0
+    private var maxVisible = 4 // 值建议最小为4
+    private var minAdapterStack = 6
+    private var rotationDegrees = 2f // 旋转角度
+    private var lastObjectInStack = 0
 
     private var mAdapter: T? = null
     private var mDataSetObserver: AdapterDataSetObserver? = null
@@ -46,9 +46,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.SwipeFlingAdapterView, defStyle, defStyleRes)
-        MAX_VISIBLE = a.getInt(R.styleable.SwipeFlingAdapterView_max_visible, MAX_VISIBLE)
-        MIN_ADAPTER_STACK = a.getInt(R.styleable.SwipeFlingAdapterView_min_adapter_stack, MIN_ADAPTER_STACK)
-        ROTATION_DEGREES = a.getFloat(R.styleable.SwipeFlingAdapterView_rotation_degrees, ROTATION_DEGREES)
+        maxVisible = a.getInt(R.styleable.SwipeFlingAdapterView_max_visible, maxVisible)
+        minAdapterStack = a.getInt(R.styleable.SwipeFlingAdapterView_min_adapter_stack, minAdapterStack)
+        rotationDegrees = a.getFloat(R.styleable.SwipeFlingAdapterView_rotation_degrees, rotationDegrees)
         yOffsetStep = a.getDimensionPixelOffset(R.styleable.SwipeFlingAdapterView_y_offset_step, 0)
         a.recycle()
     }
@@ -71,7 +71,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         if (adapterCount == 0) {
             removeAndAddToCache(0)
         } else {
-            val topCard = getChildAt(LAST_OBJECT_IN_STACK)
+            val topCard = getChildAt(lastObjectInStack)
             if (mActiveCard != null && topCard == mActiveCard) {
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
@@ -86,7 +86,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             initTop = mActiveCard!!.top
             initLeft = mActiveCard!!.left
         }
-        if (adapterCount < MIN_ADAPTER_STACK) {
+        if (adapterCount < minAdapterStack) {
             if (flingListener != null) {
                 flingListener!!.onAdapterAboutToEmpty(adapterCount)
             }
@@ -104,7 +104,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun layoutChildren(startingIndex: Int, adapterCount: Int) {
         var startingIndex = startingIndex
-        while (startingIndex < Math.min(adapterCount, MAX_VISIBLE)) {
+        while (startingIndex < Math.min(adapterCount, maxVisible)) {
             var item: View? = null
             if (cacheItems.size > 0) {
                 item = cacheItems[0]
@@ -113,7 +113,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             val newUnderChild = mAdapter!!.getView(startingIndex, item, this)
             if (newUnderChild.visibility != GONE) {
                 makeAndAddView(newUnderChild, startingIndex)
-                LAST_OBJECT_IN_STACK = startingIndex
+                lastObjectInStack = startingIndex
             }
             startingIndex++
         }
@@ -171,12 +171,12 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun adjustChildView(child: View, index: Int) {
-        if (index > -1 && index < MAX_VISIBLE) {
+        if (index > -1 && index < maxVisible) {
             val multiple: Int
             multiple = if (index > 2) 2 else index
             child.offsetTopAndBottom(yOffsetStep * multiple)
-            child.scaleX = 1 - SCALE_STEP * multiple
-            child.scaleY = 1 - SCALE_STEP * multiple
+            child.scaleX = 1 - scaleStep * multiple
+            child.scaleY = 1 - scaleStep * multiple
         }
     }
 
@@ -186,19 +186,19 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             var i: Int
             var multiple: Int
             if (count == 2) {
-                i = LAST_OBJECT_IN_STACK - 1
+                i = lastObjectInStack - 1
                 multiple = 1
             } else {
-                i = LAST_OBJECT_IN_STACK - 2
+                i = lastObjectInStack - 2
                 multiple = 2
             }
             val rate = Math.abs(scrollRate)
-            while (i < LAST_OBJECT_IN_STACK) {
+            while (i < lastObjectInStack) {
                 val underTopView = getChildAt(i)
                 val offset = (yOffsetStep * (multiple - rate)).toInt()
                 underTopView.offsetTopAndBottom(offset - underTopView.top + initTop)
-                underTopView.scaleX = 1 - SCALE_STEP * multiple + SCALE_STEP * rate
-                underTopView.scaleY = 1 - SCALE_STEP * multiple + SCALE_STEP * rate
+                underTopView.scaleX = 1 - scaleStep * multiple + scaleStep * rate
+                underTopView.scaleY = 1 - scaleStep * multiple + scaleStep * rate
                 i++
                 multiple--
             }
@@ -210,10 +210,10 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun setTopView() {
         if (childCount > 0) {
-            mActiveCard = getChildAt(LAST_OBJECT_IN_STACK)
+            mActiveCard = getChildAt(lastObjectInStack)
             if (mActiveCard != null && flingListener != null) {
                 flingCardListener = FlingCardListener(mActiveCard, mAdapter!!.getItem(0),
-                    ROTATION_DEGREES, object : FlingListener {
+                    rotationDegrees, object : FlingListener {
                         override fun onCardExited() {
                             removeViewInLayout(mActiveCard)
                             mActiveCard = null
@@ -254,11 +254,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     fun setMaxVisible(MAX_VISIBLE: Int) {
-        this.MAX_VISIBLE = MAX_VISIBLE
+        this.maxVisible = MAX_VISIBLE
     }
 
     fun setMinStackInAdapter(MIN_ADAPTER_STACK: Int) {
-        this.MIN_ADAPTER_STACK = MIN_ADAPTER_STACK
+        this.minAdapterStack = MIN_ADAPTER_STACK
     }
 
     /**
