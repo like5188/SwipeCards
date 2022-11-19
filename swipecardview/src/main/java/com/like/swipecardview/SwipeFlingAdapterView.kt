@@ -75,7 +75,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 initLeft = this.left
             }
         }
-        if (adapterCount < minAdapterStack) {
+        if (adapterCount < minAdapterStack) {// 通知添加数据
             flingListener?.onAdapterAboutToEmpty(adapterCount)
         }
     }
@@ -96,9 +96,8 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         var index = startingIndex
         while (index < Math.min(adapterCount, maxVisible)) {
             var item: View? = null
-            if (cacheItems.size > 0) {
-                item = cacheItems[0]
-                cacheItems.remove(item)
+            if (cacheItems.isNotEmpty()) {
+                item = cacheItems.removeAt(0)
             }
             mAdapter?.getView(index, item, this)?.let {
                 if (it.visibility != GONE) {
