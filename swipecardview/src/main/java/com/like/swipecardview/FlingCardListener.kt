@@ -94,7 +94,6 @@ class FlingCardListener(
         try {
             when (event.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_DOWN -> {
-
                     // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                     cardView.animate().setListener(null)
                     cardView.animate().cancel()
@@ -131,7 +130,6 @@ class FlingCardListener(
                     }
                 }
                 MotionEvent.ACTION_MOVE -> {
-
                     // Find the index of the active pointer and fetch its position
                     val pointerIndexMove = event.findPointerIndex(activePointerId)
                     val xMove = event.getX(pointerIndexMove)
