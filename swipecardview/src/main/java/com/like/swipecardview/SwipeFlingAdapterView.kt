@@ -72,7 +72,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             removeAndAddToCache(0)
         } else {
             val topCard = getChildAt(LAST_OBJECT_IN_STACK)
-            if (mActiveCard != null && topCard != null && topCard === mActiveCard) {
+            if (mActiveCard != null && topCard == mActiveCard) {
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
