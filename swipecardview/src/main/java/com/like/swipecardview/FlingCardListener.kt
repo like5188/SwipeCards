@@ -119,8 +119,7 @@ class FlingCardListener(
                 MotionEvent.ACTION_POINTER_DOWN -> {}
                 MotionEvent.ACTION_POINTER_UP -> {
                     // Extract the index of the pointer that left the touch sensor
-                    val pointerIndex = event.action and
-                            MotionEvent.ACTION_POINTER_INDEX_MASK shr MotionEvent.ACTION_POINTER_INDEX_SHIFT
+                    val pointerIndex = event.action and MotionEvent.ACTION_POINTER_INDEX_MASK shr MotionEvent.ACTION_POINTER_INDEX_SHIFT
                     val pointerId = event.getPointerId(pointerIndex)
                     if (pointerId == activePointerId) {
                         // This was our active pointer going up. Choose a new
