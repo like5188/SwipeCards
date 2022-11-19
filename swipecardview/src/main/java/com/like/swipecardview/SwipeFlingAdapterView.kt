@@ -40,7 +40,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     var rotationDegrees = 6f // 旋转角度
     var isNeedSwipe: Boolean = true // 支持左右滑
 
-    var flingListener: OnFlingListener? = null
+    var onFlingListener: OnFlingListener? = null
     var onItemClickListener: OnItemClickListener? = null
 
     override fun getSelectedView(): View? {
@@ -79,7 +79,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             }
         }
         if (adapterCount < minAdapterStack) {// 通知添加数据
-            flingListener?.onAdapterAboutToEmpty(adapterCount)
+            onFlingListener?.onAdapterAboutToEmpty(adapterCount)
         }
     }
 
@@ -181,24 +181,24 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 override fun onCardExited() {
                     removeViewInLayout(view)
                     mTopView = null
-                    flingListener?.removeFirstObjectInAdapter()
+                    onFlingListener?.removeFirstObjectInAdapter()
                 }
 
-                override fun leftExit(dataObject: Any) {
-                    flingListener?.onExitFromLeft(dataObject)
+                override fun leftExit(dataObject: Any?) {
+                    onFlingListener?.onExitFromLeft(dataObject)
                 }
 
-                override fun rightExit(dataObject: Any) {
-                    flingListener?.onExitFromRight(dataObject)
+                override fun rightExit(dataObject: Any?) {
+                    onFlingListener?.onExitFromRight(dataObject)
                 }
 
-                override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
+                override fun onClick(event: MotionEvent?, v: View?, dataObject: Any?) {
                     onItemClickListener?.onItemClick(event, v, dataObject)
                 }
 
                 override fun onScroll(progress: Float, scrollXProgress: Float) {
                     adjustChildrenUnderTopView(progress)
-                    flingListener?.onScroll(progress, scrollXProgress)
+                    onFlingListener?.onScroll(progress, scrollXProgress)
                 }
             }).apply {
                 // 设置是否支持左右滑

@@ -69,7 +69,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
         swipeView = (SwipeFlingAdapterView) findViewById(R.id.swipe_view);
         if (swipeView != null) {
             swipeView.setNeedSwipe(true);
-            swipeView.setFlingListener(this);
+            swipeView.setOnFlingListener(this);
             swipeView.setOnItemClickListener(this);
 
             adapter = new InnerAdapter();
