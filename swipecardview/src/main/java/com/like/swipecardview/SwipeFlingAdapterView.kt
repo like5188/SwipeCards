@@ -17,33 +17,32 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
     defStyleRes: Int = 0
-) :
-    BaseFlingAdapterView<T>(context, attrs, defStyle, defStyleRes) {
-    private val cacheItems = ArrayList<View?>()
+) : BaseFlingAdapterView<T>(context, attrs, defStyle, defStyleRes) {
+    private val cacheItems = mutableListOf<View?>()
 
     //缩放层叠效果
     private var yOffsetStep = 0 // view叠加垂直偏移量的步长
     private val SCALE_STEP = 0.08f // view叠加缩放的步长
-    //缩放层叠效果
 
     private var MAX_VISIBLE = 4 // 值建议最小为4
     private var MIN_ADAPTER_STACK = 6
-    private var ROTATION_DEGREES = 2f
+    private var ROTATION_DEGREES = 2f // 旋转角度
     private var LAST_OBJECT_IN_STACK = 0
 
     private var mAdapter: T? = null
-    var flingListener: OnFlingListener? = null
     private var mDataSetObserver: AdapterDataSetObserver? = null
     private var mInLayout = false
     private var mActiveCard: View? = null
-    var onItemClickListener: OnItemClickListener? = null
     private var flingCardListener: FlingCardListener? = null
-
-    // 支持左右滑
-    var needSwipe: Boolean = true
 
     private var initTop = 0
     private var initLeft = 0
+
+    var flingListener: OnFlingListener? = null
+    var onItemClickListener: OnItemClickListener? = null
+
+    // 支持左右滑
+    var needSwipe: Boolean = true
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.SwipeFlingAdapterView, defStyle, defStyleRes)
@@ -54,28 +53,9 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         a.recycle()
     }
 
-    /**
-     * A shortcut method to set both the listeners and the adapter.
-     *
-     * @param context The activity context which extends onFlingListener, OnItemClickListener or both
-     * @param mAdapter The adapter you have to set.
-     */
-    fun init(context: Context?, mAdapter: T) {
-        flingListener = if (context is OnFlingListener) {
-            context
-        } else {
-            throw RuntimeException("Activity does not implement SwipeFlingAdapterView.onFlingListener")
-        }
-        if (context is OnItemClickListener) {
-            onItemClickListener = context
-        }
-        setAdapter(mAdapter)
-    }
-
     override fun getSelectedView(): View? {
         return mActiveCard
     }
-
 
     override fun requestLayout() {
         if (!mInLayout) {
@@ -85,24 +65,17 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        // if we don't have an adapter, we don't need to do anything
-        if (mAdapter == null) {
-            return
-        }
+        val adapter = mAdapter ?: return
         mInLayout = true
-        val adapterCount = mAdapter!!.count
+        val adapterCount = adapter.count
         if (adapterCount == 0) {
-//            removeAllViewsInLayout();
             removeAndAddToCache(0)
         } else {
             val topCard = getChildAt(LAST_OBJECT_IN_STACK)
             if (mActiveCard != null && topCard != null && topCard === mActiveCard) {
-//                removeViewsInLayout(0, LAST_OBJECT_IN_STACK);
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
-                // Reset the UI and set top view listener
-//                removeAllViewsInLayout();
                 removeAndAddToCache(0)
                 layoutChildren(0, adapterCount)
                 setTopView()
