@@ -23,7 +23,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         AdapterDataSetObserver()
     }
     private var mInLayout = false
-    private var mActiveCard: View? = null
+    private var mTopView: View? = null
 
     private var topViewIndex = 0
     private var initTop = 0
@@ -44,7 +44,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     var onItemClickListener: OnItemClickListener? = null
 
     override fun getSelectedView(): View? {
-        return mActiveCard
+        return mTopView
     }
 
     override fun requestLayout() {
@@ -62,7 +62,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             removeAndAddToCache(0)
         } else {
             val topView = getChildAt(topViewIndex)
-            if (mActiveCard != null && topView == mActiveCard) {
+            if (mTopView != null && topView == mTopView) {
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
@@ -73,7 +73,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         }
         mInLayout = false
         if (initTop == 0 && initLeft == 0) {
-            mActiveCard?.apply {
+            mTopView?.apply {
                 initTop = this.top
                 initLeft = this.left
             }
@@ -176,11 +176,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
      * Set the top view and add the fling listener
      */
     private fun setTopView() {
-        mActiveCard = getChildAt(topViewIndex)?.also { view ->
+        mTopView = getChildAt(topViewIndex)?.also { view ->
             flingCardListener = FlingCardListener(view, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
                 override fun onCardExited() {
                     removeViewInLayout(view)
-                    mActiveCard = null
+                    mTopView = null
                     flingListener?.removeFirstObjectInAdapter()
                 }
 
