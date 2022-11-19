@@ -223,8 +223,8 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         val rate = Math.abs(scrollRate)
         while (indexOfUnderTopView < topViewIndex) {
             val underTopView = getChildAt(indexOfUnderTopView)
-            val offset = (yOffsetStep * (level - rate)).toInt()
-            underTopView.offsetTopAndBottom(offset - underTopView.top + initTop)
+            val yOffset = (yOffsetStep * (level - rate)).toInt()
+            underTopView.offsetTopAndBottom(yOffset - underTopView.top + initTop)
             underTopView.scaleX = 1 - scaleStep * level + scaleStep * rate
             underTopView.scaleY = 1 - scaleStep * level + scaleStep * rate
             indexOfUnderTopView++
