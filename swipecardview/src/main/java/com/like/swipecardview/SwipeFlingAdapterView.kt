@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
+import android.widget.FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
 import com.like.swipecardview.FlingCardListener.FlingListener
 
 class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
@@ -110,8 +111,14 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun makeAndAddView(child: View, index: Int) {
-        val lp = child.layoutParams as FrameLayout.LayoutParams
+        val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
         addViewInLayout(child, 0, lp, true)
+        layoutChild(child, lp)
+        // 缩放层叠效果
+        adjustChildView(child, index)
+    }
+
+    private fun layoutChild(child: View, lp: FrameLayout.LayoutParams) {
         val needToMeasure = child.isLayoutRequested
         if (needToMeasure) {
             val childWidthSpec = getChildMeasureSpec(
@@ -131,7 +138,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         val w = child.measuredWidth
         val h = child.measuredHeight
         var gravity = lp.gravity
-        if (gravity == -1) {
+        if (gravity == UNSPECIFIED_GRAVITY) {
             gravity = Gravity.TOP or Gravity.START
         }
         val absoluteGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection)
@@ -149,41 +156,17 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             else -> paddingTop + lp.topMargin
         }
         child.layout(childLeft, childTop, childLeft + w, childTop + h)
-        // 缩放层叠效果
-        adjustChildView(child, index)
     }
 
+    /**
+     * 调整视图垂直位置及缩放系数，达到缩放层叠效果
+     */
     private fun adjustChildView(child: View, index: Int) {
         if (index > -1 && index < maxVisible) {
-            val multiple: Int = if (index > 2) 2 else index
-            child.offsetTopAndBottom(yOffsetStep * multiple)
-            child.scaleX = 1 - scaleStep * multiple
-            child.scaleY = 1 - scaleStep * multiple
-        }
-    }
-
-    private fun adjustChildrenOfUnderTopView(scrollRate: Float) {
-        val count = childCount
-        if (count > 1) {
-            var i: Int
-            var multiple: Int
-            if (count == 2) {
-                i = lastObjectInStack - 1
-                multiple = 1
-            } else {
-                i = lastObjectInStack - 2
-                multiple = 2
-            }
-            val rate = Math.abs(scrollRate)
-            while (i < lastObjectInStack) {
-                val underTopView = getChildAt(i)
-                val offset = (yOffsetStep * (multiple - rate)).toInt()
-                underTopView.offsetTopAndBottom(offset - underTopView.top + initTop)
-                underTopView.scaleX = 1 - scaleStep * multiple + scaleStep * rate
-                underTopView.scaleY = 1 - scaleStep * multiple + scaleStep * rate
-                i++
-                multiple--
-            }
+            val level = if (index > 2) 2 else index
+            child.offsetTopAndBottom(yOffsetStep * level)
+            child.scaleX = 1 - scaleStep * level
+            child.scaleY = 1 - scaleStep * level
         }
     }
 
@@ -224,6 +207,31 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
             // 设置是否支持左右滑
             flingCardListener?.setIsNeedSwipe(isNeedSwipe)
             mActiveCard?.setOnTouchListener(flingCardListener)
+        }
+    }
+
+    private fun adjustChildrenOfUnderTopView(scrollRate: Float) {
+        val count = childCount
+        if (count > 1) {
+            var i: Int
+            var multiple: Int
+            if (count == 2) {
+                i = lastObjectInStack - 1
+                multiple = 1
+            } else {
+                i = lastObjectInStack - 2
+                multiple = 2
+            }
+            val rate = Math.abs(scrollRate)
+            while (i < lastObjectInStack) {
+                val underTopView = getChildAt(i)
+                val offset = (yOffsetStep * (multiple - rate)).toInt()
+                underTopView.offsetTopAndBottom(offset - underTopView.top + initTop)
+                underTopView.scaleX = 1 - scaleStep * multiple + scaleStep * rate
+                underTopView.scaleY = 1 - scaleStep * multiple + scaleStep * rate
+                i++
+                multiple--
+            }
         }
     }
 
