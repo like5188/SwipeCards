@@ -8,6 +8,7 @@ import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by dionysis_lorentzos on 5/8/14
@@ -37,7 +38,7 @@ class FlingCardListener(
     private var mActivePointerId = INVALID_POINTER_ID
     private var touchPosition = 0
 
-    private var isAnimationRunning = false
+    private var isAnimationRunning = AtomicBoolean(false)
 
     // 支持左右滑
     var isNeedSwipe = true
@@ -179,11 +180,11 @@ class FlingCardListener(
             val duration = 200
             if (movedBeyondLeftBorder()) {
                 // Left Swipe
-                onSelected(true, getExitPoint(-objectW), duration.toLong())
+                exitWithAnimation(true, getExitPoint(-objectW), duration.toLong())
                 mFlingListener.onScroll(1f, -1.0f)
             } else if (movedBeyondRightBorder()) {
                 // Right Swipe
-                onSelected(false, getExitPoint(parentWidth), duration.toLong())
+                exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
                 mFlingListener.onScroll(1f, 1.0f)
             } else {
                 val absMoveXDistance = Math.abs(aPosX - objectX)
@@ -230,59 +231,60 @@ class FlingCardListener(
         return 3 * parentWidth / 4f
     }
 
-    private fun onSelected(isLeft: Boolean, exitY: Float, duration: Long) {
-        isAnimationRunning = true
-        val exitX: Float = if (isLeft) {
-            -objectW - rotationWidthOffset
-        } else {
-            parentWidth + rotationWidthOffset
-        }
-        frame.animate()
-            .setDuration(duration)
-            .setInterpolator(LinearInterpolator())
-            .translationX(exitX)
-            .translationY(exitY)
-            .rotation(if (isLeft) -rotationDegrees else rotationDegrees)
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    if (isLeft) {
-                        mFlingListener.onCardExited()
-                        mFlingListener.leftExit(dataObject)
-                    } else {
-                        mFlingListener.onCardExited()
-                        mFlingListener.rightExit(dataObject)
+    private fun exitWithAnimation(isLeft: Boolean, exitY: Float, duration: Long) {
+        if (isAnimationRunning.compareAndSet(false, true)) {
+            val exitX: Float = if (isLeft) {
+                -objectW - rotationWidthOffset
+            } else {
+                parentWidth + rotationWidthOffset
+            }
+            frame.animate()
+                .setDuration(duration)
+                .setInterpolator(LinearInterpolator())
+                .translationX(exitX)
+                .translationY(exitY)
+                .rotation(if (isLeft) -rotationDegrees else rotationDegrees)
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        if (isLeft) {
+                            mFlingListener.onCardExited()
+                            mFlingListener.leftExit(dataObject)
+                        } else {
+                            mFlingListener.onCardExited()
+                            mFlingListener.rightExit(dataObject)
+                        }
+                        isAnimationRunning.set(false)
                     }
-                    isAnimationRunning = false
-                }
-            }).start()
+                }).start()
+        }
     }
 
     /**
      * Starts a default left exit animation.
      */
-    fun selectLeft() {
-        if (!isAnimationRunning) selectLeft(animDuration.toLong())
+    fun exitFromLeft() {
+        exitFromLeft(animDuration.toLong())
     }
 
     /**
      * Starts a default left exit animation.
      */
-    fun selectLeft(duration: Long) {
-        if (!isAnimationRunning) onSelected(true, objectY, duration)
+    fun exitFromLeft(duration: Long) {
+        exitWithAnimation(true, objectY, duration)
     }
 
     /**
      * Starts a default right exit animation.
      */
-    fun selectRight() {
-        if (!isAnimationRunning) selectRight(animDuration.toLong())
+    fun exitFromRight() {
+        exitFromRight(animDuration.toLong())
     }
 
     /**
      * Starts a default right exit animation.
      */
-    fun selectRight(duration: Long) {
-        if (!isAnimationRunning) onSelected(false, objectY, duration)
+    fun exitFromRight(duration: Long) {
+        exitWithAnimation(false, objectY, duration)
     }
 
     private fun getExitPoint(exitXPoint: Int): Float {

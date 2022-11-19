@@ -241,22 +241,22 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
      * click to swipe left
      */
     fun swipeLeft() {
-        flingCardListener?.selectLeft()
+        flingCardListener?.exitFromLeft()
     }
 
     fun swipeLeft(duration: Int) {
-        flingCardListener?.selectLeft(duration.toLong())
+        flingCardListener?.exitFromLeft(duration.toLong())
     }
 
     /**
      * click to swipe right
      */
     fun swipeRight() {
-        flingCardListener?.selectRight()
+        flingCardListener?.exitFromRight()
     }
 
     fun swipeRight(duration: Int) {
-        flingCardListener?.selectRight(duration.toLong())
+        flingCardListener?.exitFromRight(duration.toLong())
     }
 
     override fun getAdapter(): T? {
