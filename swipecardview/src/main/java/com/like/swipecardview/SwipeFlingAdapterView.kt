@@ -17,7 +17,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     defStyle: Int = 0,
     defStyleRes: Int = 0
 ) : BaseFlingAdapterView<T>(context, attrs, defStyle, defStyleRes) {
-    private val cacheItems = mutableListOf<View?>()
+    private val viewCaches = mutableListOf<View?>()
     private var mAdapter: T? = null
     private val mDataSetObserver: AdapterDataSetObserver by lazy {
         AdapterDataSetObserver()
@@ -90,7 +90,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         while (childCount - remain > 0) {
             getChildAt(0)?.apply {
                 removeViewInLayout(this)
-                cacheItems.add(this)
+                viewCaches.add(this)
             }
         }
     }
@@ -98,13 +98,13 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     private fun layoutChildren(startingIndex: Int, adapterCount: Int) {
         var index = startingIndex
         while (index < Math.min(adapterCount, maxVisible)) {
-            var item: View? = null
-            if (cacheItems.isNotEmpty()) {
-                item = cacheItems.removeAt(0)
+            var view: View? = null
+            if (viewCaches.isNotEmpty()) {
+                view = viewCaches.removeAt(0)
             }
-            mAdapter?.getView(index, item, this)?.let {
+            mAdapter?.getView(index, view, this)?.let {
                 if (it.visibility != GONE) {
-                    makeAndAddView(it, index)
+                    addChild(it, index)
                     topViewIndex = index
                 }
             }
@@ -112,12 +112,12 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    private fun makeAndAddView(child: View, index: Int) {
+    private fun addChild(child: View, index: Int) {
         val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
         addViewInLayout(child, 0, lp, true)
         layoutChild(child, lp)
         // 缩放层叠效果
-        adjustChildView(child, index)
+        adjustChild(child, index)
     }
 
     private fun layoutChild(child: View, lp: FrameLayout.LayoutParams) {
@@ -163,7 +163,7 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
     /**
      * 调整视图垂直位置及缩放系数，达到缩放层叠效果
      */
-    private fun adjustChildView(child: View, index: Int) {
+    private fun adjustChild(child: View, index: Int) {
         if (index > -1 && index < maxVisible) {
             val level = if (index > 2) 2 else index
             child.offsetTopAndBottom(yOffsetStep * level)
