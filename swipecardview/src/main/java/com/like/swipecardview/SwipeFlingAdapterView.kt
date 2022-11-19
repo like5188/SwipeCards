@@ -193,11 +193,11 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
                 }
 
                 override fun onClick(event: MotionEvent, v: View, dataObject: Any) {
-                    if (onItemClickListener != null) onItemClickListener!!.onItemClick(event, v, dataObject)
+                    onItemClickListener?.onItemClick(event, v, dataObject)
                 }
 
                 override fun onScroll(progress: Float, scrollXProgress: Float) {
-                    adjustChildrenOfUnderTopView(progress)
+                    adjustChildrenUnderTopView(progress)
                     flingListener?.onScroll(progress, scrollXProgress)
                 }
             }).apply {
@@ -208,28 +208,31 @@ class SwipeFlingAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    private fun adjustChildrenOfUnderTopView(scrollRate: Float) {
+    /**
+     * 调整 TopView 之下的所有视图
+     */
+    private fun adjustChildrenUnderTopView(scrollRate: Float) {
         val count = childCount
         if (count <= 1) {
             return
         }
-        var indexOfUnderTopView: Int
+        var index: Int
         var level: Int
         if (count == 2) {
-            indexOfUnderTopView = topViewIndex - 1
+            index = topViewIndex - 1
             level = 1
         } else {
-            indexOfUnderTopView = topViewIndex - 2
+            index = topViewIndex - 2
             level = 2
         }
         val rate = Math.abs(scrollRate)
-        while (indexOfUnderTopView < topViewIndex) {
-            val underTopView = getChildAt(indexOfUnderTopView)
+        while (index < topViewIndex) {
             val yOffset = (yOffsetStep * (level - rate)).toInt()
-            underTopView.offsetTopAndBottom(yOffset - underTopView.top + initTop)
-            underTopView.scaleX = 1 - scaleStep * level + scaleStep * rate
-            underTopView.scaleY = 1 - scaleStep * level + scaleStep * rate
-            indexOfUnderTopView++
+            val view = getChildAt(index)
+            view.offsetTopAndBottom(yOffset - view.top + initTop)
+            view.scaleX = 1 - scaleStep * level + scaleStep * rate
+            view.scaleY = 1 - scaleStep * level + scaleStep * rate
+            index++
             level--
         }
     }
