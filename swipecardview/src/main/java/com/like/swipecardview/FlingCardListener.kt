@@ -27,6 +27,7 @@ class FlingCardListener(
     private val objectW: Int = frame.height
     private val parentWidth: Int = (frame.parent as ViewGroup).width
     private val halfWidth: Float = objectW / 2f
+
     private var aPosX = 0f
     private var aPosY = 0f
     private var aDownTouchX = 0f
@@ -34,11 +35,8 @@ class FlingCardListener(
 
     // The active pointer is the one currently moving our object.
     private var mActivePointerId = INVALID_POINTER_ID
-    private val TOUCH_ABOVE = 0
-    private val TOUCH_BELOW = 1
     private var touchPosition = 0
 
-    // private final Object obj = new Object();
     private var isAnimationRunning = false
     private val MAX_COS = Math.cos(Math.toRadians(45.0)).toFloat()
 
@@ -61,17 +59,17 @@ class FlingCardListener(
      *
      */
     private val rotationWidthOffset: Float
-        private get() = objectW / MAX_COS - objectW
+        get() = objectW / MAX_COS - objectW
 
     private val scrollProgress: Float
-        private get() {
+        get() {
             val dx = aPosX - objectX
             val dy = aPosY - objectY
             val dis = Math.abs(dx) + Math.abs(dy)
             return Math.min(dis, 400f) / 400f
         }
     private val scrollXProgressPercent: Float
-        private get() = if (movedBeyondLeftBorder()) {
+        get() = if (movedBeyondLeftBorder()) {
             -1f
         } else if (movedBeyondRightBorder()) {
             1f
@@ -83,7 +81,7 @@ class FlingCardListener(
         override fun run() {
             mFlingListener.onScroll(scale, 0f)
             if (scale > 0 && !resetAnimCanceled) {
-                scale = scale - 0.1f
+                scale -= 0.1f
                 if (scale < 0) scale = 0f
                 frame.postDelayed(this, (animDuration / 20).toLong())
             }
@@ -322,6 +320,8 @@ class FlingCardListener(
 
     companion object {
         private const val INVALID_POINTER_ID = -1
+        private const val TOUCH_ABOVE = 0
+        private const val TOUCH_BELOW = 1
     }
 
 }
