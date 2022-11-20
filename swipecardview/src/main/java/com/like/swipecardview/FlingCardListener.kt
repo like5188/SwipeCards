@@ -22,11 +22,11 @@ class FlingCardListener(
     private val rotationDegrees: Float,
     private val flingListener: FlingListener
 ) : OnTouchListener {
-    private val initCardViewX: Float = cardView.x
-    private val initCardViewY: Float = cardView.y
-    private val initCardViewWidth: Int = cardView.width
-    private val initCardViewHeight: Int = cardView.height
-    private val halfCardViewWidth: Float = initCardViewWidth / 2f
+    private val originCardViewX: Float = cardView.x
+    private val originCardViewY: Float = cardView.y
+    private val originCardViewWidth: Int = cardView.width
+    private val originCardViewHeight: Int = cardView.height
+    private val halfCardViewWidth: Float = originCardViewWidth / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
 
     // cardView 的当前坐标
@@ -67,12 +67,12 @@ class FlingCardListener(
      *
      */
     private val rotationWidthOffset: Float
-        get() = initCardViewWidth / MAX_COS - initCardViewWidth
+        get() = originCardViewWidth / MAX_COS - originCardViewWidth
 
     private val scrollProgress: Float
         get() {
-            val dx = curCardViewX - initCardViewX
-            val dy = curCardViewY - initCardViewY
+            val dx = curCardViewX - originCardViewX
+            val dy = curCardViewY - originCardViewY
             val dis = Math.abs(dx) + Math.abs(dy)
             return Math.min(dis, 400f) / 400f
         }
@@ -116,7 +116,7 @@ class FlingCardListener(
                     // to prevent an initial jump of the magnifier, aposX and aPosY must have the values from the magnifier cardView
                     curCardViewX = cardView.x
                     curCardViewY = cardView.y
-                    touchPosition = if (y < initCardViewHeight / 2) {
+                    touchPosition = if (y < originCardViewHeight / 2) {
                         TOUCH_ABOVE
                     } else {
                         TOUCH_BELOW
@@ -149,7 +149,7 @@ class FlingCardListener(
                     curCardViewY += dy
 
                     // calculate the rotation degrees
-                    val disX = curCardViewX - initCardViewX
+                    val disX = curCardViewX - originCardViewX
                     var rotation = rotationDegrees * 2f * disX / parentWidth
                     if (touchPosition == TOUCH_BELOW) {
                         rotation = -rotation
@@ -182,23 +182,23 @@ class FlingCardListener(
             val duration = 200
             if (movedBeyondLeftBorder()) {
                 // Left Swipe
-                exitWithAnimation(true, getExitPoint(-initCardViewWidth), duration.toLong())
+                exitWithAnimation(true, getExitPoint(-originCardViewWidth), duration.toLong())
                 flingListener.onScroll(1f, -1.0f)
             } else if (movedBeyondRightBorder()) {
                 // Right Swipe
                 exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
                 flingListener.onScroll(1f, 1.0f)
             } else {
-                val absMoveXDistance = Math.abs(curCardViewX - initCardViewX)
-                val absMoveYDistance = Math.abs(curCardViewY - initCardViewY)
+                val absMoveXDistance = Math.abs(curCardViewX - originCardViewX)
+                val absMoveYDistance = Math.abs(curCardViewY - originCardViewY)
                 if (absMoveXDistance < 4 && absMoveYDistance < 4) {
                     flingListener.onClick(event, cardView, data)
                 } else {
                     cardView.animate()
                         .setDuration(animDuration.toLong())
                         .setInterpolator(OvershootInterpolator(1.5f))
-                        .x(initCardViewX)
-                        .y(initCardViewY)
+                        .x(originCardViewX)
+                        .y(originCardViewY)
                         .rotation(0f)
                         .start()
                     scale = scrollProgress
@@ -236,7 +236,7 @@ class FlingCardListener(
     private fun exitWithAnimation(isLeft: Boolean, exitY: Float, duration: Long) {
         if (isAnimationRunning.compareAndSet(false, true)) {
             val exitX: Float = if (isLeft) {
-                -initCardViewWidth - rotationWidthOffset
+                -originCardViewWidth - rotationWidthOffset
             } else {
                 parentWidth + rotationWidthOffset
             }
@@ -272,7 +272,7 @@ class FlingCardListener(
      * Starts a default left exit animation.
      */
     fun exitFromLeft(duration: Long) {
-        exitWithAnimation(true, initCardViewY, duration)
+        exitWithAnimation(true, originCardViewY, duration)
     }
 
     /**
@@ -286,15 +286,15 @@ class FlingCardListener(
      * Starts a default right exit animation.
      */
     fun exitFromRight(duration: Long) {
-        exitWithAnimation(false, initCardViewY, duration)
+        exitWithAnimation(false, originCardViewY, duration)
     }
 
     private fun getExitPoint(exitXPoint: Int): Float {
         val x = FloatArray(2)
-        x[0] = initCardViewX
+        x[0] = originCardViewX
         x[1] = curCardViewX
         val y = FloatArray(2)
-        y[0] = initCardViewY
+        y[0] = originCardViewY
         y[1] = curCardViewY
         val regression = LinearRegression(x, y)
 
@@ -303,7 +303,7 @@ class FlingCardListener(
     }
 
     private fun getExitRotation(isLeft: Boolean): Float {
-        var rotation = rotationDegrees * 2f * (parentWidth - initCardViewX) / parentWidth
+        var rotation = rotationDegrees * 2f * (parentWidth - originCardViewX) / parentWidth
         if (touchPosition == TOUCH_BELOW) {
             rotation = -rotation
         }
