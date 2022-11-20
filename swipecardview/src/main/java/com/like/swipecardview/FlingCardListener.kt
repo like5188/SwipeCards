@@ -164,10 +164,9 @@ class FlingCardListener(
                     }
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val pointerCount = event.pointerCount
-                    val activePointerId = Math.min(activePointerId, pointerCount - 1)
-                    upX = event.getX(activePointerId)
-                    this.activePointerId = INVALID_POINTER_ID
+                    val pointerIndex = Math.min(activePointerId, event.pointerCount - 1)
+                    upX = event.getX(pointerIndex)
+                    activePointerId = INVALID_POINTER_ID
                     resetCardViewOnStack(event)
                 }
             }
