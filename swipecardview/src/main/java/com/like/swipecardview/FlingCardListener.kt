@@ -136,14 +136,14 @@ class FlingCardListener(
                 }
                 MotionEvent.ACTION_MOVE -> {
                     // Find the index of the active pointer and fetch its position
-                    val pointerIndexMove = event.findPointerIndex(activePointerId)
-                    val xMove = event.getX(pointerIndexMove)
-                    val yMove = event.getY(pointerIndexMove)
+                    val pointerIndex = event.findPointerIndex(activePointerId)
+                    val x = event.getX(pointerIndex)
+                    val y = event.getY(pointerIndex)
 
                     // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
                     // Calculate the distance moved
-                    val dx = xMove - downX
-                    val dy = yMove - downY
+                    val dx = x - downX
+                    val dy = y - downY
 
                     // Move the cardView
                     curCardViewX += dx
