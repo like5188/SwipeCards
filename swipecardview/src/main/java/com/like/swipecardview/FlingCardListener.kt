@@ -107,8 +107,8 @@ class FlingCardListener(
 
                     // Save the ID of this pointer
                     activePointerId = event.getPointerId(0)
-                    val x = event.getX(activePointerId)
-                    val y = event.getY(activePointerId)
+                    val x = event.getX(0)
+                    val y = event.getY(0)
 
                     // Remember where we started
                     downX = x
