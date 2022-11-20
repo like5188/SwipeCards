@@ -98,7 +98,7 @@ class FlingCardListener(
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         try {
-            when (event.action and MotionEvent.ACTION_MASK) {
+            when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                     cardView.animate().setListener(null)
