@@ -106,7 +106,7 @@ class FlingCardListener(
                     resetAnimCanceled = true
 
                     // Save the ID of this pointer
-                    val pointerIndex = 0
+                    val pointerIndex = event.actionIndex
                     activePointerId = event.getPointerId(pointerIndex)
                     val x = event.getX(pointerIndex)
                     val y = event.getY(pointerIndex)
