@@ -182,7 +182,7 @@ class FlingCardListener(
                 if (isNeedSwipe) {
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
-                    cardView.rotation = rotation
+//                    cardView.rotation = rotation
                     flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                 }
             }
@@ -251,11 +251,13 @@ class FlingCardListener(
 
     /**
      * 自动滑出屏幕
+     *
+     * @param exitPoint 是相对于[originCardViewX]、[originCardViewY]，因为这里要使用 translationX、translationY 方法移除视图。
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
         if (isAnimationRunning.compareAndSet(false, true)) {
             val animator = cardView.animate()
-                .setDuration(3000)
+                .setDuration(duration)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
@@ -308,15 +310,18 @@ class FlingCardListener(
 
     /**
      * 获取离开点的坐标
+     *
+     * 相对于[originCardViewX]、[originCardViewY]，因为需要使用 translationX、translationY 方法移除视图。
      */
     private fun getExitPoint(isLeft: Boolean, byClick: Boolean): PointF {
         return if (!byClick) {
             val newPointByRotation = getNewPointByRotation(cardView.rotation)
             val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
+            val distanceYByRotation = Math.abs(newPointByRotation.y - originCardViewY)
             val x = if (isLeft) {
-                -originCardViewWidth - distanceXByRotation
+                -(originCardViewX + originCardViewWidth) - distanceXByRotation
             } else {
-                parentWidth + distanceXByRotation
+                parentWidth - originCardViewX + distanceXByRotation
             }
             // 根据起点和终点坐标得到线性方程
             val regression = LinearRegression(floatArrayOf(originCardViewX, curCardViewX), floatArrayOf(originCardViewY, curCardViewY))
@@ -327,9 +332,9 @@ class FlingCardListener(
             val newPointByRotation = getNewPointByRotation(rotationDegrees)
             val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
             val x = if (isLeft) {
-                -originCardViewWidth - distanceXByRotation
+                -(originCardViewX + originCardViewWidth) - distanceXByRotation
             } else {
-                parentWidth + distanceXByRotation
+                parentWidth - originCardViewX + distanceXByRotation
             }
             PointF(x, 0f)
         }
