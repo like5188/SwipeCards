@@ -125,6 +125,9 @@ class FlingCardListener(
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
+        if (isAnimationRunning.get()) {
+            return true
+        }
         // 以第一个按下的手指为准
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
