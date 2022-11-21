@@ -183,6 +183,7 @@ class FlingCardListener(
                 exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
                 flingListener.onScroll(1f, 1.0f)
             } else {
+                // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = Math.abs(curCardViewX - originCardViewX)
                 val distanceY = Math.abs(curCardViewY - originCardViewY)
                 if (distanceX < 4 && distanceY < 4) {
@@ -206,6 +207,7 @@ class FlingCardListener(
                 downY = 0f
             }
         } else {
+            // 如果不能滑动，就根据触摸坐标判断点击事件
             val pointerIndex = event.findPointerIndex(activePointerId)
             val distanceX = Math.abs(event.getX(pointerIndex) - downX)
             val distanceY = Math.abs(event.getY(pointerIndex) - downY)
