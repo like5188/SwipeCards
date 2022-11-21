@@ -30,6 +30,7 @@ class FlingCardListener(
     private val halfCardViewWidth: Float = originCardViewWidth / 2f
     private val halfCardViewHeight: Float = originCardViewHeight / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
+    private val pivot: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
 
     // cardView 的当前坐标
     private var curCardViewX = 0f
@@ -68,13 +69,16 @@ class FlingCardListener(
     private fun getNewPointByRotation(rotation: Float): PointF {
         val angle = Math.abs(rotation)
         val oldPoint = PointF(originCardViewX, originCardViewY)
-        val pivot = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
         return oldPoint.rotation(pivot, angle)
     }
 
     // x 轴方向上通过移动和旋转造成的位移
     private val absDistanceXByMoveAndRotation: Float
         get() = Math.abs(curCardViewX - originCardViewX) + Math.abs(getNewPointByRotation(cardView.rotation).x - originCardViewX)
+
+    // y 轴方向上通过移动和旋转造成的位移
+    private val absDistanceYByMoveAndRotation: Float
+        get() = Math.abs(curCardViewY - originCardViewY) + Math.abs(getNewPointByRotation(cardView.rotation).y - originCardViewY)
 
     // 是否左滑超出了左边界
     private val isMovedBeyondLeftBorder: Boolean
