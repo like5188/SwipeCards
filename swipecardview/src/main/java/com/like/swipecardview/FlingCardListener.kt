@@ -157,21 +157,13 @@ class FlingCardListener(
                         flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                     }
                 }
-                MotionEvent.ACTION_POINTER_UP -> {
-                    // 如果是 down 那个手指抬起，那么就选择其它还在屏幕上的手指作为 activePointerId
+                MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     val pointerIndex = event.actionIndex
-                    val pointerId = event.getPointerId(pointerIndex)
-                    if (pointerId == activePointerId) {
+                    if (activePointerId == event.getPointerId(pointerIndex)) {
                         upX = event.getX(pointerIndex)
                         activePointerId = INVALID_POINTER_ID
                         resetCardViewOnStack(event)
                     }
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val pointerIndex = event.findPointerIndex(activePointerId)
-                    upX = event.getX(pointerIndex)
-                    activePointerId = INVALID_POINTER_ID
-                    resetCardViewOnStack(event)
                 }
             }
         } catch (e: Exception) {
