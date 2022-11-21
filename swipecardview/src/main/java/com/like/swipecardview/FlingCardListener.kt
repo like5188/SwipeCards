@@ -2,7 +2,6 @@ package com.like.swipecardview
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -161,14 +160,15 @@ class FlingCardListener(
                 if (activePointerId != event.getPointerId(pointerIndex)) {
                     return true
                 }
-                val distanceX = Math.abs(event.getX(pointerIndex) - downX)
-                val distanceY = Math.abs(event.getY(pointerIndex) - downY)
-                Log.e("TAG", "upX=${event.getX(pointerIndex)}, downX=$downX, distanceX=$distanceX")
-                Log.e("TAG", "upY=${event.getY(pointerIndex)}, downY=$downY, distanceY=$distanceY")
-                if (distanceX < 0.4 && distanceY < 0.4) {
-                    flingListener.onClick(event, cardView, data)
+                if (isNeedSwipe) {
+                    resetCardViewOnStack(event)
+                } else {
+                    val distanceX = Math.abs(event.getX(pointerIndex) - downX)
+                    val distanceY = Math.abs(event.getY(pointerIndex) - downY)
+                    if (distanceX < 4 && distanceY < 4) {
+                        flingListener.onClick(event, cardView, data)
+                    }
                 }
-                resetCardViewOnStack(event)
                 activePointerId = INVALID_POINTER_ID
             }
             MotionEvent.ACTION_CANCEL -> {
