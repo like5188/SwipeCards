@@ -97,8 +97,12 @@ class FlingCardListener(
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
+        val action = event.actionMasked
+        if (action != MotionEvent.ACTION_DOWN && activePointerId == INVALID_POINTER_ID) {
+            return true
+        }
         try {
-            when (event.actionMasked) {
+            when (action) {
                 MotionEvent.ACTION_DOWN -> {
                     // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                     cardView.animate().setListener(null)
@@ -121,16 +125,6 @@ class FlingCardListener(
                         TOUCH_ABOVE
                     } else {
                         TOUCH_BELOW
-                    }
-                }
-                MotionEvent.ACTION_POINTER_DOWN -> {}
-                MotionEvent.ACTION_POINTER_UP -> {
-                    // 如果是 down 那个手指抬起，那么就选择其它还在屏幕上的手指作为 activePointerId
-                    val pointerIndex = event.actionIndex
-                    val pointerId = event.getPointerId(pointerIndex)
-                    if (pointerId == activePointerId) {
-                        val newPointerIndex = if (pointerIndex == 0) 1 else 0
-                        activePointerId = event.getPointerId(newPointerIndex)
                     }
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -163,8 +157,18 @@ class FlingCardListener(
                         flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                     }
                 }
+                MotionEvent.ACTION_POINTER_UP -> {
+                    // 如果是 down 那个手指抬起，那么就选择其它还在屏幕上的手指作为 activePointerId
+                    val pointerIndex = event.actionIndex
+                    val pointerId = event.getPointerId(pointerIndex)
+                    if (pointerId == activePointerId) {
+                        upX = event.getX(pointerIndex)
+                        activePointerId = INVALID_POINTER_ID
+                        resetCardViewOnStack(event)
+                    }
+                }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val pointerIndex = Math.min(activePointerId, event.pointerCount - 1)
+                    val pointerIndex = event.findPointerIndex(activePointerId)
                     upX = event.getX(pointerIndex)
                     activePointerId = INVALID_POINTER_ID
                     resetCardViewOnStack(event)
