@@ -182,7 +182,7 @@ class FlingCardListener(
                 if (isNeedSwipe) {
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
-//                    cardView.rotation = rotation
+                    cardView.rotation = rotation
                     flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                 }
             }
