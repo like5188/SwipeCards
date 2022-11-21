@@ -3,6 +3,7 @@ package com.like.swipecardview.app;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -118,6 +119,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
     @Override
     public void onScroll(float progress, float scrollXProgress) {
+        Log.e("TAG", "progress=" + progress + ", scrollXProgress=" + scrollXProgress);
     }
 
     @Override
