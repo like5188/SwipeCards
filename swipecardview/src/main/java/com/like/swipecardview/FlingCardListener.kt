@@ -94,7 +94,7 @@ class FlingCardListener(
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        // 只处理第一次按下的手指
+        // 以第一个按下的手指为准
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 if (activePointerId != INVALID_POINTER_ID) {
