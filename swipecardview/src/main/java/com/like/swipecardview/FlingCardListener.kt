@@ -183,9 +183,9 @@ class FlingCardListener(
                 exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
                 flingListener.onScroll(1f, 1.0f)
             } else {
-                val absMoveXDistance = Math.abs(curCardViewX - originCardViewX)
-                val absMoveYDistance = Math.abs(curCardViewY - originCardViewY)
-                if (absMoveXDistance < 4 && absMoveYDistance < 4) {
+                val distanceX = Math.abs(curCardViewX - originCardViewX)
+                val distanceY = Math.abs(curCardViewY - originCardViewY)
+                if (distanceX < 4 && distanceY < 4) {
                     flingListener.onClick(event, cardView, data)
                 } else {
                     cardView.animate()
