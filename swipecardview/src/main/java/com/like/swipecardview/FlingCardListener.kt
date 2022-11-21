@@ -176,11 +176,11 @@ class FlingCardListener(
             val duration = 200
             if (movedBeyondLeftBorder()) {
                 // Left Swipe
-                exitWithAnimation(true, getExitPoint(-originCardViewWidth), duration.toLong())
+                exitWithAnimation(true, getExitPointY(-originCardViewWidth), duration.toLong())
                 flingListener.onScroll(1f, -1.0f)
             } else if (movedBeyondRightBorder()) {
                 // Right Swipe
-                exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
+                exitWithAnimation(false, getExitPointY(parentWidth), duration.toLong())
                 flingListener.onScroll(1f, 1.0f)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
@@ -289,17 +289,16 @@ class FlingCardListener(
         exitWithAnimation(false, originCardViewY, duration)
     }
 
-    private fun getExitPoint(exitXPoint: Int): Float {
-        val x = FloatArray(2)
-        x[0] = originCardViewX
-        x[1] = curCardViewX
-        val y = FloatArray(2)
-        y[0] = originCardViewY
-        y[1] = curCardViewY
-        val regression = LinearRegression(x, y)
+    /**
+     * 获取离开点的 y 坐标
+     * @param exitPointX    离开点的 x 坐标
+     */
+    private fun getExitPointY(exitPointX: Int): Float {
+        // 根据起点和终点坐标得到线性方程
+        val regression = LinearRegression(floatArrayOf(originCardViewX, curCardViewX), floatArrayOf(originCardViewY, curCardViewY))
 
         //Your typical y = ax+b linear regression
-        return regression.slope().toFloat() * exitXPoint + regression.intercept().toFloat()
+        return regression.slope().toFloat() * exitPointX + regression.intercept().toFloat()
     }
 
     private fun getExitRotation(isLeft: Boolean): Float {
