@@ -30,12 +30,12 @@ class FlingCardListener(
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
 
     /**
-     * 左边界
+     * 左边界（parent x 轴方向的 1/4 处）
      */
     private val leftBorder: Float = parentWidth / 4f
 
     /**
-     * 右边界
+     * 右边界（parent x 轴方向的 3/4 处）
      */
     private val rightBorder: Float = 3 * parentWidth / 4f
 
@@ -67,13 +67,13 @@ class FlingCardListener(
     private var resetAnimCanceled = false
 
     /**
-     * 是否滑动查出了左边界
+     * 是否滑动查出了左边界（x 轴方向上的中心点超过了 leftBorder）
      */
     private val isMovedBeyondLeftBorder: Boolean
         get() = curCardViewX + halfCardViewWidth < leftBorder
 
     /**
-     * 是否滑动查出了右边界
+     * 是否滑动查出了右边界（x 轴方向上的中心点超过了 rightBorder）
      */
     private val isMovedBeyondRightBorder: Boolean
         get() = curCardViewX + halfCardViewWidth > rightBorder
