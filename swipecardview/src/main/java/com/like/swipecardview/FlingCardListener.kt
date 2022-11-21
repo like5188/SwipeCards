@@ -160,15 +160,7 @@ class FlingCardListener(
                 if (activePointerId != event.getPointerId(pointerIndex)) {
                     return true
                 }
-                if (isNeedSwipe) {
-                    resetCardViewOnStack(event)
-                } else {
-                    val distanceX = Math.abs(event.getX(pointerIndex) - downX)
-                    val distanceY = Math.abs(event.getY(pointerIndex) - downY)
-                    if (distanceX < 4 && distanceY < 4) {
-                        flingListener.onClick(event, cardView, data)
-                    }
-                }
+                resetCardViewOnStack(event)
                 activePointerId = INVALID_POINTER_ID
             }
             MotionEvent.ACTION_CANCEL -> {
@@ -180,39 +172,45 @@ class FlingCardListener(
     }
 
     private fun resetCardViewOnStack(event: MotionEvent) {
-        if (!isNeedSwipe) {
-            return
-        }
-        val duration = 200
-        if (movedBeyondLeftBorder()) {
-            // Left Swipe
-            exitWithAnimation(true, getExitPoint(-originCardViewWidth), duration.toLong())
-            flingListener.onScroll(1f, -1.0f)
-        } else if (movedBeyondRightBorder()) {
-            // Right Swipe
-            exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
-            flingListener.onScroll(1f, 1.0f)
-        } else {
-            val absMoveXDistance = Math.abs(curCardViewX - originCardViewX)
-            val absMoveYDistance = Math.abs(curCardViewY - originCardViewY)
-            if (absMoveXDistance < 4 && absMoveYDistance < 4) {
-                flingListener.onClick(event, cardView, data)
+        if (isNeedSwipe) {
+            val duration = 200
+            if (movedBeyondLeftBorder()) {
+                // Left Swipe
+                exitWithAnimation(true, getExitPoint(-originCardViewWidth), duration.toLong())
+                flingListener.onScroll(1f, -1.0f)
+            } else if (movedBeyondRightBorder()) {
+                // Right Swipe
+                exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
+                flingListener.onScroll(1f, 1.0f)
             } else {
-                cardView.animate()
-                    .setDuration(animDuration.toLong())
-                    .setInterpolator(OvershootInterpolator(1.5f))
-                    .x(originCardViewX)
-                    .y(originCardViewY)
-                    .rotation(0f)
-                    .start()
-                scale = scrollProgress
-                cardView.postDelayed(animRun, 0)
-                resetAnimCanceled = false
+                val absMoveXDistance = Math.abs(curCardViewX - originCardViewX)
+                val absMoveYDistance = Math.abs(curCardViewY - originCardViewY)
+                if (absMoveXDistance < 4 && absMoveYDistance < 4) {
+                    flingListener.onClick(event, cardView, data)
+                } else {
+                    cardView.animate()
+                        .setDuration(animDuration.toLong())
+                        .setInterpolator(OvershootInterpolator(1.5f))
+                        .x(originCardViewX)
+                        .y(originCardViewY)
+                        .rotation(0f)
+                        .start()
+                    scale = scrollProgress
+                    cardView.postDelayed(animRun, 0)
+                    resetAnimCanceled = false
+                }
+                curCardViewX = 0f
+                curCardViewY = 0f
+                downX = 0f
+                downY = 0f
             }
-            curCardViewX = 0f
-            curCardViewY = 0f
-            downX = 0f
-            downY = 0f
+        } else {
+            val pointerIndex = event.findPointerIndex(activePointerId)
+            val distanceX = Math.abs(event.getX(pointerIndex) - downX)
+            val distanceY = Math.abs(event.getY(pointerIndex) - downY)
+            if (distanceX < 4 && distanceY < 4) {
+                flingListener.onClick(event, cardView, data)
+            }
         }
     }
 

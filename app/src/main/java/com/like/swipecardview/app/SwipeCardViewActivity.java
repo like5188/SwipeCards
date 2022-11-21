@@ -3,7 +3,6 @@ package com.like.swipecardview.app;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -68,7 +67,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
         cardHeight = (int) (dm.heightPixels - (338 * density));
 
 
-        swipeView = (SwipeFlingAdapterView) findViewById(R.id.swipe_view);
+        swipeView = findViewById(R.id.swipe_view);
         if (swipeView != null) {
             swipeView.setNeedSwipe(true);
             swipeView.setOnFlingListener(this);
