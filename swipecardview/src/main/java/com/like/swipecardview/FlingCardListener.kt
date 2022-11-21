@@ -323,13 +323,13 @@ class FlingCardListener(
             val y = regression.slope().toFloat() * x + regression.intercept().toFloat()
             PointF(x, y)
         } else {
-            val distanceByRotation = Math.abs(getNewPointByRotation(rotationDegrees).x - originCardViewX)
+            val distanceXByRotation = Math.abs(getNewPointByRotation(rotationDegrees).x - originCardViewX)
             val x = if (isLeft) {
-                -originCardViewWidth - distanceByRotation
+                -originCardViewWidth - distanceXByRotation
             } else {
-                parentWidth + distanceByRotation
+                parentWidth + distanceXByRotation
             }
-            PointF(x, originCardViewY)
+            PointF(x, 0f)
         }
     }
 
