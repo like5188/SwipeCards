@@ -2,6 +2,7 @@ package com.like.swipecardview
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -160,55 +161,59 @@ class FlingCardListener(
                 if (activePointerId != event.getPointerId(pointerIndex)) {
                     return true
                 }
-                activePointerId = INVALID_POINTER_ID
+                val distanceX = Math.abs(event.getX(pointerIndex) - downX)
+                val distanceY = Math.abs(event.getY(pointerIndex) - downY)
+                Log.e("TAG", "upX=${event.getX(pointerIndex)}, downX=$downX, distanceX=$distanceX")
+                Log.e("TAG", "upY=${event.getY(pointerIndex)}, downY=$downY, distanceY=$distanceY")
+                if (distanceX < 0.4 && distanceY < 0.4) {
+                    flingListener.onClick(event, cardView, data)
+                }
                 resetCardViewOnStack(event)
+                activePointerId = INVALID_POINTER_ID
             }
             MotionEvent.ACTION_CANCEL -> {
-                activePointerId = INVALID_POINTER_ID
                 resetCardViewOnStack(event)
+                activePointerId = INVALID_POINTER_ID
             }
         }
         return true
     }
 
-    private fun resetCardViewOnStack(event: MotionEvent): Boolean {
-        if (isNeedSwipe) {
-            val duration = 200
-            if (movedBeyondLeftBorder()) {
-                // Left Swipe
-                exitWithAnimation(true, getExitPoint(-originCardViewWidth), duration.toLong())
-                flingListener.onScroll(1f, -1.0f)
-            } else if (movedBeyondRightBorder()) {
-                // Right Swipe
-                exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
-                flingListener.onScroll(1f, 1.0f)
-            } else {
-                val absMoveXDistance = Math.abs(curCardViewX - originCardViewX)
-                val absMoveYDistance = Math.abs(curCardViewY - originCardViewY)
-                if (absMoveXDistance < 4 && absMoveYDistance < 4) {
-                    flingListener.onClick(event, cardView, data)
-                } else {
-                    cardView.animate()
-                        .setDuration(animDuration.toLong())
-                        .setInterpolator(OvershootInterpolator(1.5f))
-                        .x(originCardViewX)
-                        .y(originCardViewY)
-                        .rotation(0f)
-                        .start()
-                    scale = scrollProgress
-                    cardView.postDelayed(animRun, 0)
-                    resetAnimCanceled = false
-                }
-                curCardViewX = 0f
-                curCardViewY = 0f
-                downX = 0f
-                downY = 0f
-            }
-        } else {
-            val distanceX = curCardViewX - originCardViewX
-            if (distanceX < 4) flingListener.onClick(event, cardView, data)
+    private fun resetCardViewOnStack(event: MotionEvent) {
+        if (!isNeedSwipe) {
+            return
         }
-        return false
+        val duration = 200
+        if (movedBeyondLeftBorder()) {
+            // Left Swipe
+            exitWithAnimation(true, getExitPoint(-originCardViewWidth), duration.toLong())
+            flingListener.onScroll(1f, -1.0f)
+        } else if (movedBeyondRightBorder()) {
+            // Right Swipe
+            exitWithAnimation(false, getExitPoint(parentWidth), duration.toLong())
+            flingListener.onScroll(1f, 1.0f)
+        } else {
+            val absMoveXDistance = Math.abs(curCardViewX - originCardViewX)
+            val absMoveYDistance = Math.abs(curCardViewY - originCardViewY)
+            if (absMoveXDistance < 4 && absMoveYDistance < 4) {
+                flingListener.onClick(event, cardView, data)
+            } else {
+                cardView.animate()
+                    .setDuration(animDuration.toLong())
+                    .setInterpolator(OvershootInterpolator(1.5f))
+                    .x(originCardViewX)
+                    .y(originCardViewY)
+                    .rotation(0f)
+                    .start()
+                scale = scrollProgress
+                cardView.postDelayed(animRun, 0)
+                resetAnimCanceled = false
+            }
+            curCardViewX = 0f
+            curCardViewY = 0f
+            downX = 0f
+            downY = 0f
+        }
     }
 
     private fun movedBeyondLeftBorder(): Boolean {

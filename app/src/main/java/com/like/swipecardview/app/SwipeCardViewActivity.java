@@ -119,7 +119,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
     @Override
     public void onScroll(float progress, float scrollXProgress) {
-        Log.e("TAG", "progress=" + progress + ", scrollXProgress=" + scrollXProgress);
+//        Log.e("TAG", "progress=" + progress + ", scrollXProgress=" + scrollXProgress);
     }
 
     @Override
