@@ -94,76 +94,79 @@ class FlingCardListener(
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        val action = event.actionMasked
-        if (action != MotionEvent.ACTION_DOWN && activePointerId == INVALID_POINTER_ID) {
-            return true
-        }
-        try {
-            when (action) {
-                MotionEvent.ACTION_DOWN -> {
-                    // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
-                    cardView.animate().setListener(null)
-                    cardView.animate().cancel()
-                    resetAnimCanceled = true
-
-                    // Save the ID of this pointer
-                    val pointerIndex = event.actionIndex
-                    activePointerId = event.getPointerId(pointerIndex)
-                    val x = event.getX(pointerIndex)
-                    val y = event.getY(pointerIndex)
-
-                    // Remember where we started
-                    downX = x
-                    downY = y
-                    // to prevent an initial jump of the magnifier, aposX and aPosY must have the values from the magnifier cardView
-                    curCardViewX = cardView.x
-                    curCardViewY = cardView.y
-                    touchPosition = if (y < originCardViewHeight / 2) {
-                        TOUCH_ABOVE
-                    } else {
-                        TOUCH_BELOW
-                    }
+        // 只处理第一次按下的手指
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                if (activePointerId != INVALID_POINTER_ID) {
+                    return true
                 }
-                MotionEvent.ACTION_MOVE -> {
-                    // Find the index of the active pointer and fetch its position
-                    val pointerIndex = event.findPointerIndex(activePointerId)
-                    val x = event.getX(pointerIndex)
-                    val y = event.getY(pointerIndex)
+                // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
+                cardView.animate().setListener(null)
+                cardView.animate().cancel()
+                resetAnimCanceled = true
 
-                    // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
-                    // Calculate the distance moved
-                    val dx = x - downX
-                    val dy = y - downY
+                // Save the ID of this pointer
+                val pointerIndex = event.actionIndex
+                activePointerId = event.getPointerId(pointerIndex)
+                val x = event.getX(pointerIndex)
+                val y = event.getY(pointerIndex)
 
-                    // Move the cardView
-                    curCardViewX += dx
-                    curCardViewY += dy
-
-                    // calculate the rotation degrees
-                    val distanceX = curCardViewX - originCardViewX
-                    var rotation = rotationDegrees * 2f * distanceX / parentWidth
-                    if (touchPosition == TOUCH_BELOW) {
-                        rotation = -rotation
-                    }
-
-                    // in this area would be code for doing something with the view as the cardView moves.
-                    if (isNeedSwipe) {
-                        cardView.x = curCardViewX
-                        cardView.y = curCardViewY
-                        cardView.rotation = rotation
-                        flingListener.onScroll(scrollProgress, scrollXProgressPercent)
-                    }
-                }
-                MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val pointerIndex = event.actionIndex
-                    if (activePointerId == event.getPointerId(pointerIndex)) {
-                        activePointerId = INVALID_POINTER_ID
-                        resetCardViewOnStack(event)
-                    }
+                // Remember where we started
+                downX = x
+                downY = y
+                // to prevent an initial jump of the magnifier, aposX and aPosY must have the values from the magnifier cardView
+                curCardViewX = cardView.x
+                curCardViewY = cardView.y
+                touchPosition = if (y < originCardViewHeight / 2) {
+                    TOUCH_ABOVE
+                } else {
+                    TOUCH_BELOW
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+            MotionEvent.ACTION_MOVE -> {
+                val pointerIndex = event.actionIndex
+                if (activePointerId != event.getPointerId(pointerIndex)) {
+                    return true
+                }
+                val x = event.getX(pointerIndex)
+                val y = event.getY(pointerIndex)
+
+                // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
+                // Calculate the distance moved
+                val dx = x - downX
+                val dy = y - downY
+
+                // Move the cardView
+                curCardViewX += dx
+                curCardViewY += dy
+
+                // calculate the rotation degrees
+                val distanceX = curCardViewX - originCardViewX
+                var rotation = rotationDegrees * 2f * distanceX / parentWidth
+                if (touchPosition == TOUCH_BELOW) {
+                    rotation = -rotation
+                }
+
+                // in this area would be code for doing something with the view as the cardView moves.
+                if (isNeedSwipe) {
+                    cardView.x = curCardViewX
+                    cardView.y = curCardViewY
+                    cardView.rotation = rotation
+                    flingListener.onScroll(scrollProgress, scrollXProgressPercent)
+                }
+            }
+            MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
+                val pointerIndex = event.actionIndex
+                if (activePointerId != event.getPointerId(pointerIndex)) {
+                    return true
+                }
+                activePointerId = INVALID_POINTER_ID
+                resetCardViewOnStack(event)
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                activePointerId = INVALID_POINTER_ID
+                resetCardViewOnStack(event)
+            }
         }
         return true
     }
