@@ -29,6 +29,16 @@ class FlingCardListener(
     private val halfCardViewWidth: Float = originCardViewWidth / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
 
+    /**
+     * 左边界
+     */
+    private val leftBorder: Float = parentWidth / 4f
+
+    /**
+     * 右边界
+     */
+    private val rightBorder: Float = 3 * parentWidth / 4f
+
     // cardView 的当前坐标
     private var curCardViewX = 0f
     private var curCardViewY = 0f
@@ -57,6 +67,18 @@ class FlingCardListener(
     private var resetAnimCanceled = false
 
     /**
+     * 是否滑动查出了左边界
+     */
+    private val isMovedBeyondLeftBorder: Boolean
+        get() = curCardViewX + halfCardViewWidth < leftBorder
+
+    /**
+     * 是否滑动查出了右边界
+     */
+    private val isMovedBeyondRightBorder: Boolean
+        get() = curCardViewX + halfCardViewWidth > rightBorder
+
+    /**
      * When the object rotates it's width becomes bigger.
      * The maximum width is at 45 degrees.
      *
@@ -74,12 +96,12 @@ class FlingCardListener(
             return Math.min(dis, 400f) / 400f
         }
     private val scrollXProgressPercent: Float
-        get() = if (movedBeyondLeftBorder()) {
+        get() = if (isMovedBeyondLeftBorder) {
             -1f
-        } else if (movedBeyondRightBorder()) {
+        } else if (isMovedBeyondRightBorder) {
             1f
         } else {
-            val zeroToOneValue = (curCardViewX + halfCardViewWidth - leftBorder()) / (rightBorder() - leftBorder())
+            val zeroToOneValue = (curCardViewX + halfCardViewWidth - leftBorder) / (rightBorder - leftBorder)
             zeroToOneValue * 2f - 1f
         }
     private val animRun: Runnable = object : Runnable {
@@ -174,11 +196,11 @@ class FlingCardListener(
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
             val duration = 200
-            if (movedBeyondLeftBorder()) {
+            if (isMovedBeyondLeftBorder) {
                 // Left Swipe
                 exitWithAnimation(true, getExitPointY(-originCardViewWidth), duration.toLong())
                 flingListener.onScroll(1f, -1.0f)
-            } else if (movedBeyondRightBorder()) {
+            } else if (isMovedBeyondRightBorder) {
                 // Right Swipe
                 exitWithAnimation(false, getExitPointY(parentWidth), duration.toLong())
                 flingListener.onScroll(1f, 1.0f)
@@ -217,25 +239,12 @@ class FlingCardListener(
         }
     }
 
-    private fun movedBeyondLeftBorder(): Boolean {
-        return curCardViewX + halfCardViewWidth < leftBorder()
-    }
-
-    private fun movedBeyondRightBorder(): Boolean {
-        return curCardViewX + halfCardViewWidth > rightBorder()
-    }
-
-    private fun leftBorder(): Float {
-        return parentWidth / 4f
-    }
-
-    private fun rightBorder(): Float {
-        return 3 * parentWidth / 4f
-    }
-
-    private fun exitWithAnimation(isLeft: Boolean, exitY: Float, duration: Long) {
+    /**
+     * 自动画出屏幕
+     */
+    private fun exitWithAnimation(isLeft: Boolean, exitPointY: Float, duration: Long) {
         if (isAnimationRunning.compareAndSet(false, true)) {
-            val exitX: Float = if (isLeft) {
+            val exitPointX: Float = if (isLeft) {
                 -originCardViewWidth - rotationWidthOffset
             } else {
                 parentWidth + rotationWidthOffset
@@ -243,8 +252,8 @@ class FlingCardListener(
             cardView.animate()
                 .setDuration(duration)
                 .setInterpolator(LinearInterpolator())
-                .translationX(exitX)
-                .translationY(exitY)
+                .translationX(exitPointX)
+                .translationY(exitPointY)
                 .rotation(if (isLeft) -rotationDegrees else rotationDegrees)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
