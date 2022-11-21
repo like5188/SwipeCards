@@ -311,11 +311,12 @@ class FlingCardListener(
      */
     private fun getExitPoint(isLeft: Boolean, byClick: Boolean): PointF {
         return if (!byClick) {
-            val distanceByRotation = Math.abs(getNewPointByRotation(cardView.rotation).x - originCardViewX)
+            val newPointByRotation = getNewPointByRotation(cardView.rotation)
+            val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
             val x = if (isLeft) {
-                -originCardViewWidth - distanceByRotation
+                -originCardViewWidth - distanceXByRotation
             } else {
-                parentWidth + distanceByRotation
+                parentWidth + distanceXByRotation
             }
             // 根据起点和终点坐标得到线性方程
             val regression = LinearRegression(floatArrayOf(originCardViewX, curCardViewX), floatArrayOf(originCardViewY, curCardViewY))
@@ -323,7 +324,8 @@ class FlingCardListener(
             val y = regression.slope().toFloat() * x + regression.intercept().toFloat()
             PointF(x, y)
         } else {
-            val distanceXByRotation = Math.abs(getNewPointByRotation(rotationDegrees).x - originCardViewX)
+            val newPointByRotation = getNewPointByRotation(rotationDegrees)
+            val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
             val x = if (isLeft) {
                 -originCardViewWidth - distanceXByRotation
             } else {
