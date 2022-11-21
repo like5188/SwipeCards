@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,7 +25,7 @@ import java.util.Random;
 public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFlingAdapterView.OnFlingListener,
         SwipeFlingAdapterView.OnItemClickListener, View.OnClickListener {
 
-    int [] headerIcons = {
+    int[] headerIcons = {
             R.drawable.i1,
             R.drawable.i2,
             R.drawable.i3,
@@ -33,13 +34,13 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
             R.drawable.i6
     };
 
-    String [] names = {"张三","李四","王五","小明","小红","小花"};
+    String[] names = {"张三", "李四", "王五", "小明", "小红", "小花"};
 
-    String [] citys = {"北京", "上海", "广州", "深圳"};
+    String[] citys = {"北京", "上海", "广州", "深圳"};
 
-    String [] edus = {"大专", "本科", "硕士", "博士"};
+    String[] edus = {"大专", "本科", "硕士", "博士"};
 
-    String [] years = {"1年", "2年", "3年", "4年", "5年"};
+    String[] years = {"1年", "2年", "3年", "4年", "5年"};
 
     Random ran = new Random();
 
@@ -90,6 +91,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
     @Override
     public void onItemClick(MotionEvent event, View v, Object dataObject) {
+        Toast.makeText(this, "onItemClick", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -99,10 +101,12 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
     @Override
     public void onExitFromLeft(Object dataObject) {
+        Toast.makeText(this, "onExitFromLeft", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onExitFromRight(Object dataObject) {
+        Toast.makeText(this, "onExitFromRight", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -138,10 +142,10 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
                 for (int i = 0; i < 6; i++) {
                     talent = new Talent();
                     talent.headerIcon = headerIcons[i % headerIcons.length];
-                    talent.nickname = names[ran.nextInt(names.length-1)];
-                    talent.cityName = citys[ran.nextInt(citys.length-1)];
-                    talent.educationName = edus[ran.nextInt(edus.length-1)];
-                    talent.workYearName = years[ran.nextInt(years.length-1)];
+                    talent.nickname = names[ran.nextInt(names.length - 1)];
+                    talent.cityName = citys[ran.nextInt(citys.length - 1)];
+                    talent.educationName = edus[ran.nextInt(edus.length - 1)];
+                    talent.workYearName = years[ran.nextInt(years.length - 1)];
                     list.add(talent);
                 }
                 return list;
@@ -197,7 +201,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
         @Override
         public Talent getItem(int position) {
-            if(objs==null ||objs.size()==0) return null;
+            if (objs == null || objs.size() == 0) return null;
             return objs.get(position);
         }
 
@@ -213,7 +217,7 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
             Talent talent = getItem(position);
             if (convertView == null) {
                 convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_new_item, parent, false);
-                holder  = new ViewHolder();
+                holder = new ViewHolder();
                 convertView.setTag(holder);
                 convertView.getLayoutParams().width = cardWidth;
                 holder.portraitView = (ImageView) convertView.findViewById(R.id.portrait);
@@ -240,15 +244,15 @@ public class SwipeCardViewActivity extends AppCompatActivity implements SwipeFli
 
             holder.cityView.setHint(no);
             holder.cityView.setText(talent.cityName);
-            holder.cityView.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.home01_icon_location,0,0);
+            holder.cityView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.home01_icon_location, 0, 0);
 
             holder.eduView.setHint(no);
             holder.eduView.setText(talent.educationName);
-            holder.eduView.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.home01_icon_edu,0,0);
+            holder.eduView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.home01_icon_edu, 0, 0);
 
             holder.workView.setHint(no);
             holder.workView.setText(talent.workYearName);
-            holder.workView.setCompoundDrawablesWithIntrinsicBounds(0,R.drawable.home01_icon_work_year,0,0);
+            holder.workView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.home01_icon_work_year, 0, 0);
 
 
             return convertView;

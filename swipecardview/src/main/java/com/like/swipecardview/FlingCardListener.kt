@@ -37,9 +37,6 @@ class FlingCardListener(
     private var downX = 0f
     private var downY = 0f
 
-    // 手指抬起时的坐标
-    private var upX = 0f
-
     // The active pointer is the one currently moving our object.
     private var activePointerId = INVALID_POINTER_ID
 
@@ -143,8 +140,8 @@ class FlingCardListener(
                     curCardViewY += dy
 
                     // calculate the rotation degrees
-                    val disX = curCardViewX - originCardViewX
-                    var rotation = rotationDegrees * 2f * disX / parentWidth
+                    val distanceX = curCardViewX - originCardViewX
+                    var rotation = rotationDegrees * 2f * distanceX / parentWidth
                     if (touchPosition == TOUCH_BELOW) {
                         rotation = -rotation
                     }
@@ -160,7 +157,6 @@ class FlingCardListener(
                 MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     val pointerIndex = event.actionIndex
                     if (activePointerId == event.getPointerId(pointerIndex)) {
-                        upX = event.getX(pointerIndex)
                         activePointerId = INVALID_POINTER_ID
                         resetCardViewOnStack(event)
                     }
@@ -206,7 +202,7 @@ class FlingCardListener(
                 downY = 0f
             }
         } else {
-            val distanceX = Math.abs(upX - downX)
+            val distanceX = curCardViewX - originCardViewX
             if (distanceX < 4) flingListener.onClick(event, cardView, data)
         }
         return false
