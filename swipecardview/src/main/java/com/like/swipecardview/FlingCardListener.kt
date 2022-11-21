@@ -187,18 +187,19 @@ class FlingCardListener(
                 val distanceY = Math.abs(curCardViewY - originCardViewY)
                 if (distanceX < 4 && distanceY < 4) {
                     flingListener.onClick(event, cardView, data)
-                } else {
-                    cardView.animate()
-                        .setDuration(animDuration.toLong())
-                        .setInterpolator(OvershootInterpolator(1.5f))
-                        .x(originCardViewX)
-                        .y(originCardViewY)
-                        .rotation(0f)
-                        .start()
-                    scale = scrollProgress
-                    cardView.postDelayed(animRun, 0)
-                    resetAnimCanceled = false
                 }
+                // 回弹到初始位置
+                cardView.animate()
+                    .setDuration(animDuration.toLong())
+                    .setInterpolator(OvershootInterpolator(1.5f))
+                    .x(originCardViewX)
+                    .y(originCardViewY)
+                    .rotation(0f)
+                    .start()
+                scale = scrollProgress
+                cardView.postDelayed(animRun, 0)
+                resetAnimCanceled = false
+
                 curCardViewX = 0f
                 curCardViewY = 0f
                 downX = 0f
