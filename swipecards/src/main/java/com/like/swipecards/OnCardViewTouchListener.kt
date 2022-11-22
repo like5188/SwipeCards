@@ -166,9 +166,9 @@ class OnCardViewTouchListener(
                 curCardViewX = cardView.x
                 curCardViewY = cardView.y
                 touchPosition = if (y < originCardViewHeight / 2) {
-                    TOUCH_ABOVE
+                    TOUCH_TOP_HALF
                 } else {
-                    TOUCH_BELOW
+                    TOUCH_BOTTOM_HALF
                 }
             }
             MotionEvent.ACTION_MOVE -> {
@@ -191,7 +191,7 @@ class OnCardViewTouchListener(
                 // calculate the rotation degrees
                 val distanceX = curCardViewX - originCardViewX
                 var rotation = rotationDegrees * 2f * distanceX / parentWidth
-                if (touchPosition == TOUCH_BELOW) {
+                if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
                 }
 
@@ -385,8 +385,10 @@ class OnCardViewTouchListener(
 
     companion object {
         private const val INVALID_POINTER_ID = -1
-        private const val TOUCH_ABOVE = 0
-        private const val TOUCH_BELOW = 1
+        // 触摸了视图的上半部分
+        private const val TOUCH_TOP_HALF = 0
+        // 触摸了视图的下半部分
+        private const val TOUCH_BOTTOM_HALF = 1
     }
 
 }
