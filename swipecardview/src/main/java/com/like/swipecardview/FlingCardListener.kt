@@ -358,22 +358,11 @@ class FlingCardListener(
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
             val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
             // 根据直线方程 y = ax+b 求滑出点的y坐标
-             regression.slope().toFloat() * translationX + regression.intercept().toFloat()
+            regression.slope().toFloat() * translationX + regression.intercept().toFloat()
         } else {// 单击滑出
             0f
         }
         return PointF(translationX, translationY)
-    }
-
-    private fun getExitRotation(isLeft: Boolean): Float {
-        var rotation = rotationDegrees * 2f * (parentWidth - originCardViewX) / parentWidth
-        if (touchPosition == TOUCH_BELOW) {
-            rotation = -rotation
-        }
-        if (isLeft) {
-            rotation = -rotation
-        }
-        return rotation
     }
 
     interface FlingListener {
