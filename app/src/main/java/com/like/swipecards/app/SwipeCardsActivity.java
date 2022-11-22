@@ -220,10 +220,10 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
                 convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cardview, parent, false);
                 holder = new ViewHolder();
                 convertView.setTag(holder);
-                convertView.getLayoutParams().width = cardWidth;
+//                convertView.getLayoutParams().width = cardWidth;
                 holder.portraitView = (ImageView) convertView.findViewById(R.id.portrait);
                 //holder.portraitView.getLayoutParams().width = cardWidth;
-                holder.portraitView.getLayoutParams().height = cardHeight;
+//                holder.portraitView.getLayoutParams().height = cardHeight;
                 holder.nameView = (TextView) convertView.findViewById(R.id.name);
                 //parentView.getLayoutParams().width = cardWidth;
                 //holder.jobView = (TextView) convertView.findViewById(R.id.job);
