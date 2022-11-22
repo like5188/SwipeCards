@@ -178,9 +178,13 @@ class OnCardViewTouchListener(
                 curCardViewX += dx
                 curCardViewY += dy
 
-                // 计算旋转角度
-                val distanceX = curCardViewX - originCardViewX
-                var rotation = rotationDegrees * 2f * distanceX / parentWidth
+                // 根据手指滑动距离计算旋转角度
+                val moveX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    event.getRawX(pointerIndex)
+                } else {
+                    event.rawX
+                } - downRawX
+                var rotation = rotationDegrees * moveX / originCardViewWidth
                 if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
                 }
