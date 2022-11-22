@@ -277,7 +277,7 @@ class OnCardViewTouchListener(
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
         if (isAnimationRunning.compareAndSet(false, true)) {
             val animator = cardView.animate()
-                .setDuration(3000)
+                .setDuration(duration)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
