@@ -88,10 +88,6 @@ class OnCardViewTouchListener(
     private val absDistanceXByMoveAndRotation: Float
         get() = Math.abs(curCardViewX - originCardViewX) + Math.abs(getNewPointByRotation().x - originCardViewX)
 
-    // y 轴方向上通过移动和旋转造成的位移
-    private val absDistanceYByMoveAndRotation: Float
-        get() = Math.abs(curCardViewY - originCardViewY) + Math.abs(getNewPointByRotation().y - originCardViewY)
-
     // 是否左滑超出了左边界
     private val isMovedBeyondLeftBorder: Boolean
         get() {
@@ -386,8 +382,10 @@ class OnCardViewTouchListener(
 
     companion object {
         private const val INVALID_POINTER_ID = -1
+
         // 触摸了视图的上半部分
         private const val TOUCH_TOP_HALF = 0
+
         // 触摸了视图的下半部分
         private const val TOUCH_BOTTOM_HALF = 1
     }
