@@ -263,6 +263,8 @@ class FlingCardListener(
 
     /**
      * 自动滑出屏幕
+     *
+     * @param byClick   是否单击事件引起的
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
         if (isAnimationRunning.compareAndSet(false, true)) {
@@ -319,7 +321,7 @@ class FlingCardListener(
     }
 
     /**
-     * 如果要视图滑出屏幕，需要获取点(originCardViewX,originCardViewY)移动的位移，即 exitPoint。
+     * 如果要视图滑出屏幕，需要获取点(originCardViewX,originCardViewY)移动的位移，这里称为滑出点：exitPoint。
      */
     private fun getExitPoint(isLeft: Boolean, event: MotionEvent?): PointF {
         val newPointByRotation = if (event != null) {
