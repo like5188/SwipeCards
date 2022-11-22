@@ -175,24 +175,19 @@ class OnCardViewTouchListener(
                 }
                 val x = event.getX(pointerIndex)
                 val y = event.getY(pointerIndex)
-
-                // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
-                // Calculate the distance moved
                 val dx = x - downX
                 val dy = y - downY
-
-                // Move the cardView
                 curCardViewX += dx
                 curCardViewY += dy
 
-                // calculate the rotation degrees
+                // 计算旋转角度
                 val distanceX = curCardViewX - originCardViewX
                 var rotation = rotationDegrees * 2f * distanceX / parentWidth
                 if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
                 }
 
-                // in this area would be code for doing something with the view as the cardView moves.
+                // 移动并旋转视图
                 if (isNeedSwipe) {
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
