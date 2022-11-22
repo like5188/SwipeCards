@@ -71,12 +71,6 @@ class OnCardViewTouchListener(
     private val animDuration = 300L
     private var scale = 0f
 
-    /**
-     * 还原缩放的动画是否取消
-     * every time we touch down,we should stop the [resetScaleRunnable]
-     */
-    private var resetScaleAnimCanceled = false
-
     // x 轴方向上的左边界
     private val leftBorderX: Float = parentWidth / 2f
 
@@ -135,6 +129,11 @@ class OnCardViewTouchListener(
                 zeroToOneValue * 2f - 1f
             }
         }
+
+    // 还原缩放的动画是否取消
+    private var resetScaleAnimCanceled = false
+
+    // 还原缩放动画
     private val resetScaleRunnable: Runnable = object : Runnable {
         override fun run() {
             flingListener.onScroll(scale, 0f)
