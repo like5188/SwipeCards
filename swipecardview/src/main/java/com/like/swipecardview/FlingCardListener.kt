@@ -196,8 +196,6 @@ class FlingCardListener(
                     cardView.rotation = rotation
                     flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                 }
-
-//                Log.w("TAG", "$curCardViewX,$curCardViewY")
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
                 val pointerIndex = event.actionIndex
@@ -268,9 +266,8 @@ class FlingCardListener(
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
         if (isAnimationRunning.compareAndSet(false, true)) {
-//            Log.d("TAG", "${cardView.x},${cardView.y} -- ${cardView.translationX},${cardView.translationY}")
             val animator = cardView.animate()
-                .setDuration(3000)
+                .setDuration(duration)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
