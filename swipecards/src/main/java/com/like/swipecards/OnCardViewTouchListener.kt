@@ -150,18 +150,16 @@ class OnCardViewTouchListener(
                 downRawX = event.rawX
                 downRawY = event.rawY
 
-                // Save the ID of this pointer
                 val pointerIndex = event.actionIndex
                 activePointerId = event.getPointerId(pointerIndex)
                 val x = event.getX(pointerIndex)
                 val y = event.getY(pointerIndex)
-
-                // Remember where we started
                 downX = x
                 downY = y
-                // to prevent an initial jump of the magnifier, aposX and aPosY must have the values from the magnifier cardView
+
                 curCardViewX = cardView.x
                 curCardViewY = cardView.y
+
                 touchPosition = if (y < originCardViewHeight / 2) {
                     TOUCH_TOP_HALF
                 } else {
