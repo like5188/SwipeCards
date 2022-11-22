@@ -262,7 +262,7 @@ class FlingCardListener(
     }
 
     /**
-     * 自动滑出屏幕
+     * 执行自动滑出屏幕动画，即点(originCardViewX,originCardViewY)移动到 exitPoint 位置。
      *
      * @param byClick   是否单击事件引起的
      */
