@@ -319,16 +319,32 @@ class FlingCardListener(
     }
 
     /**
-     * 获取离开点的坐标
+     * 如果要视图滑出屏幕，需要获取点(originCardViewX,originCardViewY)移动的位移，即 exitPoint。
      */
     private fun getExitPoint(isLeft: Boolean, event: MotionEvent?): PointF {
-        return if (event != null) {
+        val newPointByRotation = if (event != null) {
+            // 如果是手指触摸滑动，那么是先旋转，再取值，则 cardView.rotation 有值。
+            getNewPointByRotation(cardView.rotation)
+        } else {// 如果是单击滑出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
+            getNewPointByRotation(rotationDegrees)
+        }
+        val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
+        // 求 exitPoint 需要在x方向的平移距离
+        val translationX = if (isLeft) {
+            -(originCardViewX + originCardViewWidth) - distanceXByRotation
+        } else {
+            parentWidth - originCardViewX + distanceXByRotation
+        }
+        // 求 exitPoint 需要在y方向的平移距离
+        val translationY = if (event != null) {// 手指触摸滑动
             val pointerIndex = event.findPointerIndex(activePointerId)
+            // 事件结束时的相对屏幕的x坐标
             val finishRawX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 event.getRawX(pointerIndex)
             } else {
                 event.rawX
             }
+            // 事件结束时的相对屏幕的y坐标
             val finishRawY = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 event.getRawY(pointerIndex)
             } else {
@@ -341,27 +357,12 @@ class FlingCardListener(
             val newFinishRawY = finishRawY - (downRawY - curCardViewY)
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
             val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
-            // 求滑出点的x坐标
-            val newPointByRotation = getNewPointByRotation(cardView.rotation)
-            val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
-            val translationX = if (isLeft) {
-                -(originCardViewX + originCardViewWidth) - distanceXByRotation
-            } else {
-                parentWidth - originCardViewX + distanceXByRotation
-            }
             // 根据直线方程 y = ax+b 求滑出点的y坐标
-            val translationY = regression.slope().toFloat() * translationX + regression.intercept().toFloat()
-            PointF(translationX, translationY)
-        } else {
-            val newPointByRotation = getNewPointByRotation(rotationDegrees)
-            val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
-            val translationX = if (isLeft) {
-                -(originCardViewX + originCardViewWidth) - distanceXByRotation
-            } else {
-                parentWidth - originCardViewX + distanceXByRotation
-            }
-            PointF(translationX, 0f)
+             regression.slope().toFloat() * translationX + regression.intercept().toFloat()
+        } else {// 单击滑出
+            0f
         }
+        return PointF(translationX, translationY)
     }
 
     private fun getExitRotation(isLeft: Boolean): Float {
