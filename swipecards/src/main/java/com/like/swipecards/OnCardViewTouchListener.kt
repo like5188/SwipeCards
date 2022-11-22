@@ -72,10 +72,10 @@ class OnCardViewTouchListener(
     private var scale = 0f
 
     /**
-     * 回弹动画是否取消
-     * every time we touch down,we should stop the [.animRun]
+     * 还原缩放的动画是否取消
+     * every time we touch down,we should stop the [resetScaleRunnable]
      */
-    private var resetAnimCanceled = false
+    private var resetScaleAnimCanceled = false
 
     // x 轴方向上的左边界
     private val leftBorderX: Float = parentWidth / 2f
@@ -135,10 +135,10 @@ class OnCardViewTouchListener(
                 zeroToOneValue * 2f - 1f
             }
         }
-    private val animRun: Runnable = object : Runnable {
+    private val resetScaleRunnable: Runnable = object : Runnable {
         override fun run() {
             flingListener.onScroll(scale, 0f)
-            if (scale > 0 && !resetAnimCanceled) {
+            if (scale > 0 && !resetScaleAnimCanceled) {
                 scale -= 0.1f
                 if (scale < 0) scale = 0f
                 cardView.postDelayed(this, animDuration / 20)
@@ -160,7 +160,7 @@ class OnCardViewTouchListener(
                 // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                 cardView.animate().setListener(null)
                 cardView.animate().cancel()
-                resetAnimCanceled = true
+                resetScaleAnimCanceled = true
 
                 downRawX = event.rawX
                 downRawY = event.rawY
@@ -261,8 +261,8 @@ class OnCardViewTouchListener(
                     .rotation(0f)
                     .start()
                 scale = scrollProgress
-                cardView.postDelayed(animRun, 0)
-                resetAnimCanceled = false
+                cardView.post(resetScaleRunnable)
+                resetScaleAnimCanceled = false
             }
             curCardViewX = 0f
             curCardViewY = 0f
