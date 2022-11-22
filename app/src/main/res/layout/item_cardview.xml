@@ -4,9 +4,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_gravity="center_horizontal"
-    android:layout_marginTop="18dp"
-    android:layout_marginLeft="18dp"
-    android:layout_marginRight="18dp"
+    android:layout_marginTop="20dp"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
     android:background="@drawable/home01_bg_card">
 
     <ImageView
