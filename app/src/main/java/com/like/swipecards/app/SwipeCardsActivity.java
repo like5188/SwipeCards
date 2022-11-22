@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-public class SwipeCardViewActivity extends AppCompatActivity implements SwipeCardsAdapterView.OnFlingListener,
+public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsAdapterView.OnFlingListener,
         SwipeCardsAdapterView.OnItemClickListener, View.OnClickListener {
 
     int[] headerIcons = {
