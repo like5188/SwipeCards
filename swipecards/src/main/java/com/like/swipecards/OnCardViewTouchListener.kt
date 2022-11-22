@@ -2,6 +2,7 @@ package com.like.swipecards
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.graphics.Matrix
 import android.graphics.PointF
 import android.os.Build
 import android.view.MotionEvent
@@ -67,20 +68,28 @@ class OnCardViewTouchListener(
     // x 轴方向上的右边界
     private val rightBorderX: Float = parentWidth / 2f
 
-    // x 轴方向上通过移动和旋转 rotation 角度造成的位移
-    private fun getNewPointByRotation(rotation: Float): PointF {
-        val angle = Math.abs(rotation)
-        val oldPoint = PointF(originCardViewX, originCardViewY)
-        return oldPoint.rotation(pivot, angle)
+    // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
+    private fun getNewPointByRotation(
+        src: PointF = PointF(originCardViewX, originCardViewY),
+        pivot: PointF = this.pivot,
+        rotation: Float = cardView.rotation
+    ): PointF {
+        val matrix = Matrix()
+        matrix.setRotate(rotation, pivot.x, pivot.y)
+        val old = FloatArray(2)
+        old[0] = src.x
+        old[1] = src.y
+        matrix.mapPoints(old)
+        return PointF(old[0], old[1])
     }
 
     // x 轴方向上通过移动和旋转造成的位移
     private val absDistanceXByMoveAndRotation: Float
-        get() = Math.abs(curCardViewX - originCardViewX) + Math.abs(getNewPointByRotation(cardView.rotation).x - originCardViewX)
+        get() = Math.abs(curCardViewX - originCardViewX) + Math.abs(getNewPointByRotation().x - originCardViewX)
 
     // y 轴方向上通过移动和旋转造成的位移
     private val absDistanceYByMoveAndRotation: Float
-        get() = Math.abs(curCardViewY - originCardViewY) + Math.abs(getNewPointByRotation(cardView.rotation).y - originCardViewY)
+        get() = Math.abs(curCardViewY - originCardViewY) + Math.abs(getNewPointByRotation().y - originCardViewY)
 
     // 是否左滑超出了左边界
     private val isMovedBeyondLeftBorder: Boolean
@@ -268,7 +277,7 @@ class OnCardViewTouchListener(
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
         if (isAnimationRunning.compareAndSet(false, true)) {
             val animator = cardView.animate()
-                .setDuration(duration)
+                .setDuration(3000)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
@@ -325,9 +334,9 @@ class OnCardViewTouchListener(
     private fun getExitPoint(isLeft: Boolean, event: MotionEvent?): PointF {
         val newPointByRotation = if (event != null) {
             // 如果是手指触摸滑动，那么是先旋转，再取值，则 cardView.rotation 有值。
-            getNewPointByRotation(cardView.rotation)
+            getNewPointByRotation(rotation = cardView.rotation)
         } else {// 如果是单击滑出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
-            getNewPointByRotation(rotationDegrees)
+            getNewPointByRotation(rotation = rotationDegrees)
         }
         val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
         // 求 exitPoint 需要在x方向的平移距离
