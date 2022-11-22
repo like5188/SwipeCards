@@ -58,6 +58,7 @@ class OnCardViewTouchListener(
     private var scale = 0f
 
     /**
+     * 回弹动画是否取消
      * every time we touch down,we should stop the [.animRun]
      */
     private var resetAnimCanceled = false
