@@ -3,6 +3,7 @@ package com.like.swipecardview
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.graphics.PointF
+import android.os.Build
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -39,6 +40,10 @@ class FlingCardListener(
     // 手指按下时的坐标
     private var downX = 0f
     private var downY = 0f
+
+    // 手指按下时的屏幕坐标
+    private var downRawX = 0f
+    private var downRawY = 0f
 
     // The active pointer is the one currently moving our object.
     private var activePointerId = INVALID_POINTER_ID
@@ -139,6 +144,9 @@ class FlingCardListener(
                 cardView.animate().cancel()
                 resetAnimCanceled = true
 
+                downRawX = event.rawX
+                downRawY = event.rawY
+
                 // Save the ID of this pointer
                 val pointerIndex = event.actionIndex
                 activePointerId = event.getPointerId(pointerIndex)
@@ -188,6 +196,8 @@ class FlingCardListener(
                     cardView.rotation = rotation
                     flingListener.onScroll(scrollProgress, scrollXProgressPercent)
                 }
+
+//                Log.w("TAG", "$curCardViewX,$curCardViewY")
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
                 val pointerIndex = event.actionIndex
@@ -211,11 +221,11 @@ class FlingCardListener(
             val isLeft = curCardViewX < originCardViewX
             if (isMovedBeyondLeftBorder) {
                 // Left Swipe
-                exitWithAnimation(isLeft, getExitPoint(isLeft, false), duration, false)
+                exitWithAnimation(isLeft, getExitPoint(isLeft, event), duration, false)
                 flingListener.onScroll(1f, -1.0f)
             } else if (isMovedBeyondRightBorder) {
                 // Right Swipe
-                exitWithAnimation(isLeft, getExitPoint(isLeft, false), duration, false)
+                exitWithAnimation(isLeft, getExitPoint(isLeft, event), duration, false)
                 flingListener.onScroll(1f, 1.0f)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
@@ -235,12 +245,13 @@ class FlingCardListener(
                 scale = scrollProgress
                 cardView.postDelayed(animRun, 0)
                 resetAnimCanceled = false
-
-                curCardViewX = 0f
-                curCardViewY = 0f
-                downX = 0f
-                downY = 0f
             }
+            curCardViewX = 0f
+            curCardViewY = 0f
+            downX = 0f
+            downY = 0f
+            downRawX = 0f
+            downRawY = 0f
         } else {
             // 如果不能滑动，就根据触摸坐标判断点击事件
             val pointerIndex = event.findPointerIndex(activePointerId)
@@ -254,13 +265,12 @@ class FlingCardListener(
 
     /**
      * 自动滑出屏幕
-     *
-     * @param exitPoint 是相对于[originCardViewX]、[originCardViewY]，因为这里要使用 translationX、translationY 方法移除视图。
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
         if (isAnimationRunning.compareAndSet(false, true)) {
+//            Log.d("TAG", "${cardView.x},${cardView.y} -- ${cardView.translationX},${cardView.translationY}")
             val animator = cardView.animate()
-                .setDuration(duration)
+                .setDuration(3000)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
@@ -294,7 +304,7 @@ class FlingCardListener(
      * Starts a default left exit animation.
      */
     fun exitFromLeft(duration: Long) {
-        exitWithAnimation(true, getExitPoint(true, true), duration, true)
+        exitWithAnimation(true, getExitPoint(true, null), duration, true)
     }
 
     /**
@@ -308,27 +318,41 @@ class FlingCardListener(
      * Starts a default right exit animation.
      */
     fun exitFromRight(duration: Long) {
-        exitWithAnimation(false, getExitPoint(false, true), duration, true)
+        exitWithAnimation(false, getExitPoint(false, null), duration, true)
     }
 
     /**
      * 获取离开点的坐标
-     *
-     * 相对于[originCardViewX]、[originCardViewY]，因为需要使用 translationX、translationY 方法移除视图。
      */
-    private fun getExitPoint(isLeft: Boolean, byClick: Boolean): PointF {
-        return if (!byClick) {
+    private fun getExitPoint(isLeft: Boolean, event: MotionEvent?): PointF {
+        return if (event != null) {
+            val pointerIndex = event.findPointerIndex(activePointerId)
+            val finishRawX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                event.getRawX(pointerIndex)
+            } else {
+                event.rawX
+            }
+            val finishRawY = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                event.getRawY(pointerIndex)
+            } else {
+                event.rawY
+            }
+            // 已知点(downRawX,downRawY)和点(finishRawX,finishRawY)构成的直线，
+            // 平移这条直线，使点(downRawX,downRawY)和点(curCardViewX,curCardViewY)重合，
+            // 然后求出点(finishRawX,finishRawY)在同步平移后的新坐标。
+            val newFinishRawX = finishRawX - (downRawX - curCardViewX)
+            val newFinishRawY = finishRawY - (downRawY - curCardViewY)
+            // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
+            val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
+            // 求滑出点的x坐标
             val newPointByRotation = getNewPointByRotation(cardView.rotation)
             val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
-            val distanceYByRotation = Math.abs(newPointByRotation.y - originCardViewY)
             val x = if (isLeft) {
                 -(originCardViewX + originCardViewWidth) - distanceXByRotation
             } else {
                 parentWidth - originCardViewX + distanceXByRotation
             }
-            // 根据起点和终点坐标得到线性方程
-            val regression = LinearRegression(floatArrayOf(originCardViewX, curCardViewX), floatArrayOf(originCardViewY, curCardViewY))
-            //Your typical y = ax+b linear regression
+            // 根据直线方程 y = ax+b 求滑出点的y坐标
             val y = regression.slope().toFloat() * x + regression.intercept().toFloat()
             PointF(x, y)
         } else {
