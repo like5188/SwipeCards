@@ -63,7 +63,8 @@ class OnCardViewTouchListener(
     // 触摸的位置。参考 TOUCH_ABOVE、TOUCH_BELOW
     private var touchPosition = 0
 
-    private var isAnimationRunning = AtomicBoolean(false)
+    // 退出动画是否正在执行
+    private var isExitAnimRunning = AtomicBoolean(false)
 
     // 支持左右滑
     var isNeedSwipe = true
@@ -147,7 +148,7 @@ class OnCardViewTouchListener(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        if (isAnimationRunning.get()) {
+        if (isExitAnimRunning.get()) {
             return true
         }
         // 以第一个按下的手指为准
@@ -286,7 +287,7 @@ class OnCardViewTouchListener(
      * @param byClick   是否单击事件引起的
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
-        if (isAnimationRunning.compareAndSet(false, true)) {
+        if (isExitAnimRunning.compareAndSet(false, true)) {
             val animator = cardView.animate()
                 .setDuration(duration)
                 .setInterpolator(LinearInterpolator())
@@ -301,7 +302,7 @@ class OnCardViewTouchListener(
                             flingListener.onCardExited()
                             flingListener.rightExit(data)
                         }
-                        isAnimationRunning.set(false)
+                        isExitAnimRunning.set(false)
                     }
                 })
             if (byClick) {
