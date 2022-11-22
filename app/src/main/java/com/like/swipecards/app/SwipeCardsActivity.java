@@ -8,9 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CheckedTextView;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,19 +32,6 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
             R.drawable.i6
     };
 
-    String[] names = {"张三", "李四", "王五", "小明", "小红", "小花"};
-
-    String[] citys = {"北京", "上海", "广州", "深圳"};
-
-    String[] edus = {"大专", "本科", "硕士", "博士"};
-
-    String[] years = {"1年", "2年", "3年", "4年", "5年"};
-
-    Random ran = new Random();
-
-    private int cardWidth;
-    private int cardHeight;
-
     private SwipeCardsAdapterView swipeCardsAdapterView;
     private InnerAdapter adapter;
 
@@ -61,12 +46,6 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
     }
 
     private void initView() {
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        float density = dm.density;
-        cardWidth = (int) (dm.widthPixels - (2 * 18 * density));
-        cardHeight = (int) (dm.heightPixels - (338 * density));
-
-
         swipeCardsAdapterView = findViewById(R.id.swipeCardsAdapterView);
         if (swipeCardsAdapterView != null) {
             swipeCardsAdapterView.setNeedSwipe(true);
@@ -143,10 +122,6 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
                 for (int i = 0; i < 6; i++) {
                     talent = new Talent();
                     talent.headerIcon = headerIcons[i % headerIcons.length];
-                    talent.nickname = names[ran.nextInt(names.length - 1)];
-                    talent.cityName = citys[ran.nextInt(citys.length - 1)];
-                    talent.educationName = edus[ran.nextInt(edus.length - 1)];
-                    talent.workYearName = years[ran.nextInt(years.length - 1)];
                     list.add(talent);
                 }
                 return list;
@@ -194,7 +169,6 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
             }
         }
 
-
         @Override
         public int getCount() {
             return objs.size();
@@ -220,42 +194,11 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
                 convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cardview, parent, false);
                 holder = new ViewHolder();
                 convertView.setTag(holder);
-//                convertView.getLayoutParams().width = cardWidth;
-                holder.portraitView = (ImageView) convertView.findViewById(R.id.portrait);
-                //holder.portraitView.getLayoutParams().width = cardWidth;
-//                holder.portraitView.getLayoutParams().height = cardHeight;
-                holder.nameView = (TextView) convertView.findViewById(R.id.name);
-                //parentView.getLayoutParams().width = cardWidth;
-                //holder.jobView = (TextView) convertView.findViewById(R.id.job);
-                //holder.companyView = (TextView) convertView.findViewById(R.id.company);
-                holder.cityView = (TextView) convertView.findViewById(R.id.city);
-                holder.eduView = (TextView) convertView.findViewById(R.id.education);
-                holder.workView = (TextView) convertView.findViewById(R.id.work_year);
+                holder.portraitView = convertView.findViewById(R.id.portrait);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-
-
             holder.portraitView.setImageResource(talent.headerIcon);
-
-            holder.nameView.setText(String.format("%s", talent.nickname));
-            //holder.jobView.setText(talent.jobName);
-
-            final CharSequence no = "暂无";
-
-            holder.cityView.setHint(no);
-            holder.cityView.setText(talent.cityName);
-            holder.cityView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.home01_icon_location, 0, 0);
-
-            holder.eduView.setHint(no);
-            holder.eduView.setText(talent.educationName);
-            holder.eduView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.home01_icon_edu, 0, 0);
-
-            holder.workView.setHint(no);
-            holder.workView.setText(talent.workYearName);
-            holder.workView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.home01_icon_work_year, 0, 0);
-
-
             return convertView;
         }
 
@@ -263,12 +206,6 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
 
     private static class ViewHolder {
         ImageView portraitView;
-        TextView nameView;
-        TextView cityView;
-        TextView eduView;
-        TextView workView;
-        CheckedTextView collectView;
-
     }
 
     public static class Talent {
