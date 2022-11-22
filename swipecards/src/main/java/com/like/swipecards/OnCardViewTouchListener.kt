@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.graphics.Matrix
 import android.graphics.PointF
+import android.graphics.Rect
 import android.os.Build
 import android.view.MotionEvent
 import android.view.View
@@ -15,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 单个卡片触摸监听处理
+ *
+ * @param rotationDegrees   滑动一个视图宽度时的最大旋转角度
  */
 class OnCardViewTouchListener(
     private val cardView: View,
@@ -30,6 +33,14 @@ class OnCardViewTouchListener(
     private val halfCardViewHeight: Float = originCardViewHeight / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
     private val pivot: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
+
+    // rotationDegrees 对应的弧度
+    private val rotationRadian: Double = Math.PI / 180 * rotationDegrees
+
+    // 视图顶部的屏幕坐标
+    private val originCardViewRawY: Int = Rect().apply {
+        cardView.getGlobalVisibleRect(this)
+    }.top
 
     // cardView 的当前坐标
     private var curCardViewX = 0f
@@ -83,6 +94,15 @@ class OnCardViewTouchListener(
         matrix.mapPoints(old)
         return PointF(old[0], old[1])
     }
+
+    // 右上角的点(originCardViewX + originCardViewWidth, originCardViewY) 旋转 rotationDegrees 造成的 x 轴方向上的位移
+    private val absRotationDegreesDistanceX: Float
+        get() = Math.abs(
+            getNewPointByRotation(
+                src = PointF(originCardViewX + originCardViewWidth, originCardViewY),
+                rotation = rotationDegrees
+            ).x - (originCardViewX + originCardViewWidth)
+        )
 
     // x 轴方向上通过移动和旋转造成的位移
     private val absDistanceXByMoveAndRotation: Float
@@ -178,13 +198,16 @@ class OnCardViewTouchListener(
                 curCardViewX += dx
                 curCardViewY += dy
 
-                // 根据手指滑动距离计算旋转角度
-                val moveX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    event.getRawX(pointerIndex)
+                // 根据滑动距离计算旋转角度
+                // 修正由于手指触摸点的 y 坐标不一致，那么滑动到最大角度所需要的滑动距离不一致，那么就需要修正这个差距使得滑动到最大角度时，都是 rotationDegrees 度。
+                val offset = if (touchPosition == TOUCH_TOP_HALF) {
+                    Math.abs((downRawY - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
                 } else {
-                    event.rawX
-                } - downRawX
-                var rotation = rotationDegrees * moveX / originCardViewWidth
+                    Math.abs((originCardViewRawY + originCardViewHeight - downRawY) * Math.tan(rotationRadian)).toFloat()
+                }
+                val maxMoveDistanceX = originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
+                val moveDistanceX = event.rawX - downRawX
+                var rotation = rotationDegrees * moveDistanceX / maxMoveDistanceX
                 if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
                 }
@@ -211,6 +234,13 @@ class OnCardViewTouchListener(
             }
         }
         return true
+    }
+
+    private fun getDistanceBetween2Points(point0: PointF, point1: PointF): Float {
+        return Math.sqrt(
+            Math.pow(point0.x.toDouble() - point1.x.toDouble(), 2.0) +
+                    Math.pow(point0.y.toDouble() - point1.y.toDouble(), 2.0)
+        ).toFloat()
     }
 
     /**
