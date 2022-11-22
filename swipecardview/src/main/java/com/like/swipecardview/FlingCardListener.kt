@@ -347,23 +347,23 @@ class FlingCardListener(
             // 求滑出点的x坐标
             val newPointByRotation = getNewPointByRotation(cardView.rotation)
             val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
-            val x = if (isLeft) {
+            val translationX = if (isLeft) {
                 -(originCardViewX + originCardViewWidth) - distanceXByRotation
             } else {
                 parentWidth - originCardViewX + distanceXByRotation
             }
             // 根据直线方程 y = ax+b 求滑出点的y坐标
-            val y = regression.slope().toFloat() * x + regression.intercept().toFloat()
-            PointF(x, y)
+            val translationY = regression.slope().toFloat() * translationX + regression.intercept().toFloat()
+            PointF(translationX, translationY)
         } else {
             val newPointByRotation = getNewPointByRotation(rotationDegrees)
             val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
-            val x = if (isLeft) {
+            val translationX = if (isLeft) {
                 -(originCardViewX + originCardViewWidth) - distanceXByRotation
             } else {
                 parentWidth - originCardViewX + distanceXByRotation
             }
-            PointF(x, 0f)
+            PointF(translationX, 0f)
         }
     }
 
