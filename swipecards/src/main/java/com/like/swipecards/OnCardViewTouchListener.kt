@@ -2,6 +2,7 @@ package com.like.swipecards
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.annotation.SuppressLint
 import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.Rect
@@ -32,6 +33,8 @@ class OnCardViewTouchListener(
     private val halfCardViewWidth: Float = originCardViewWidth / 2f
     private val halfCardViewHeight: Float = originCardViewHeight / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
+
+    // 旋转中心点
     private val pivot: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
 
     // rotationDegrees 对应的弧度
@@ -95,15 +98,6 @@ class OnCardViewTouchListener(
         return PointF(old[0], old[1])
     }
 
-    // 右上角的点(originCardViewX + originCardViewWidth, originCardViewY) 旋转 rotationDegrees 造成的 x 轴方向上的位移
-    private val absRotationDegreesDistanceX: Float
-        get() = Math.abs(
-            getNewPointByRotation(
-                src = PointF(originCardViewX + originCardViewWidth, originCardViewY),
-                rotation = rotationDegrees
-            ).x - (originCardViewX + originCardViewWidth)
-        )
-
     // x 轴方向上通过移动和旋转造成的位移
     private val absDistanceXByMoveAndRotation: Float
         get() = Math.abs(curCardViewX - originCardViewX) + Math.abs(getNewPointByRotation().x - originCardViewX)
@@ -152,6 +146,7 @@ class OnCardViewTouchListener(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         if (isAnimationRunning.get()) {
             return true
@@ -234,13 +229,6 @@ class OnCardViewTouchListener(
             }
         }
         return true
-    }
-
-    private fun getDistanceBetween2Points(point0: PointF, point1: PointF): Float {
-        return Math.sqrt(
-            Math.pow(point0.x.toDouble() - point1.x.toDouble(), 2.0) +
-                    Math.pow(point0.y.toDouble() - point1.y.toDouble(), 2.0)
-        ).toFloat()
     }
 
     /**
