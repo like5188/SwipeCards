@@ -213,17 +213,19 @@ class FlingCardListener(
         return true
     }
 
+    /**
+     * 为视图执行回弹动画、滑出动画，点击事件判断
+     */
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
-            val duration = 200L
             val isLeft = curCardViewX < originCardViewX
             if (isMovedBeyondLeftBorder) {
                 // Left Swipe
-                exitWithAnimation(isLeft, getExitPoint(isLeft, event), duration, false)
+                exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
                 flingListener.onScroll(1f, -1.0f)
             } else if (isMovedBeyondRightBorder) {
                 // Right Swipe
-                exitWithAnimation(isLeft, getExitPoint(isLeft, event), duration, false)
+                exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
                 flingListener.onScroll(1f, 1.0f)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
