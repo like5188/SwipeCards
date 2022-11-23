@@ -198,9 +198,9 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                     onItemClickListener?.onItemClick(event, v, dataObject)
                 }
 
-                override fun onScroll(progress: Float, scrollXProgress: Float) {
+                override fun onScroll(progress: Float) {
                     adjustChildrenUnderTopView(progress)
-                    onFlingListener?.onScroll(progress, scrollXProgress)
+                    onFlingListener?.onScroll(progress)
                 }
             }).also {
                 // 设置是否支持左右滑
@@ -294,7 +294,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         fun onExitFromLeft(dataObject: Any?)
         fun onExitFromRight(dataObject: Any?)
         fun onAdapterAboutToEmpty(itemsInAdapter: Int)
-        fun onScroll(progress: Float, scrollXProgress: Float)
+        fun onScroll(progress: Float)
     }
 
 }

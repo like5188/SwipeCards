@@ -120,18 +120,6 @@ class OnCardViewTouchListener(
             val dis = Math.abs(dx) + Math.abs(dy)
             return Math.min(dis, 400f) / 400f
         }
-    private val scrollXProgressPercent: Float
-        get() {
-            val isLeft = curCardViewX < originCardViewX
-            return if (isLeft && isMovedBeyondLeftBorder) {
-                -1f
-            } else if (!isLeft && isMovedBeyondRightBorder) {
-                1f
-            } else {
-                val zeroToOneValue = (curCardViewX + halfCardViewWidth - leftBorderX) / (rightBorderX - leftBorderX)
-                zeroToOneValue * 2f - 1f
-            }
-        }
 
     // 还原缩放的动画是否取消
     private val resetScaleAnimCanceled = AtomicBoolean(false)
@@ -140,7 +128,7 @@ class OnCardViewTouchListener(
     private val resetScaleRunnable: Runnable = object : Runnable {
         override fun run() {
             // 在 SwipeCardsAdapterView 中会处理底层的所有视图的缩放
-            flingListener.onScroll(scale, 0f)
+            flingListener.onScroll(scale)
             if (scale > 0 && !resetScaleAnimCanceled.get()) {
                 scale -= 0.1f
                 if (scale < 0) scale = 0f
@@ -215,7 +203,7 @@ class OnCardViewTouchListener(
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
                     cardView.rotation = rotation
-                    flingListener.onScroll(scrollProgress, scrollXProgressPercent)
+                    flingListener.onScroll(scrollProgress)
                 }
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
@@ -243,11 +231,11 @@ class OnCardViewTouchListener(
             if (isMovedBeyondLeftBorder) {
                 // Left Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
-                flingListener.onScroll(1f, -1.0f)
+                flingListener.onScroll(1f)
             } else if (isMovedBeyondRightBorder) {
                 // Right Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
-                flingListener.onScroll(1f, 1.0f)
+                flingListener.onScroll(1f)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = Math.abs(curCardViewX - originCardViewX)
@@ -396,7 +384,7 @@ class OnCardViewTouchListener(
         fun leftExit(dataObject: Any?)
         fun rightExit(dataObject: Any?)
         fun onClick(event: MotionEvent?, v: View?, dataObject: Any?)
-        fun onScroll(progress: Float, scrollXProgress: Float)
+        fun onScroll(progress: Float)
     }
 
     companion object {
