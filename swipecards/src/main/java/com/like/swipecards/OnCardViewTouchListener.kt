@@ -132,14 +132,14 @@ class OnCardViewTouchListener(
         }
 
     // 还原缩放的动画是否取消
-    private var resetScaleAnimCanceled = false
+    private var resetScaleAnimCanceled = AtomicBoolean(false)
 
     // 还原缩放动画
     private val resetScaleRunnable: Runnable = object : Runnable {
         override fun run() {
             // 在 SwipeCardsAdapterView 中会处理底层的所有视图的缩放
             flingListener.onScroll(scale, 0f)
-            if (scale > 0 && !resetScaleAnimCanceled) {
+            if (scale > 0 && !resetScaleAnimCanceled.get()) {
                 scale -= 0.1f
                 if (scale < 0) scale = 0f
                 cardView.postDelayed(this, animDuration / 20)
@@ -161,7 +161,7 @@ class OnCardViewTouchListener(
                 // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                 cardView.animate().setListener(null)
                 cardView.animate().cancel()
-                resetScaleAnimCanceled = true
+                resetScaleAnimCanceled.set(true)
 
                 downRawX = event.rawX
                 downRawY = event.rawY
@@ -261,9 +261,10 @@ class OnCardViewTouchListener(
                     .y(originCardViewY)
                     .rotation(0f)
                     .start()
-                scale = scrollProgress
-                cardView.post(resetScaleRunnable)
-                resetScaleAnimCanceled = false
+                if (resetScaleAnimCanceled.compareAndSet(true, false)) {
+                    scale = scrollProgress
+                    cardView.post(resetScaleRunnable)
+                }
             }
             curCardViewX = 0f
             curCardViewY = 0f
