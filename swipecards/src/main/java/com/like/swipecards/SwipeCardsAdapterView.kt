@@ -199,16 +199,9 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                     onItemClickListener?.onItemClick(event, v, dataObject)
                 }
 
-                override fun onHorizontalScroll(direction: Int, absProgress: Float) {
-                    onFlingListener?.onHorizontalScroll(direction, absProgress)
-                }
-
-                override fun onVerticalScroll(direction: Int, absProgress: Float) {
-                    onFlingListener?.onVerticalScroll(direction, absProgress)
-                }
-
-                override fun onScale(scale: Float) {
-                    adjustChildrenUnderTopView(scale)
+                override fun onScroll(direction: Int, absProgress: Float) {
+                    adjustChildrenUnderTopView(absProgress)
+                    onFlingListener?.onScroll(direction, absProgress)
                 }
 
             }).also {
@@ -303,8 +296,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         fun onExitFromLeft(dataObject: Any?)
         fun onExitFromRight(dataObject: Any?)
         fun onAdapterAboutToEmpty(itemsInAdapter: Int)
-        fun onHorizontalScroll(direction: Int, absProgress: Float)
-        fun onVerticalScroll(direction: Int, absProgress: Float)
+        fun onScroll(direction: Int, absProgress: Float)
     }
 
 }
