@@ -305,28 +305,28 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * Starts a default left exit animation.
+     * 单击触发往左滑出的动画
      */
     fun exitFromLeft() {
         exitFromLeft(animDuration)
     }
 
     /**
-     * Starts a default left exit animation.
+     * 单击触发往左滑出的动画
      */
     fun exitFromLeft(duration: Long) {
         exitWithAnimation(true, getExitPoint(true, null), duration, true)
     }
 
     /**
-     * Starts a default right exit animation.
+     * 单击触发往右滑出的动画
      */
     fun exitFromRight() {
         exitFromRight(animDuration)
     }
 
     /**
-     * Starts a default right exit animation.
+     * 单击触发往右滑出的动画
      */
     fun exitFromRight(duration: Long) {
         exitWithAnimation(false, getExitPoint(false, null), duration, true)
