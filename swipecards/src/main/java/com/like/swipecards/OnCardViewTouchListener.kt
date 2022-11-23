@@ -137,6 +137,7 @@ class OnCardViewTouchListener(
     // 还原缩放动画
     private val resetScaleRunnable: Runnable = object : Runnable {
         override fun run() {
+            // 在 SwipeCardsAdapterView 中会处理底层的所有视图的缩放
             flingListener.onScroll(scale, 0f)
             if (scale > 0 && !resetScaleAnimCanceled) {
                 scale -= 0.1f
