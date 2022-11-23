@@ -35,7 +35,13 @@ class OnCardViewTouchListener(
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
 
     // 旋转中心点
-    private val pivot: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
+    private val pivotPoint: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
+
+    // 左上角点
+    private val leftTopPoint = PointF(originCardViewX, originCardViewY)
+
+    // 右上角点
+    private val rightTopPoint = PointF(originCardViewX + originCardViewWidth, originCardViewY)
 
     // rotationDegrees 对应的弧度
     private val rotationRadian: Double = Math.PI / 180 * rotationDegrees
@@ -87,7 +93,7 @@ class OnCardViewTouchListener(
     // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
     private fun getNewPointByRotation(
         src: PointF = PointF(originCardViewX, originCardViewY),
-        pivot: PointF = this.pivot,
+        pivot: PointF = this.pivotPoint,
         rotation: Float = cardView.rotation
     ): PointF {
         val matrix = Matrix()
@@ -99,23 +105,21 @@ class OnCardViewTouchListener(
         return PointF(old[0], old[1])
     }
 
-    // x 轴方向上通过移动和旋转造成的位移
-    private val absDistanceXByMoveAndRotation: Float
-        get() = Math.abs(curCardViewX - originCardViewX) + Math.abs(getNewPointByRotation().x - originCardViewX)
-
     // 是否左滑超出了左边界
     private val isMovedBeyondLeftBorder: Boolean
-        get() {
-            val anchorX = originCardViewX + originCardViewWidth
-            return anchorX - absDistanceXByMoveAndRotation < leftBorderX
-        }
+        get() = rightTopPoint.x - getDistanceXByMoveAndRotation(rightTopPoint) < leftBorderX
 
     // 是否右滑超出了右边界
     private val isMovedBeyondRightBorder: Boolean
-        get() {
-            val anchorX = originCardViewX
-            return anchorX + absDistanceXByMoveAndRotation > rightBorderX
-        }
+        get() = leftTopPoint.x + getDistanceXByMoveAndRotation(leftTopPoint) > rightBorderX
+
+    // 指定点在 x 轴方向上通过移动和旋转造成的位移
+    private fun getDistanceXByMoveAndRotation(point: PointF): Float {
+        val distanceByMove = Math.abs(curCardViewX - originCardViewX)
+        val distanceByRotation = Math.abs(getNewPointByRotation(point).x - point.x)
+        // x 轴方向上通过移动和旋转造成的位移
+        return distanceByMove + distanceByRotation
+    }
 
     // 手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
     private val moveDirection: Int
