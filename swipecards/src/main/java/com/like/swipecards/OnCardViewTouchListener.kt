@@ -57,7 +57,7 @@ class OnCardViewTouchListener(
     private var downRawX = 0f
     private var downRawY = 0f
 
-    // The active pointer is the one currently moving our object.
+    // 当前活动手指的id
     private var activePointerId = INVALID_POINTER_ID
 
     /**
