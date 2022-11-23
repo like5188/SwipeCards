@@ -124,8 +124,7 @@ class OnCardViewTouchListener(
     // 手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
     private val moveDirection: Int
         get() {
-            // 这里不能使用 curCardViewX - originCardViewX 来计算 dx，因为手指触摸点在 y 轴坐标不同时，会有偏差，请看角度计算的代码。
-            // 当触摸点为垂直方向的中间点时，两者才一样，
+            // 这里不能使用 curCardViewX - originCardViewX 来计算 dx，因为需要包含旋转，即屏幕上看到的滑动和手指的滑动一致。而 curCardViewX 不包含。
             val dx = curRawX - downRawX
             val dy = curRawY - downRawY
             return when {
