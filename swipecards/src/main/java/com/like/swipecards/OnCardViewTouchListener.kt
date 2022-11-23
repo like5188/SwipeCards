@@ -60,7 +60,9 @@ class OnCardViewTouchListener(
     // The active pointer is the one currently moving our object.
     private var activePointerId = INVALID_POINTER_ID
 
-    // 触摸的位置。参考 TOUCH_ABOVE、TOUCH_BELOW
+    /**
+     * 触摸的位置。参考 [TOUCH_TOP_HALF]、[TOUCH_BOTTOM_HALF]
+     */
     private var touchPosition = 0
 
     // 退出动画是否正在执行
