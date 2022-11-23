@@ -251,6 +251,7 @@ class OnCardViewTouchListener(
                     .y(originCardViewY)
                     .rotation(0f)
                     .start()
+                // 还原缩放动画
                 if (resetScaleAnimCanceled.compareAndSet(true, false)) {
                     scale = scrollProgress
                     cardView.post(resetScaleRunnable)
