@@ -3,6 +3,7 @@ package com.like.swipecards.app;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -97,7 +98,7 @@ public class SwipeCardsActivity extends AppCompatActivity implements SwipeCardsA
 
     @Override
     public void onScroll(float progress, float scrollXProgress) {
-//        Log.e("TAG", "progress=" + progress + ", scrollXProgress=" + scrollXProgress);
+        Log.e("TAG", "progress=" + progress + ", scrollXProgress=" + scrollXProgress);
     }
 
     @Override

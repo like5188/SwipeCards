@@ -213,7 +213,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     /**
      * 调整 TopView 之下的所有视图
      */
-    private fun adjustChildrenUnderTopView(scrollRate: Float) {
+    private fun adjustChildrenUnderTopView(scrollProgress: Float) {
         val count = childCount
         if (count <= 1) {
             return
@@ -227,13 +227,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             index = topViewIndex - 2
             level = 2
         }
-        val rate = Math.abs(scrollRate)
+        val progress = Math.abs(scrollProgress)
         while (index < topViewIndex) {
-            val yOffset = (yOffsetStep * (level - rate)).toInt()
+            val yOffset = (yOffsetStep * (level - progress)).toInt()
             val view = getChildAt(index)
             view.offsetTopAndBottom(yOffset - view.top + initTop)
-            view.scaleX = 1 - scaleStep * level + scaleStep * rate
-            view.scaleY = 1 - scaleStep * level + scaleStep * rate
+            view.scaleX = 1 - scaleStep * level + scaleStep * progress
+            view.scaleY = 1 - scaleStep * level + scaleStep * progress
             index++
             level--
         }
