@@ -57,9 +57,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onScroll(progress: Float) {
-                Log.e("TAG", "progress=$progress")
+            override fun onHorizontalScroll(direction: Int, absProgress: Float) {
+                Log.v("TAG", "onHorizontalScroll direction=$direction absProgress=$absProgress")
             }
+
+            override fun onVerticalScroll(direction: Int, absProgress: Float) {
+                Log.v("TAG", "onVerticalScroll direction=$direction absProgress=$absProgress")
+            }
+
         }
         mBinding.swipeCardsAdapterView.onItemClickListener = object : SwipeCardsAdapterView.OnItemClickListener {
             override fun onItemClick(event: MotionEvent?, v: View?, dataObject: Any?) {

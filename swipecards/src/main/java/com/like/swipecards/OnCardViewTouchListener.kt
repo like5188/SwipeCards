@@ -7,6 +7,7 @@ import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Build
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
@@ -37,6 +38,18 @@ class OnCardViewTouchListener(
     // 旋转中心点
     private val pivot: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
 
+    // 右上角的原始点
+    private val originRightTopPoint: PointF = PointF(originCardViewX + originCardViewWidth, originCardViewY)
+
+    // 当前右上角的点
+    private val curRightTopPoint: PointF
+        get() {
+            val rightTopPoint = getNewPointByRotation(originRightTopPoint)
+            rightTopPoint.x += cardView.translationX
+            rightTopPoint.y += cardView.translationY
+            return rightTopPoint
+        }
+
     // rotationDegrees 对应的弧度
     private val rotationRadian: Double = Math.PI / 180 * rotationDegrees
 
@@ -56,6 +69,10 @@ class OnCardViewTouchListener(
     // 手指按下时的屏幕坐标
     private var downRawX = 0f
     private var downRawY = 0f
+
+    // 当前手指触摸点的屏幕坐标
+    private var curRawX = 0f
+    private var curRawY = 0f
 
     // 当前活动手指的id
     private var activePointerId = INVALID_POINTER_ID
@@ -113,12 +130,51 @@ class OnCardViewTouchListener(
             return anchorX + absDistanceXByMoveAndRotation > rightBorderX
         }
 
-    private val scrollProgress: Float
+    // 手指左右滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；
+    private val moveDirectionX: Int
         get() {
-            val dx = curCardViewX - originCardViewX
-            val dy = curCardViewY - originCardViewY
-            val dis = Math.abs(dx) + Math.abs(dy)
-            return Math.min(dis, 400f) / 400f
+            val isLeft = curCardViewX < originCardViewX
+            return if (touchPosition == TOUCH_TOP_HALF) {
+                if (!isLeft) 0 else 1
+            } else {
+                if (!isLeft) 2 else 3
+            }
+        }
+
+    // x方向上的滑动进度
+    private val absMoveXProgress: Float
+        get() {
+            var moveRate = cardView.rotation / rotationDegrees
+            if (moveRate > 1f) {
+                moveRate = 1f
+            }
+            if (moveRate < -1f) {
+                moveRate = -1f
+            }
+            return Math.abs(moveRate)
+        }
+
+    // 手指上下滑动方向。0：下滑；1：上滑；
+    private val moveDirectionY: Int
+        get() {
+            return if (curRawY - downRawY > 0) {
+                0
+            } else {
+                1
+            }
+        }
+
+    // y方向上的滑动进度
+    private val absMoveYProgress: Float
+        get() {
+            var moveRate = (curRawY - downRawY) / originCardViewHeight
+            if (moveRate > 1f) {
+                moveRate = 1f
+            }
+            if (moveRate < -1f) {
+                moveRate = -1f
+            }
+            return Math.abs(moveRate)
         }
 
     // 还原缩放的动画是否取消
@@ -128,7 +184,7 @@ class OnCardViewTouchListener(
     private val resetScaleRunnable: Runnable = object : Runnable {
         override fun run() {
             // 在 SwipeCardsAdapterView 中会处理底层的所有视图的缩放
-            flingListener.onScroll(scale)
+            flingListener.onScale(scale)
             if (scale > 0 && !resetScaleAnimCanceled.get()) {
                 scale -= 0.1f
                 if (scale < 0) scale = 0f
@@ -137,10 +193,32 @@ class OnCardViewTouchListener(
         }
     }
 
+    // 原始左上角和原始右下角连线的直线方程
+    private val leftTop2RightBottomLinearRegression = LinearRegression(
+        floatArrayOf(originCardViewX, originCardViewX + originCardViewWidth),
+        floatArrayOf(originCardViewY, originCardViewY + originCardViewHeight)
+    )
+
+    // 原始右上角和原始左下角连线的直线方程
+    private val rightTop2LeftBottomLinearRegression = LinearRegression(
+        floatArrayOf(originCardViewX + originCardViewWidth, originCardViewX),
+        floatArrayOf(originCardViewY, originCardViewY + originCardViewHeight)
+    )
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         if (isExitAnimRunning.get()) {
             return true
+        }
+        curRawX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            event.getRawX(event.actionIndex)
+        } else {
+            event.rawX
+        }
+        curRawY = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            event.getRawY(event.actionIndex)
+        } else {
+            event.rawY
         }
         // 以第一个按下的手指为准
         when (event.actionMasked) {
@@ -153,8 +231,8 @@ class OnCardViewTouchListener(
                 cardView.animate().cancel()
                 resetScaleAnimCanceled.set(true)
 
-                downRawX = event.rawX
-                downRawY = event.rawY
+                downRawX = curRawX
+                downRawY = curRawY
 
                 val pointerIndex = event.actionIndex
                 activePointerId = event.getPointerId(pointerIndex)
@@ -186,13 +264,14 @@ class OnCardViewTouchListener(
 
                 // 根据滑动距离计算旋转角度
                 // 修正由于手指触摸点的 y 坐标不一致，那么滑动到最大角度所需要的滑动距离不一致，那么就需要修正这个差距使得滑动到最大角度时，都是 rotationDegrees 度。
+                // 具体滑动全程参考 FlingListener.onScroll的注释
                 val offset = if (touchPosition == TOUCH_TOP_HALF) {
                     Math.abs((downRawY - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
                 } else {
                     Math.abs((originCardViewRawY + originCardViewHeight - downRawY) * Math.tan(rotationRadian)).toFloat()
                 }
                 val maxMoveDistanceX = originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
-                val moveDistanceX = event.rawX - downRawX
+                val moveDistanceX = curRawX - downRawX
                 var rotation = rotationDegrees * moveDistanceX / maxMoveDistanceX
                 if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
@@ -203,7 +282,13 @@ class OnCardViewTouchListener(
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
                     cardView.rotation = rotation
-                    flingListener.onScroll(scrollProgress)
+                    if (isHorizontalMove()) {
+                        flingListener.onHorizontalScroll(moveDirectionX, absMoveXProgress)
+                        flingListener.onScale(absMoveXProgress)
+                    } else {
+                        flingListener.onVerticalScroll(moveDirectionY, absMoveYProgress)
+                        flingListener.onScale(absMoveYProgress)
+                    }
                 }
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
@@ -223,6 +308,33 @@ class OnCardViewTouchListener(
     }
 
     /**
+     * 手指是否左右滑动
+     */
+    private fun isHorizontalMove(): Boolean {
+        val isLeft = curCardViewX < originCardViewX
+        // 根据直线方程 y = ax+b 求滑出点的y坐标
+        val yInRightTop2LeftBottomLinearRegression =
+            rightTop2LeftBottomLinearRegression.slope() * curRightTopPoint.x + rightTop2LeftBottomLinearRegression.intercept()
+        val yInLeftTop2RightBottomLinearRegression =
+            leftTop2RightBottomLinearRegression.slope() * curRightTopPoint.x + leftTop2RightBottomLinearRegression.intercept()
+        val isHorizontalMove = if (touchPosition == TOUCH_TOP_HALF) {
+            when {
+                curCardViewX < originCardViewX -> curRightTopPoint.y < yInRightTop2LeftBottomLinearRegression
+                curCardViewX > originCardViewX -> curRightTopPoint.y < yInLeftTop2RightBottomLinearRegression
+                else -> false
+            }
+        } else {
+            when {
+                curCardViewX < originCardViewX -> curRightTopPoint.y > yInLeftTop2RightBottomLinearRegression
+                curCardViewX > originCardViewX -> curRightTopPoint.y > yInRightTop2LeftBottomLinearRegression
+                else -> false
+            }
+        }
+        Log.e("TAG", "$isHorizontalMove $curRightTopPoint")
+        return isHorizontalMove
+    }
+
+    /**
      * 为视图执行回弹动画、滑出动画，点击事件判断
      */
     private fun resetCardViewOnStack(event: MotionEvent) {
@@ -231,11 +343,13 @@ class OnCardViewTouchListener(
             if (isMovedBeyondLeftBorder) {
                 // Left Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
-                flingListener.onScroll(1f)
+                flingListener.onHorizontalScroll(1, 1f)
+                flingListener.onScale(1f)
             } else if (isMovedBeyondRightBorder) {
                 // Right Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
-                flingListener.onScroll(1f)
+                flingListener.onHorizontalScroll(0, 1f)
+                flingListener.onScale(1f)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = Math.abs(curCardViewX - originCardViewX)
@@ -253,7 +367,11 @@ class OnCardViewTouchListener(
                     .start()
                 // 还原缩放动画
                 if (resetScaleAnimCanceled.compareAndSet(true, false)) {
-                    scale = scrollProgress
+                    scale = if (isHorizontalMove()) {
+                        absMoveXProgress
+                    } else {
+                        absMoveYProgress
+                    }
                     cardView.post(resetScaleRunnable)
                 }
             }
@@ -352,31 +470,18 @@ class OnCardViewTouchListener(
         }
         // 求 exitPoint 需要在y方向的平移距离
         val translationY = if (event != null) {// 手指触摸滑动
-            val pointerIndex = event.findPointerIndex(activePointerId)
-            // 事件结束时的相对屏幕的x坐标
-            val finishRawX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                event.getRawX(pointerIndex)
-            } else {
-                event.rawX
-            }
-            // 事件结束时的相对屏幕的y坐标
-            val finishRawY = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                event.getRawY(pointerIndex)
-            } else {
-                event.rawY
-            }
             // 已知点(downRawX,downRawY)和点(finishRawX,finishRawY)构成的直线，
             // 平移这条直线，使点(downRawX,downRawY)和点(curCardViewX,curCardViewY)重合，
             // 然后求出点(finishRawX,finishRawY)在同步平移后的新坐标。
-            val newFinishRawX = finishRawX - (downRawX - curCardViewX)
-            val newFinishRawY = finishRawY - (downRawY - curCardViewY)
+            val newFinishRawX = curRawX - (downRawX - curCardViewX)
+            val newFinishRawY = curRawY - (downRawY - curCardViewY)
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
             val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
             // 根据直线方程 y = ax+b 求滑出点的y坐标
-            regression.slope().toFloat() * translationX + regression.intercept().toFloat()
+            regression.slope() * translationX + regression.intercept()
         } else {// 单击滑出
             0f
-        }
+        }.toFloat()
         return PointF(translationX, translationY)
     }
 
@@ -385,7 +490,31 @@ class OnCardViewTouchListener(
         fun leftExit(dataObject: Any?)
         fun rightExit(dataObject: Any?)
         fun onClick(event: MotionEvent?, v: View?, dataObject: Any?)
-        fun onScroll(progress: Float)
+
+        /**
+         * 左右滑动回调
+         * @param direction     手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；
+         * @param absProgress   视图滑动进度的绝对值。
+         * direction==0：全程为：视图左上角滑动到与视图原来的右上角重叠。
+         * direction==1：全程为：视图右上角滑动到与视图原来的左上角重叠。
+         * direction==2：全程为：视图左下角滑动到与视图原来的右下角重叠。
+         * direction==3：全程为：视图右下角滑动到与视图原来的左下角重叠。
+         */
+        fun onHorizontalScroll(direction: Int, absProgress: Float)
+
+        /**
+         * 上下滑动回调
+         * @param direction     手指滑动方向。0：下滑；1：上滑；
+         * @param absProgress   视图滑动进度的绝对值。
+         */
+        fun onVerticalScroll(direction: Int, absProgress: Float)
+
+        /**
+         * 缩放回调
+         *
+         * @param scale     缩放系数
+         */
+        fun onScale(scale: Float)
     }
 
     companion object {

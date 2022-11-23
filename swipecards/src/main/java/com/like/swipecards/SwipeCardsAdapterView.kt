@@ -3,6 +3,7 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -198,10 +199,18 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                     onItemClickListener?.onItemClick(event, v, dataObject)
                 }
 
-                override fun onScroll(progress: Float) {
-                    adjustChildrenUnderTopView(progress)
-                    onFlingListener?.onScroll(progress)
+                override fun onHorizontalScroll(direction: Int, absProgress: Float) {
+                    onFlingListener?.onHorizontalScroll(direction, absProgress)
                 }
+
+                override fun onVerticalScroll(direction: Int, absProgress: Float) {
+                    onFlingListener?.onVerticalScroll(direction, absProgress)
+                }
+
+                override fun onScale(scale: Float) {
+                    adjustChildrenUnderTopView(scale)
+                }
+
             }).also {
                 // 设置是否支持左右滑
                 it.isNeedSwipe = isNeedSwipe
@@ -211,9 +220,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     /**
-     * 调整 TopView 之下的所有视图
+     * 调整 TopView 之下的所有视图的缩放和垂直位移
      */
-    private fun adjustChildrenUnderTopView(scrollProgress: Float) {
+    private fun adjustChildrenUnderTopView(scale: Float) {
+        Log.d("TAG", "scale=$scale")
         val count = childCount
         if (count <= 1) {
             return
@@ -227,13 +237,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             index = topViewIndex - 2
             level = 2
         }
-        val progress = Math.abs(scrollProgress)
         while (index < topViewIndex) {
-            val yOffset = (yOffsetStep * (level - progress)).toInt()
+            val yOffset = (yOffsetStep * (level - scale)).toInt()
             val view = getChildAt(index)
             view.offsetTopAndBottom(yOffset - view.top + initTop)
-            view.scaleX = 1 - scaleStep * level + scaleStep * progress
-            view.scaleY = 1 - scaleStep * level + scaleStep * progress
+            view.scaleX = 1 - scaleStep * level + scaleStep * scale
+            view.scaleY = 1 - scaleStep * level + scaleStep * scale
             index++
             level--
         }
@@ -294,7 +303,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         fun onExitFromLeft(dataObject: Any?)
         fun onExitFromRight(dataObject: Any?)
         fun onAdapterAboutToEmpty(itemsInAdapter: Int)
-        fun onScroll(progress: Float)
+        fun onHorizontalScroll(direction: Int, absProgress: Float)
+        fun onVerticalScroll(direction: Int, absProgress: Float)
     }
 
 }
