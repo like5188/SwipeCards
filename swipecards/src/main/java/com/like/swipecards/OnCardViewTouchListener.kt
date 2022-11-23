@@ -233,14 +233,14 @@ class OnCardViewTouchListener(
                 curCardViewY += dy
 
                 // 根据滑动距离计算旋转角度
-                // 修正由于手指触摸点的 y 坐标不一致，那么滑动到最大角度所需要的滑动距离不一致，那么就需要修正这个差距使得滑动到最大角度时，都是 rotationDegrees 度。
+                // 修正由于手指触摸点的 y 坐标不一致，那么水平滑动到某一目标点（最大角度时的点）所需要的滑动距离不一致，那么就需要修正这个差距使得滑动到最大角度时，都是 rotationDegrees 度。
                 val offset = if (touchPosition == TOUCH_TOP_HALF) {
                     Math.abs((downRawY - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
                 } else {
                     Math.abs((originCardViewRawY + originCardViewHeight - downRawY) * Math.tan(rotationRadian)).toFloat()
                 }
                 val maxMoveDistanceX = originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
-                val moveDistanceX = curRawX - downRawX
+                val moveDistanceX = curRawX - downRawX// 需要所见即所得
                 var rotation = rotationDegrees * moveDistanceX / maxMoveDistanceX
                 if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
@@ -400,9 +400,9 @@ class OnCardViewTouchListener(
         }
         // 求 exitPoint 需要在y方向的平移距离
         val translationY = if (event != null) {// 手指触摸滑动
-            // 已知点(downRawX,downRawY)和点(finishRawX,finishRawY)构成的直线，
+            // 已知点(downRawX,downRawY)和点(curRawX,curRawY)构成的直线，
             // 平移这条直线，使点(downRawX,downRawY)和点(curCardViewX,curCardViewY)重合，
-            // 然后求出点(finishRawX,finishRawY)在同步平移后的新坐标。
+            // 然后求出点(curRawX,curRawY)在同步平移后的新坐标。
             val newFinishRawX = curRawX - (downRawX - curCardViewX)
             val newFinishRawY = curRawY - (downRawY - curCardViewY)
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
