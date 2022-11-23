@@ -90,21 +90,6 @@ class OnCardViewTouchListener(
     // x 轴方向上的右边界
     private val rightBorderX: Float = parentWidth / 2f
 
-    // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
-    private fun getNewPointByRotation(
-        src: PointF = PointF(originCardViewX, originCardViewY),
-        pivot: PointF = this.pivotPoint,
-        rotation: Float = cardView.rotation
-    ): PointF {
-        val matrix = Matrix()
-        matrix.setRotate(rotation, pivot.x, pivot.y)
-        val old = FloatArray(2)
-        old[0] = src.x
-        old[1] = src.y
-        matrix.mapPoints(old)
-        return PointF(old[0], old[1])
-    }
-
     // 是否左滑超出了左边界
     private val isMovedBeyondLeftBorder: Boolean
         get() = rightTopPoint.x - getDistanceXByMoveAndRotation(rightTopPoint) < leftBorderX
@@ -119,6 +104,21 @@ class OnCardViewTouchListener(
         val distanceByRotation = Math.abs(getNewPointByRotation(point).x - point.x)
         // x 轴方向上通过移动和旋转造成的位移
         return distanceByMove + distanceByRotation
+    }
+
+    // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
+    private fun getNewPointByRotation(
+        src: PointF = PointF(originCardViewX, originCardViewY),
+        pivot: PointF = this.pivotPoint,
+        rotation: Float = cardView.rotation
+    ): PointF {
+        val matrix = Matrix()
+        matrix.setRotate(rotation, pivot.x, pivot.y)
+        val old = FloatArray(2)
+        old[0] = src.x
+        old[1] = src.y
+        matrix.mapPoints(old)
+        return PointF(old[0], old[1])
     }
 
     // 手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
