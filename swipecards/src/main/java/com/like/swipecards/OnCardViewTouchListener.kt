@@ -51,7 +51,7 @@ class OnCardViewTouchListener(
         cardView.getGlobalVisibleRect(this)
     }.top
 
-    // cardView 的当前坐标，不包含旋转引起的变化。
+    // cardView 的当前坐标。
     private var curCardViewX = 0f
     private var curCardViewY = 0f
 
