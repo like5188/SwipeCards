@@ -145,9 +145,11 @@ class OnCardViewTouchListener(
     // 滑动进度百分比
     private val absMoveProgressPercent: Float
         get() {
+            val dx = curRawX - downRawX
+            val dy = curRawY - downRawY
             var percent = when (moveDirection) {
-                0, 1, 2, 3 -> (curRawX - downRawX) / originCardViewWidth
-                else -> (curRawY - downRawY) / originCardViewWidth// 这里也除以窄边 originCardViewWidth，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
+                0, 1, 2, 3 -> dx / originCardViewWidth
+                else -> dy / originCardViewWidth// 这里也除以窄边 originCardViewWidth，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
             }
             if (percent > 1f) {
                 percent = 1f
