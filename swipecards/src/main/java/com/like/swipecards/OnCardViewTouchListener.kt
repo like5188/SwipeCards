@@ -64,7 +64,7 @@ class OnCardViewTouchListener(
     private var touchPosition = 0
 
     // 退出动画是否正在执行
-    private var isExitAnimRunning = AtomicBoolean(false)
+    private val isExitAnimRunning = AtomicBoolean(false)
 
     // 支持左右滑
     var isNeedSwipe = true
@@ -132,7 +132,7 @@ class OnCardViewTouchListener(
         }
 
     // 还原缩放的动画是否取消
-    private var resetScaleAnimCanceled = AtomicBoolean(false)
+    private val resetScaleAnimCanceled = AtomicBoolean(false)
 
     // 还原缩放动画
     private val resetScaleRunnable: Runnable = object : Runnable {
