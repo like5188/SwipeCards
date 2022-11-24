@@ -38,8 +38,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var scaleStep = 0.08f // view叠加缩放的步长
     var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大
 
-    var maxVisible = 4 // 值建议最小为4
-    var prefetchCount = 4// 预取数量，当数量小于此值时，触发加载数据的操作
+    private var maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+    var prefetchCount = 5// 预取数量，当数量小于此值时，触发加载数据的操作。建议为 maxVisible + 1，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
     var rotationDegrees = 20f // 最大旋转角度
     var isNeedSwipe: Boolean = true // 是否支持滑动
 
