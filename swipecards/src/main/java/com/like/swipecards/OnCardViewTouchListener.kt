@@ -75,12 +75,19 @@ class OnCardViewTouchListener(
     // 动画是否正在执行
     private val isAnimRunning = AtomicBoolean(false)
 
-    // 支持左右滑
+    /**
+     * 是否支持左右滑
+     */
     var isNeedSwipe = true
 
+    /**
+     * 动画执行时长
+     */
     var animDuration = 300L
 
-    // x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
+    /**
+     * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
+     */
     var borderPercent: Float = 0.5f
 
     // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
