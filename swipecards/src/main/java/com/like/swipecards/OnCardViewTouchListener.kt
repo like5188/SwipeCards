@@ -14,16 +14,12 @@ import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.tan
 
-
 /**
- * 单个卡片触摸监听处理
+ * 单个卡片视图触摸相关的处理
  *
  * @param rotationDegrees   滑动一个视图宽度时的最大旋转角度
  */
@@ -40,7 +36,6 @@ class OnCardViewTouchListener(
     private val halfCardViewWidth: Float = originCardViewWidth / 2f
     private val halfCardViewHeight: Float = originCardViewHeight / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
-    private val lifecycleScope = cardView.findViewTreeLifecycleOwner()?.lifecycleScope
 
     // 旋转中心点
     private val pivotPoint: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
@@ -156,9 +151,6 @@ class OnCardViewTouchListener(
         return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
     }
 
-    // 缩放操作任务
-    private var scaleJob: Job? = null
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         if (isExitAnimRunning.get()) {
@@ -183,8 +175,6 @@ class OnCardViewTouchListener(
                 // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                 cardView.animate().setListener(null)
                 cardView.animate().cancel()
-                scaleJob?.cancel()
-                scaleJob = null
 
                 downRawX = curRawX
                 downRawY = curRawY
@@ -333,16 +323,13 @@ class OnCardViewTouchListener(
      * @param zoom          true：放大；false：缩小；
      */
     private fun scaleWithAnimation(initScale: Float, zoom: Boolean) {
-        scaleJob?.cancel()
-        scaleJob = lifecycleScope?.launchWhenResumed {
-            ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
-                duration = animDuration
-                interpolator = LinearInterpolator()
-                addUpdateListener {
-                    flingListener.onScroll(moveDirection, it.animatedValue as Float)
-                }
-                start()
+        ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
+            duration = animDuration
+            interpolator = LinearInterpolator()
+            addUpdateListener {
+                flingListener.onScroll(moveDirection, it.animatedValue as Float)
             }
+            start()
         }
     }
 
