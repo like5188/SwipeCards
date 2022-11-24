@@ -200,7 +200,11 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 }
 
                 override fun onScroll(direction: Int, absProgress: Float) {
-                    adjustChildrenUnderTopView(absProgress)
+                    var scale = absProgress / scaleMax// 修正系数
+                    if (scale > 1f) {
+                        scale = 1f
+                    }
+                    adjustChildrenUnderTopView(scale)
                     onFlingListener?.onScroll(direction, absProgress)
                 }
 
@@ -229,16 +233,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             index = topViewIndex - 2
             level = 2
         }
-        var modifyScale = scale / scaleMax// 修正系数
-        if (modifyScale > 1f) {
-            modifyScale = 1f
-        }
+        val absScale = Math.abs(scale)
         while (index < topViewIndex) {
-            val yOffset = (yOffsetStep * (level - modifyScale)).toInt()
+            val yOffset = (yOffsetStep * (level - absScale)).toInt()
             val view = getChildAt(index)
             view.offsetTopAndBottom(yOffset - view.top + initTop)
-            view.scaleX = 1 - scaleStep * level + scaleStep * modifyScale
-            view.scaleY = 1 - scaleStep * level + scaleStep * modifyScale
+            view.scaleX = 1 - scaleStep * level + scaleStep * absScale
+            view.scaleY = 1 - scaleStep * level + scaleStep * absScale
             index++
             level--
         }
