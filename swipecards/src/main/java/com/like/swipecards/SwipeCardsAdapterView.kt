@@ -34,7 +34,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     //缩放层叠效果
     var yOffsetStep = 100 // view叠加垂直偏移量的步长
     var scaleStep = 0.08f // view叠加缩放的步长
-    var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大
+    var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大。[0f,1f]
 
     private var maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
     var prefetchCount = 5// 预取数量，当数量小于此值时，触发加载数据的操作。建议为 maxVisible + 1，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
