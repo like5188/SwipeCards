@@ -249,14 +249,12 @@ class OnCardViewTouchListener(
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
             val moveDirection = moveDirection
-            val zoom = if ((moveDirection == 1 || moveDirection == 3) && absMoveProgressPercent > borderPercent) {
+            if ((moveDirection == 1 || moveDirection == 3) && absMoveProgressPercent > borderPercent) {
                 // Left Swipe
                 exitWithAnimation(true, getExitPoint(true, event), animDuration, false)
-                true
             } else if ((moveDirection == 0 || moveDirection == 2) && absMoveProgressPercent > borderPercent) {
                 // Right Swipe
                 exitWithAnimation(false, getExitPoint(false, event), animDuration, false)
-                true
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = Math.abs(curCardViewX - originCardViewX)
@@ -271,11 +269,12 @@ class OnCardViewTouchListener(
                     .x(originCardViewX)
                     .y(originCardViewY)
                     .rotation(0f)
+                    .withStartAction {
+                        // 执行缩放动画
+                        scale(absMoveProgressPercent, false)
+                    }
                     .start()
-                false
             }
-            // 执行缩放动画
-            scale(absMoveProgressPercent, zoom)
         } else {
             // 如果不能滑动，就根据触摸坐标判断点击事件
             val pointerIndex = event.findPointerIndex(activePointerId)
@@ -330,6 +329,10 @@ class OnCardViewTouchListener(
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
+                .withStartAction {
+                    // 执行缩放动画
+                    scale(absMoveProgressPercent, true)
+                }
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         flingListener.onCardExited(moveDirection, data)
