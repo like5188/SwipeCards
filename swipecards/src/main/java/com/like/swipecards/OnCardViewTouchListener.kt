@@ -100,19 +100,6 @@ class OnCardViewTouchListener(
         return PointF(old[0], old[1])
     }
 
-    /**
-     * 指定y坐标时的最大滑动距离（角度为 rotationRadian 时的距离）
-     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的距离，在不同的 y 坐标时不一致。
-     */
-    private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
-        val offset = if (touchPosition == TOUCH_TOP_HALF) {
-            Math.abs((y - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
-        } else {
-            Math.abs((originCardViewRawY + originCardViewHeight - y) * Math.tan(rotationRadian)).toFloat()
-        }
-        return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
-    }
-
     // 手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
     private val moveDirection: Int
         get() {
@@ -141,7 +128,7 @@ class OnCardViewTouchListener(
             val dy = curRawY - downRawY
             var percent = when (moveDirection) {
                 0, 1, 2, 3 -> dx / maxMoveDistanceXByY
-                else -> dy / maxMoveDistanceXByY// 这里也除以窄边宽度，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
+                else -> dy / maxMoveDistanceXByY// 这里也除以窄边宽度，只有横向和纵向长度一致时，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
             }
             if (percent > 1f) {
                 percent = 1f
@@ -151,6 +138,19 @@ class OnCardViewTouchListener(
             }
             return Math.abs(percent)
         }
+
+    /**
+     * 指定y坐标时的最大滑动距离（角度为 rotationRadian 时的距离）
+     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的距离，在不同的 y 坐标时不一致。
+     */
+    private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
+        val offset = if (touchPosition == TOUCH_TOP_HALF) {
+            Math.abs((y - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
+        } else {
+            Math.abs((originCardViewRawY + originCardViewHeight - y) * Math.tan(rotationRadian)).toFloat()
+        }
+        return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
+    }
 
     // 缩放操作任务
     private var scaleJob: Job? = null
@@ -331,13 +331,7 @@ class OnCardViewTouchListener(
                 .translationY(exitPoint.y)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
-                        if (isLeft) {
-                            flingListener.onCardExited()
-                            flingListener.leftExit(data)
-                        } else {
-                            flingListener.onCardExited()
-                            flingListener.rightExit(data)
-                        }
+                        flingListener.onCardExited(moveDirection, data)
                         isExitAnimRunning.set(false)
                     }
                 })
@@ -411,11 +405,20 @@ class OnCardViewTouchListener(
     }
 
     interface FlingListener {
-        fun onCardExited()
-        fun leftExit(dataObject: Any?)
-        fun rightExit(dataObject: Any?)
-        fun onClick(event: MotionEvent?, v: View?, dataObject: Any?)
+        /**
+         * 滚动回调
+         *
+         * @param direction     手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
+         * @param absProgress   滑动进度百分比。最大宽度为视图宽度，参照物是视图的四个顶点（具体是哪个根据滑动方向确定）
+         */
         fun onScroll(direction: Int, absProgress: Float)
+
+        /**
+         * 视图完全离开屏幕时回调
+         */
+        fun onCardExited(direction: Int, dataObject: Any?)
+
+        fun onClick(event: MotionEvent?, v: View?, dataObject: Any?)
     }
 
     companion object {

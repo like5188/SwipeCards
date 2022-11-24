@@ -39,31 +39,25 @@ class MainActivity : AppCompatActivity() {
     private fun initView() {
         mBinding.swipeCardsAdapterView.isNeedSwipe = true
         mBinding.swipeCardsAdapterView.onFlingListener = object : SwipeCardsAdapterView.OnFlingListener {
-            override fun removeFirstObjectInAdapter() {
-                this@MainActivity.myAdapter.remove(0)
-            }
-
-            override fun onExitFromLeft(dataObject: Any?) {
-                Toast.makeText(this@MainActivity, "onExitFromLeft", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onExitFromRight(dataObject: Any?) {
-                Toast.makeText(this@MainActivity, "onExitFromRight", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onAdapterAboutToEmpty(itemsInAdapter: Int) {
-                if (itemsInAdapter == 0) {
-                    loadData()
-                }
+            override fun onLoadData() {
+                loadData()
             }
 
             override fun onScroll(direction: Int, absProgress: Float) {
                 Log.v("TAG", "onScroll direction=$direction absProgress=$absProgress")
             }
-        }
-        mBinding.swipeCardsAdapterView.onItemClickListener = object : SwipeCardsAdapterView.OnItemClickListener {
-            override fun onItemClick(event: MotionEvent?, v: View?, dataObject: Any?) {
-                Toast.makeText(this@MainActivity, "onItemClick", Toast.LENGTH_SHORT).show()
+
+            override fun onCardExited(direction: Int, dataObject: Any?) {
+                myAdapter.remove(0)
+                if (direction == 1 || direction == 3) {
+                    Toast.makeText(this@MainActivity, "leftExit", Toast.LENGTH_SHORT).show()
+                } else if (direction == 0 || direction == 2) {
+                    Toast.makeText(this@MainActivity, "rightExit", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onClick(event: MotionEvent?, v: View?, dataObject: Any?) {
+                Toast.makeText(this@MainActivity, "onClick", Toast.LENGTH_SHORT).show()
             }
         }
         mBinding.swipeCardsAdapterView.setAdapter(myAdapter)

@@ -39,12 +39,11 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大
 
     var maxVisible = 4 // 值建议最小为4
-    var minAdapterStack = 6
+    var prefetchCount = 4// 预取数量，当数量小于此值时，触发加载数据的操作
     var rotationDegrees = 20f // 最大旋转角度
     var isNeedSwipe: Boolean = true // 是否支持滑动
 
     var onFlingListener: OnFlingListener? = null
-    var onItemClickListener: OnItemClickListener? = null
 
     override fun getSelectedView(): View? {
         return topView
@@ -81,8 +80,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 initLeft = this.left
             }
         }
-        if (adapterCount < minAdapterStack) {// 通知添加数据
-            onFlingListener?.onAdapterAboutToEmpty(adapterCount)
+        if (adapterCount < prefetchCount) {// 通知添加数据
+            onFlingListener?.onLoadData()
         }
     }
 
@@ -181,22 +180,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private fun setTopView() {
         topView = getChildAt(topViewIndex)?.also { view ->
             onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
-                override fun onCardExited() {
+                override fun onCardExited(direction: Int, dataObject: Any?) {
                     removeViewInLayout(view)
                     topView = null
-                    onFlingListener?.removeFirstObjectInAdapter()
-                }
-
-                override fun leftExit(dataObject: Any?) {
-                    onFlingListener?.onExitFromLeft(dataObject)
-                }
-
-                override fun rightExit(dataObject: Any?) {
-                    onFlingListener?.onExitFromRight(dataObject)
+                    onFlingListener?.onCardExited(direction, dataObject)
                 }
 
                 override fun onClick(event: MotionEvent?, v: View?, dataObject: Any?) {
-                    onItemClickListener?.onItemClick(event, v, dataObject)
+                    onFlingListener?.onClick(event, v, dataObject)
                 }
 
                 override fun onScroll(direction: Int, absProgress: Float) {
@@ -291,16 +282,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    interface OnItemClickListener {
-        fun onItemClick(event: MotionEvent?, v: View?, dataObject: Any?)
-    }
-
-    interface OnFlingListener {
-        fun removeFirstObjectInAdapter()
-        fun onExitFromLeft(dataObject: Any?)
-        fun onExitFromRight(dataObject: Any?)
-        fun onAdapterAboutToEmpty(itemsInAdapter: Int)
-        fun onScroll(direction: Int, absProgress: Float)
+    interface OnFlingListener : FlingListener {
+        fun onLoadData()
     }
 
 }
