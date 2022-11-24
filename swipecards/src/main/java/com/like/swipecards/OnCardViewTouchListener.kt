@@ -13,6 +13,10 @@ import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -33,6 +37,7 @@ class OnCardViewTouchListener(
     private val halfCardViewWidth: Float = originCardViewWidth / 2f
     private val halfCardViewHeight: Float = originCardViewHeight / 2f
     private val parentWidth: Int = (cardView.parent as ViewGroup).width
+    private val lifecycleScope = cardView.findViewTreeLifecycleOwner()?.lifecycleScope
 
     // 旋转中心点
     private val pivotPoint: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
@@ -82,7 +87,6 @@ class OnCardViewTouchListener(
     var isNeedSwipe = true
 
     private val animDuration = 300L
-    private var scale = 0f
 
     // x 轴方向上的左边界
     private val leftBorderX: Float = parentWidth / 2f
@@ -159,21 +163,8 @@ class OnCardViewTouchListener(
             return Math.abs(percent)
         }
 
-    // 还原缩放的动画是否取消
-    private val resetScaleAnimCanceled = AtomicBoolean(false)
-
-    // 还原缩放动画
-    private val resetScaleRunnable: Runnable = object : Runnable {
-        override fun run() {
-            // 在 SwipeCardsAdapterView 中会处理底层的所有视图的缩放
-            flingListener.onScroll(moveDirection, scale)
-            if (scale > 0 && !resetScaleAnimCanceled.get()) {
-                scale -= 0.1f
-                if (scale < 0) scale = 0f
-                cardView.postDelayed(this, animDuration / 20)
-            }
-        }
-    }
+    // 缩放操作任务
+    private var scaleJob: Job? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
@@ -199,7 +190,8 @@ class OnCardViewTouchListener(
                 // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
                 cardView.animate().setListener(null)
                 cardView.animate().cancel()
-                resetScaleAnimCanceled.set(true)
+                scaleJob?.cancel()
+                scaleJob = null
 
                 downRawX = curRawX
                 downRawY = curRawY
@@ -276,14 +268,14 @@ class OnCardViewTouchListener(
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
             val isLeft = curCardViewX < originCardViewX
-            if (isMovedBeyondLeftBorder) {
+            val zoom = if (isMovedBeyondLeftBorder) {
                 // Left Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
-                flingListener.onScroll(1, 1f)
+                true
             } else if (isMovedBeyondRightBorder) {
                 // Right Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
-                flingListener.onScroll(0, 1f)
+                true
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = Math.abs(curCardViewX - originCardViewX)
@@ -299,12 +291,11 @@ class OnCardViewTouchListener(
                     .y(originCardViewY)
                     .rotation(0f)
                     .start()
-                // 还原缩放动画
-                if (resetScaleAnimCanceled.compareAndSet(true, false)) {
-                    scale = absMoveProgressPercent
-                    cardView.post(resetScaleRunnable)
-                }
+                false
             }
+            // 执行缩放动画
+            scale(absMoveProgressPercent, zoom)
+
             curCardViewX = 0f
             curCardViewY = 0f
             downX = 0f
@@ -318,6 +309,36 @@ class OnCardViewTouchListener(
             val distanceY = Math.abs(event.getY(pointerIndex) - downY)
             if (distanceX < 4 && distanceY < 4) {
                 flingListener.onClick(event, cardView, data)
+            }
+        }
+    }
+
+    /**
+     * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作
+     * @param initScale     初始缩放系数
+     * @param zoom          true：放大；false：缩小；
+     */
+    private fun scale(initScale: Float, zoom: Boolean) {
+        scaleJob?.cancel()
+        scaleJob = lifecycleScope?.launchWhenResumed {
+            var scale = initScale
+            if (zoom) {// 放大
+                while (scale < 1) {
+                    scale += 0.1f
+                    if (scale > 1) scale = 1f
+                    flingListener.onScroll(moveDirection, scale)
+                    // 这里必须用 animDuration 作被除数，因为滑出动画 exitWithAnimation 使用的也是这个值。
+                    // 而滑出动画执行完毕后，会导致 SwipeCardsAdapterView 执行 requestLayout，重新 onLayout，
+                    // 如果缩放动画此时还未完成的话，就会受到影响。
+                    delay(animDuration / 20)
+                }
+            } else {// 缩小
+                while (scale > 0) {
+                    scale -= 0.1f
+                    if (scale < 0) scale = 0f
+                    flingListener.onScroll(moveDirection, scale)
+                    delay(animDuration / 20)
+                }
             }
         }
     }
