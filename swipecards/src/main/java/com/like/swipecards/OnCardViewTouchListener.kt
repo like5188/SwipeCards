@@ -18,6 +18,8 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
+import kotlin.math.tan
 
 
 /**
@@ -108,7 +110,7 @@ class OnCardViewTouchListener(
             val dx = curRawX - downRawX
             val dy = curRawY - downRawY
             return when {
-                Math.abs(dx) >= Math.abs(dy) -> {// 水平滑动
+                abs(dx) >= abs(dy) -> {// 水平滑动
                     if (dx >= 0) {
                         if (touchPart == TOUCH_PART_TOP_HALF) DIRECTION_TOP_HALF_RIGHT else DIRECTION_BOTTOM_HALF_RIGHT
                     } else {
@@ -138,7 +140,7 @@ class OnCardViewTouchListener(
             if (percent < -1f) {
                 percent = -1f
             }
-            return Math.abs(percent)
+            return abs(percent)
         }
 
     /**
@@ -147,9 +149,9 @@ class OnCardViewTouchListener(
      */
     private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
         val offset = if (touchPart == TOUCH_PART_TOP_HALF) {
-            Math.abs((y - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
+            abs((y - originCardViewRawY) * tan(rotationRadian)).toFloat()
         } else {
-            Math.abs((originCardViewRawY + originCardViewHeight - y) * Math.tan(rotationRadian)).toFloat()
+            abs((originCardViewRawY + originCardViewHeight - y) * tan(rotationRadian)).toFloat()
         }
         return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
     }
@@ -259,8 +261,8 @@ class OnCardViewTouchListener(
                 exitWithAnimation(false, getExitPoint(false, event), animDuration, false)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
-                val distanceX = Math.abs(curCardViewX - originCardViewX)
-                val distanceY = Math.abs(curCardViewY - originCardViewY)
+                val distanceX = abs(curCardViewX - originCardViewX)
+                val distanceY = abs(curCardViewY - originCardViewY)
                 if (distanceX < 4 && distanceY < 4) {
                     flingListener.onClick(event, cardView, data)
                 }
@@ -280,8 +282,8 @@ class OnCardViewTouchListener(
         } else {
             // 如果不能滑动，就根据触摸坐标判断点击事件
             val pointerIndex = event.findPointerIndex(activePointerId)
-            val distanceX = Math.abs(event.getX(pointerIndex) - downX)
-            val distanceY = Math.abs(event.getY(pointerIndex) - downY)
+            val distanceX = abs(event.getX(pointerIndex) - downX)
+            val distanceY = abs(event.getY(pointerIndex) - downY)
             if (distanceX < 4 && distanceY < 4) {
                 flingListener.onClick(event, cardView, data)
             }
@@ -373,7 +375,7 @@ class OnCardViewTouchListener(
         } else {// 如果是单击飞出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
             getNewPointByRotation(rotation = rotationDegrees)
         }
-        val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
+        val distanceXByRotation = abs(newPointByRotation.x - originCardViewX)
         // 求 exitPoint 需要在x方向的平移距离
         val translationX = if (isLeft) {
             -(originCardViewX + originCardViewWidth) - distanceXByRotation
