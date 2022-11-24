@@ -88,19 +88,8 @@ class OnCardViewTouchListener(
 
     private val animDuration = 300L
 
-    // x 轴方向上的左边界
-    private val leftBorderX: Float = parentWidth / 2f
-
-    // x 轴方向上的右边界
-    private val rightBorderX: Float = parentWidth / 2f
-
-    // 是否左滑超出了左边界
-    private val isMovedBeyondLeftBorder: Boolean
-        get() = rightTopPoint.x - getDistanceXByMoveAndRotation(rightTopPoint) < leftBorderX
-
-    // 是否右滑超出了右边界
-    private val isMovedBeyondRightBorder: Boolean
-        get() = leftTopPoint.x + getDistanceXByMoveAndRotation(leftTopPoint) > rightBorderX
+    // x 轴方向上的边界百分比
+    private val borderPercent: Float = 0.5f
 
     // 指定点在 x 轴方向上通过移动和旋转造成的位移
     private fun getDistanceXByMoveAndRotation(point: PointF): Float {
@@ -274,11 +263,11 @@ class OnCardViewTouchListener(
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
             val isLeft = curCardViewX < originCardViewX
-            val zoom = if (isMovedBeyondLeftBorder) {
+            val zoom = if (isLeft && absMoveProgressPercent > borderPercent) {
                 // Left Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
                 true
-            } else if (isMovedBeyondRightBorder) {
+            } else if (!isLeft && absMoveProgressPercent > borderPercent) {
                 // Right Swipe
                 exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
                 true
