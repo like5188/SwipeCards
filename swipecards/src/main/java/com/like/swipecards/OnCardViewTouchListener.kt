@@ -70,7 +70,7 @@ class OnCardViewTouchListener(
     /**
      * 触摸的位置。参考 [TOUCH_PART_TOP_HALF]、[TOUCH_PART_BOTTOM_HALF]
      */
-    private var touchPart = 0
+    private var touchPart = TOUCH_PART_TOP_HALF
 
     // 动画是否正在执行
     private val isAnimRunning = AtomicBoolean(false)
@@ -80,7 +80,7 @@ class OnCardViewTouchListener(
 
     var animDuration = 300L
 
-    // x 轴方向上的边界百分比，相对于 left 或者 right
+    // x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
     var borderPercent: Float = 0.5f
 
     // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
