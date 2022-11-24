@@ -288,7 +288,8 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作
+     * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作。
+     * 这个缩放操作是为了在手指离开屏幕后，补充完成进度回调
      * @param initScale     初始缩放系数
      * @param zoom          true：放大；false：缩小；
      */
