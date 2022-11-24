@@ -72,8 +72,8 @@ class OnCardViewTouchListener(
      */
     private var touchPart = 0
 
-    // 退出动画是否正在执行
-    private val isExitAnimRunning = AtomicBoolean(false)
+    // 动画是否正在执行
+    private val isAnimRunning = AtomicBoolean(false)
 
     // 支持左右滑
     var isNeedSwipe = true
@@ -153,7 +153,7 @@ class OnCardViewTouchListener(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        if (isExitAnimRunning.get()) {
+        if (isAnimRunning.get()) {
             return true
         }
         curRawX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -172,9 +172,6 @@ class OnCardViewTouchListener(
                 if (activePointerId != INVALID_POINTER_ID) {
                     return true
                 }
-                // remove the listener because 'onAnimationEnd' will still be called if we cancel the animation.
-                cardView.animate().setListener(null)
-                cardView.animate().cancel()
 
                 downRawX = curRawX
                 downRawY = curRawY
@@ -274,17 +271,24 @@ class OnCardViewTouchListener(
      * 执行回弹动画
      */
     private fun resetWithAnimation() {
-        cardView.animate()
-            .setDuration(animDuration)
-            .setInterpolator(OvershootInterpolator(1.5f))
-            .x(originCardViewX)
-            .y(originCardViewY)
-            .rotation(0f)
-            .withStartAction {
-                // 执行缩放动画
-                scaleWithAnimation(absMoveProgressPercent, false)
-            }
-            .start()
+        if (isAnimRunning.compareAndSet(false, true)) {
+            cardView.animate()
+                .setDuration(animDuration)
+                .setInterpolator(OvershootInterpolator(1.5f))
+                .x(originCardViewX)
+                .y(originCardViewY)
+                .rotation(0f)
+                .withStartAction {
+                    // 执行缩放动画
+                    scaleWithAnimation(absMoveProgressPercent, false)
+                }
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        isAnimRunning.set(false)
+                    }
+                })
+                .start()
+        }
     }
 
     /**
@@ -293,7 +297,7 @@ class OnCardViewTouchListener(
      * @param byClick   是否单击事件引起的
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean) {
-        if (isExitAnimRunning.compareAndSet(false, true)) {
+        if (isAnimRunning.compareAndSet(false, true)) {
             val animator = cardView.animate()
                 .setDuration(animDuration)
                 .setInterpolator(LinearInterpolator())
@@ -306,7 +310,7 @@ class OnCardViewTouchListener(
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         flingListener.onCardExited(moveDirection, data)
-                        isExitAnimRunning.set(false)
+                        isAnimRunning.set(false)
                     }
                 })
             if (byClick) {
