@@ -125,6 +125,19 @@ class OnCardViewTouchListener(
         return PointF(old[0], old[1])
     }
 
+    /**
+     * 指定y坐标时的最大滑动距离（角度为 rotationRadian 时的距离）
+     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的距离，在不同的 y 坐标时不一致。
+     */
+    private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
+        val offset = if (touchPosition == TOUCH_TOP_HALF) {
+            Math.abs((y - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
+        } else {
+            Math.abs((originCardViewRawY + originCardViewHeight - y) * Math.tan(rotationRadian)).toFloat()
+        }
+        return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
+    }
+
     // 手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
     private val moveDirection: Int
         get() {
@@ -148,11 +161,12 @@ class OnCardViewTouchListener(
     // 滑动进度百分比
     private val absMoveProgressPercent: Float
         get() {
+            val maxMoveDistanceXByY = getMaxMoveDistanceXByY()
             val dx = curRawX - downRawX
             val dy = curRawY - downRawY
             var percent = when (moveDirection) {
-                0, 1, 2, 3 -> dx / originCardViewWidth
-                else -> dy / originCardViewWidth// 这里也除以窄边 originCardViewWidth，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
+                0, 1, 2, 3 -> dx / maxMoveDistanceXByY
+                else -> dy / maxMoveDistanceXByY// 这里也除以窄边宽度，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
             }
             if (percent > 1f) {
                 percent = 1f
@@ -225,15 +239,7 @@ class OnCardViewTouchListener(
                 curCardViewY += dy
 
                 // 根据滑动距离计算旋转角度
-                // 修正由于手指触摸点的 y 坐标不一致，那么水平滑动到某一目标点（最大角度时的点）所需要的滑动距离不一致，那么就需要修正这个差距使得滑动到最大角度时，都是 rotationDegrees 度。
-                val offset = if (touchPosition == TOUCH_TOP_HALF) {
-                    Math.abs((downRawY - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
-                } else {
-                    Math.abs((originCardViewRawY + originCardViewHeight - downRawY) * Math.tan(rotationRadian)).toFloat()
-                }
-                val maxMoveDistanceX = originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
-                val moveDistanceX = curRawX - downRawX// 需要所见即所得
-                var rotation = rotationDegrees * moveDistanceX / maxMoveDistanceX
+                var rotation = (curRawX - downRawX) / getMaxMoveDistanceXByY() * rotationDegrees
                 if (touchPosition == TOUCH_BOTTOM_HALF) {
                     rotation = -rotation
                 }
