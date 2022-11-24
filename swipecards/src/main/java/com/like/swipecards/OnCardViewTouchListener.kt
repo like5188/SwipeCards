@@ -281,26 +281,6 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作。
-     * 这个缩放操作是为了在手指离开屏幕后，补充完成进度回调
-     * @param initScale     初始缩放系数
-     * @param zoom          true：放大；false：缩小；
-     */
-    private fun scaleWithAnimation(initScale: Float, zoom: Boolean) {
-        scaleJob?.cancel()
-        scaleJob = lifecycleScope?.launchWhenResumed {
-            ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
-                duration = animDuration
-                interpolator = LinearInterpolator()
-                addUpdateListener {
-                    flingListener.onScroll(moveDirection, it.animatedValue as Float)
-                }
-                start()
-            }
-        }
-    }
-
-    /**
      * 执行回弹动画
      */
     private fun resetWithAnimation() {
@@ -343,6 +323,26 @@ class OnCardViewTouchListener(
                 animator.rotation(if (isLeft) -rotationDegrees else rotationDegrees)
             }
             animator.start()
+        }
+    }
+
+    /**
+     * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作。
+     * 这个缩放操作是为了在手指离开屏幕后，补充完成进度回调
+     * @param initScale     初始缩放系数
+     * @param zoom          true：放大；false：缩小；
+     */
+    private fun scaleWithAnimation(initScale: Float, zoom: Boolean) {
+        scaleJob?.cancel()
+        scaleJob = lifecycleScope?.launchWhenResumed {
+            ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
+                duration = animDuration
+                interpolator = LinearInterpolator()
+                addUpdateListener {
+                    flingListener.onScroll(moveDirection, it.animatedValue as Float)
+                }
+                start()
+            }
         }
     }
 
