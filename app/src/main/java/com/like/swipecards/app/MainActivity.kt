@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import com.like.swipecards.OnCardViewTouchListener
 import com.like.swipecards.SwipeCardsAdapterView
 import com.like.swipecards.app.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
@@ -49,9 +50,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onCardExited(direction: Int, dataObject: Any?) {
                 myAdapter.remove(0)
-                if (direction == 1 || direction == 3) {
+                if (direction == OnCardViewTouchListener.DIRECTION_TOP_HALF_LEFT || direction == OnCardViewTouchListener.DIRECTION_BOTTOM_HALF_LEFT) {
                     Toast.makeText(this@MainActivity, "leftExit", Toast.LENGTH_SHORT).show()
-                } else if (direction == 0 || direction == 2) {
+                } else if (direction == OnCardViewTouchListener.DIRECTION_TOP_HALF_RIGHT || direction == OnCardViewTouchListener.DIRECTION_BOTTOM_HALF_RIGHT) {
                     Toast.makeText(this@MainActivity, "rightExit", Toast.LENGTH_SHORT).show()
                 }
             }

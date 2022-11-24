@@ -70,9 +70,9 @@ class OnCardViewTouchListener(
     private var activePointerId = INVALID_POINTER_ID
 
     /**
-     * 触摸的位置。参考 [TOUCH_TOP_HALF]、[TOUCH_BOTTOM_HALF]
+     * 触摸的位置。参考 [TOUCH_PART_TOP_HALF]、[TOUCH_PART_BOTTOM_HALF]
      */
-    private var touchPosition = 0
+    private var touchPart = 0
 
     // 退出动画是否正在执行
     private val isExitAnimRunning = AtomicBoolean(false)
@@ -100,7 +100,7 @@ class OnCardViewTouchListener(
         return PointF(old[0], old[1])
     }
 
-    // 手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
+    // 手指滑动方向。
     private val moveDirection: Int
         get() {
             // 这里不能使用 curCardViewX - originCardViewX 来计算 dx，因为需要包含旋转，即屏幕上看到的滑动和手指的滑动一致。而 curCardViewX 不包含。
@@ -109,13 +109,13 @@ class OnCardViewTouchListener(
             return when {
                 Math.abs(dx) >= Math.abs(dy) -> {// 水平滑动
                     if (dx >= 0) {
-                        if (touchPosition == TOUCH_TOP_HALF) 0 else 2
+                        if (touchPart == TOUCH_PART_TOP_HALF) DIRECTION_TOP_HALF_RIGHT else DIRECTION_BOTTOM_HALF_RIGHT
                     } else {
-                        if (touchPosition == TOUCH_TOP_HALF) 1 else 3
+                        if (touchPart == TOUCH_PART_TOP_HALF) DIRECTION_TOP_HALF_LEFT else DIRECTION_BOTTOM_HALF_LEFT
                     }
                 }
                 else -> {// 垂直滑动
-                    if (dy >= 0) 5 else 4
+                    if (dy >= 0) DIRECTION_DOWN else DIRECTION_UP
                 }
             }
         }
@@ -127,7 +127,8 @@ class OnCardViewTouchListener(
             val dx = curRawX - downRawX
             val dy = curRawY - downRawY
             var percent = when (moveDirection) {
-                0, 1, 2, 3 -> dx / maxMoveDistanceXByY
+                DIRECTION_TOP_HALF_RIGHT, DIRECTION_TOP_HALF_LEFT,
+                DIRECTION_BOTTOM_HALF_RIGHT, DIRECTION_BOTTOM_HALF_LEFT -> dx / maxMoveDistanceXByY
                 else -> dy / maxMoveDistanceXByY// 这里也除以窄边宽度，只有横向和纵向长度一致时，才能使从水平滑动变为垂直滑动时，scale 不跳跃。
             }
             if (percent > 1f) {
@@ -144,7 +145,7 @@ class OnCardViewTouchListener(
      * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的距离，在不同的 y 坐标时不一致。
      */
     private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
-        val offset = if (touchPosition == TOUCH_TOP_HALF) {
+        val offset = if (touchPart == TOUCH_PART_TOP_HALF) {
             Math.abs((y - originCardViewRawY) * Math.tan(rotationRadian)).toFloat()
         } else {
             Math.abs((originCardViewRawY + originCardViewHeight - y) * Math.tan(rotationRadian)).toFloat()
@@ -195,10 +196,10 @@ class OnCardViewTouchListener(
                 curCardViewX = cardView.x
                 curCardViewY = cardView.y
 
-                touchPosition = if (y < originCardViewHeight / 2) {
-                    TOUCH_TOP_HALF
+                touchPart = if (y < originCardViewHeight / 2) {
+                    TOUCH_PART_TOP_HALF
                 } else {
-                    TOUCH_BOTTOM_HALF
+                    TOUCH_PART_BOTTOM_HALF
                 }
             }
             MotionEvent.ACTION_MOVE -> {
@@ -215,7 +216,7 @@ class OnCardViewTouchListener(
 
                 // 根据滑动距离计算旋转角度
                 var rotation = (curRawX - downRawX) / getMaxMoveDistanceXByY() * rotationDegrees
-                if (touchPosition == TOUCH_BOTTOM_HALF) {
+                if (touchPart == TOUCH_PART_BOTTOM_HALF) {
                     rotation = -rotation
                 }
 
@@ -249,10 +250,10 @@ class OnCardViewTouchListener(
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
             val moveDirection = moveDirection
-            if ((moveDirection == 1 || moveDirection == 3) && absMoveProgressPercent > borderPercent) {
+            if ((moveDirection == DIRECTION_TOP_HALF_LEFT || moveDirection == DIRECTION_BOTTOM_HALF_LEFT) && absMoveProgressPercent > borderPercent) {
                 // Left Swipe
                 exitWithAnimation(true, getExitPoint(true, event), animDuration, false)
-            } else if ((moveDirection == 0 || moveDirection == 2) && absMoveProgressPercent > borderPercent) {
+            } else if ((moveDirection == DIRECTION_TOP_HALF_RIGHT || moveDirection == DIRECTION_BOTTOM_HALF_RIGHT) && absMoveProgressPercent > borderPercent) {
                 // Right Swipe
                 exitWithAnimation(false, getExitPoint(false, event), animDuration, false)
             } else {
@@ -412,7 +413,13 @@ class OnCardViewTouchListener(
         /**
          * 滚动回调
          *
-         * @param direction     手指滑动方向。0：上半部分往右滑；1：上半部分往左滑；2：下半部分往右滑；3：下半部分往左滑；4：上滑；5：下滑
+         * @param direction     手指滑动方向。
+         * [DIRECTION_TOP_HALF_RIGHT]、
+         * [DIRECTION_TOP_HALF_LEFT]、
+         * [DIRECTION_BOTTOM_HALF_RIGHT]、
+         * [DIRECTION_BOTTOM_HALF_LEFT]、
+         * [DIRECTION_UP]、
+         * [DIRECTION_DOWN]
          * @param absProgress   滑动进度百分比。最大宽度为视图宽度，参照物是视图的四个顶点（具体是哪个根据滑动方向确定）
          */
         fun onScroll(direction: Int, absProgress: Float)
@@ -429,10 +436,40 @@ class OnCardViewTouchListener(
         private const val INVALID_POINTER_ID = -1
 
         // 触摸了视图的上半部分
-        private const val TOUCH_TOP_HALF = 0
+        private const val TOUCH_PART_TOP_HALF = 0
 
         // 触摸了视图的下半部分
-        private const val TOUCH_BOTTOM_HALF = 1
+        private const val TOUCH_PART_BOTTOM_HALF = 1
+
+        /**
+         * 上半部分往右滑
+         */
+        const val DIRECTION_TOP_HALF_RIGHT = 0
+
+        /**
+         * 上半部分往左滑
+         */
+        const val DIRECTION_TOP_HALF_LEFT = 1
+
+        /**
+         * 下半部分往右滑
+         */
+        const val DIRECTION_BOTTOM_HALF_RIGHT = 2
+
+        /**
+         * 下半部分往左滑
+         */
+        const val DIRECTION_BOTTOM_HALF_LEFT = 3
+
+        /**
+         * 上滑
+         */
+        const val DIRECTION_UP = 4
+
+        /**
+         * 下滑
+         */
+        const val DIRECTION_DOWN = 5
     }
 
 }
