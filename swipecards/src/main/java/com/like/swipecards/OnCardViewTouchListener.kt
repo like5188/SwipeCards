@@ -255,10 +255,10 @@ class OnCardViewTouchListener(
             val moveDirection = moveDirection
             if ((moveDirection == DIRECTION_TOP_HALF_LEFT || moveDirection == DIRECTION_BOTTOM_HALF_LEFT) && absMoveProgressPercent > borderPercent) {
                 // Left Swipe
-                exitWithAnimation(true, getExitPoint(true, event), animDuration, false)
+                exitWithAnimation(true, getExitPoint(true, event), false)
             } else if ((moveDirection == DIRECTION_TOP_HALF_RIGHT || moveDirection == DIRECTION_BOTTOM_HALF_RIGHT) && absMoveProgressPercent > borderPercent) {
                 // Right Swipe
-                exitWithAnimation(false, getExitPoint(false, event), animDuration, false)
+                exitWithAnimation(false, getExitPoint(false, event), false)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = abs(curCardViewX - originCardViewX)
@@ -267,17 +267,7 @@ class OnCardViewTouchListener(
                     flingListener.onClick(event, cardView, data)
                 }
                 // 回弹到初始位置
-                cardView.animate()
-                    .setDuration(animDuration)
-                    .setInterpolator(OvershootInterpolator(1.5f))
-                    .x(originCardViewX)
-                    .y(originCardViewY)
-                    .rotation(0f)
-                    .withStartAction {
-                        // 执行缩放动画
-                        scaleWithAnimation(absMoveProgressPercent, false)
-                    }
-                    .start()
+                resetWithAnimation()
             }
         } else {
             // 如果不能滑动，就根据触摸坐标判断点击事件
@@ -288,6 +278,23 @@ class OnCardViewTouchListener(
                 flingListener.onClick(event, cardView, data)
             }
         }
+    }
+
+    /**
+     * 执行回弹动画
+     */
+    private fun resetWithAnimation() {
+        cardView.animate()
+            .setDuration(animDuration)
+            .setInterpolator(OvershootInterpolator(1.5f))
+            .x(originCardViewX)
+            .y(originCardViewY)
+            .rotation(0f)
+            .withStartAction {
+                // 执行缩放动画
+                scaleWithAnimation(absMoveProgressPercent, false)
+            }
+            .start()
     }
 
     /**
@@ -313,10 +320,10 @@ class OnCardViewTouchListener(
      *
      * @param byClick   是否单击事件引起的
      */
-    private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, duration: Long, byClick: Boolean) {
+    private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean) {
         if (isExitAnimRunning.compareAndSet(false, true)) {
             val animator = cardView.animate()
-                .setDuration(duration)
+                .setDuration(animDuration)
                 .setInterpolator(LinearInterpolator())
                 .translationX(exitPoint.x)
                 .translationY(exitPoint.y)
@@ -341,28 +348,14 @@ class OnCardViewTouchListener(
      * 单击触发往左滑出的动画
      */
     fun exitFromLeft() {
-        exitFromLeft(animDuration)
-    }
-
-    /**
-     * 单击触发往左滑出的动画
-     */
-    fun exitFromLeft(duration: Long) {
-        exitWithAnimation(true, getExitPoint(true, null), duration, true)
+        exitWithAnimation(true, getExitPoint(true, null), true)
     }
 
     /**
      * 单击触发往右滑出的动画
      */
     fun exitFromRight() {
-        exitFromRight(animDuration)
-    }
-
-    /**
-     * 单击触发往右滑出的动画
-     */
-    fun exitFromRight(duration: Long) {
-        exitWithAnimation(false, getExitPoint(false, null), duration, true)
+        exitWithAnimation(false, getExitPoint(false, null), true)
     }
 
     /**
