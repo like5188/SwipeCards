@@ -27,7 +27,7 @@ class OnCardViewTouchListener(
     private val cardView: View,
     private val data: Any?,
     private val rotationDegrees: Float,
-    private val flingListener: FlingListener
+    private val onSwipeListener: OnSwipeListener
 ) : OnTouchListener {
     private val originCardViewX: Float = cardView.x
     private val originCardViewY: Float = cardView.y
@@ -215,7 +215,7 @@ class OnCardViewTouchListener(
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
                     cardView.rotation = rotation
-                    flingListener.onScroll(moveDirection, absMoveProgressPercent)
+                    onSwipeListener.onScroll(moveDirection, absMoveProgressPercent)
                 }
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
@@ -251,7 +251,7 @@ class OnCardViewTouchListener(
                 val distanceX = abs(curCardViewX - originCardViewX)
                 val distanceY = abs(curCardViewY - originCardViewY)
                 if (distanceX < 4 && distanceY < 4) {
-                    flingListener.onClick(event, cardView, data)
+                    onSwipeListener.onClick(cardView, data)
                 }
                 // 回弹到初始位置
                 resetWithAnimation()
@@ -262,7 +262,7 @@ class OnCardViewTouchListener(
             val distanceX = abs(event.getX(pointerIndex) - downX)
             val distanceY = abs(event.getY(pointerIndex) - downY)
             if (distanceX < 4 && distanceY < 4) {
-                flingListener.onClick(event, cardView, data)
+                onSwipeListener.onClick(cardView, data)
             }
         }
     }
@@ -309,7 +309,7 @@ class OnCardViewTouchListener(
                 }
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
-                        flingListener.onCardExited(moveDirection, data)
+                        onSwipeListener.onCardExited(moveDirection, data)
                         isAnimRunning.set(false)
                     }
                 })
@@ -331,7 +331,7 @@ class OnCardViewTouchListener(
             duration = animDuration
             interpolator = LinearInterpolator()
             addUpdateListener {
-                flingListener.onScroll(moveDirection, it.animatedValue as Float)
+                onSwipeListener.onScroll(moveDirection, it.animatedValue as Float)
             }
             start()
         }
@@ -383,29 +383,6 @@ class OnCardViewTouchListener(
             0f
         }.toFloat()
         return PointF(translationX, translationY)
-    }
-
-    interface FlingListener {
-        /**
-         * 滚动回调
-         *
-         * @param direction     手指滑动方向。
-         * [DIRECTION_TOP_HALF_RIGHT]、
-         * [DIRECTION_TOP_HALF_LEFT]、
-         * [DIRECTION_BOTTOM_HALF_RIGHT]、
-         * [DIRECTION_BOTTOM_HALF_LEFT]、
-         * [DIRECTION_UP]、
-         * [DIRECTION_DOWN]
-         * @param absProgress   滑动进度百分比。最大宽度为视图宽度，参照物是视图的四个顶点（具体是哪个根据滑动方向确定）
-         */
-        fun onScroll(direction: Int, absProgress: Float)
-
-        /**
-         * 视图完全离开屏幕时回调
-         */
-        fun onCardExited(direction: Int, dataObject: Any?)
-
-        fun onClick(event: MotionEvent?, v: View?, dataObject: Any?)
     }
 
     companion object {

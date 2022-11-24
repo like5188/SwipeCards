@@ -3,7 +3,6 @@ package com.like.swipecards.app
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -13,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.like.swipecards.OnCardViewTouchListener
-import com.like.swipecards.SwipeCardsAdapterView
+import com.like.swipecards.OnSwipeListener
 import com.like.swipecards.app.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         mBinding.swipeCardsAdapterView.isNeedSwipe = true
-        mBinding.swipeCardsAdapterView.onFlingListener = object : SwipeCardsAdapterView.OnFlingListener {
+        mBinding.swipeCardsAdapterView.onSwipeListener = object : OnSwipeListener {
             override fun onLoadData() {
                 loadData()
             }
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onClick(event: MotionEvent?, v: View?, dataObject: Any?) {
+            override fun onClick(v: View?, dataObject: Any?) {
                 Toast.makeText(this@MainActivity, "onClick", Toast.LENGTH_SHORT).show()
             }
         }

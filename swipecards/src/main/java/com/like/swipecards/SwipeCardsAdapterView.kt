@@ -4,12 +4,10 @@ import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
-import com.like.swipecards.OnCardViewTouchListener.FlingListener
 
 /**
  * 滑动卡片集合视图
@@ -43,7 +41,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var rotationDegrees = 20f // 最大旋转角度
     var isNeedSwipe: Boolean = true // 是否支持滑动
 
-    var onFlingListener: OnFlingListener? = null
+    var onSwipeListener: OnSwipeListener? = null
 
     override fun getSelectedView(): View? {
         return topView
@@ -81,7 +79,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
         }
         if (adapterCount < prefetchCount) {// 通知添加数据
-            onFlingListener?.onLoadData()
+            onSwipeListener?.onLoadData()
         }
     }
 
@@ -179,15 +177,15 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun setTopView() {
         topView = getChildAt(topViewIndex)?.also { view ->
-            onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : FlingListener {
+            onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : OnSwipeListener {
                 override fun onCardExited(direction: Int, dataObject: Any?) {
                     removeViewInLayout(view)
                     topView = null
-                    onFlingListener?.onCardExited(direction, dataObject)
+                    onSwipeListener?.onCardExited(direction, dataObject)
                 }
 
-                override fun onClick(event: MotionEvent?, v: View?, dataObject: Any?) {
-                    onFlingListener?.onClick(event, v, dataObject)
+                override fun onClick(v: View?, dataObject: Any?) {
+                    onSwipeListener?.onClick(v, dataObject)
                 }
 
                 override fun onScroll(direction: Int, absProgress: Float) {
@@ -196,7 +194,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                         scale = 1f
                     }
                     adjustChildrenUnderTopView(scale)
-                    onFlingListener?.onScroll(direction, absProgress)
+                    onSwipeListener?.onScroll(direction, absProgress)
+                }
+
+                override fun onLoadData() {
                 }
 
             }).also {
@@ -272,10 +273,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         override fun onInvalidated() {
             requestLayout()
         }
-    }
-
-    interface OnFlingListener : FlingListener {
-        fun onLoadData()
     }
 
 }
