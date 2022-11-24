@@ -263,7 +263,7 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 为视图执行回弹动画、滑出动画，点击事件判断
+     * 为视图执行回弹动画、飞出动画，点击事件判断
      */
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
@@ -327,8 +327,8 @@ class OnCardViewTouchListener(
                     scale += 0.1f
                     if (scale > 1) scale = 1f
                     flingListener.onScroll(moveDirection, scale)
-                    // 这里必须用 animDuration 作被除数，因为滑出动画 exitWithAnimation 使用的也是这个值。
-                    // 而滑出动画执行完毕后，会导致 SwipeCardsAdapterView 执行 requestLayout，重新 onLayout，
+                    // 这里必须用 animDuration 作被除数，因为飞出动画 exitWithAnimation 使用的也是这个值。
+                    // 而飞出动画执行完毕后，会导致 SwipeCardsAdapterView 执行 requestLayout，重新 onLayout，
                     // 如果缩放动画此时还未完成的话，就会受到影响。
                     delay(animDuration / 20)
                 }
@@ -344,7 +344,7 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 执行自动滑出屏幕动画，即点(originCardViewX,originCardViewY)移动到 exitPoint 位置。
+     * 执行飞出屏幕动画，即点(originCardViewX,originCardViewY)移动到 exitPoint 位置。
      *
      * @param byClick   是否单击事件引起的
      */
@@ -403,13 +403,13 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 如果要视图滑出屏幕，需要获取点(originCardViewX,originCardViewY)移动的位移，这里称为滑出点：exitPoint。
+     * 如果要视图飞出屏幕，需要计算点(originCardViewX,originCardViewY)移动多少，这里称这个移动后的点为飞出点：exitPoint。
      */
     private fun getExitPoint(isLeft: Boolean, event: MotionEvent?): PointF {
         val newPointByRotation = if (event != null) {
             // 如果是手指触摸滑动，那么是先旋转，再取值，则 cardView.rotation 有值。
             getNewPointByRotation(rotation = cardView.rotation)
-        } else {// 如果是单击滑出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
+        } else {// 如果是单击飞出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
             getNewPointByRotation(rotation = rotationDegrees)
         }
         val distanceXByRotation = Math.abs(newPointByRotation.x - originCardViewX)
@@ -428,9 +428,9 @@ class OnCardViewTouchListener(
             val newFinishRawY = curRawY - (downRawY - curCardViewY)
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
             val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
-            // 根据直线方程 y = ax+b 求滑出点的y坐标
+            // 根据直线方程 y = ax+b 求飞出点的y坐标
             regression.slope() * translationX + regression.intercept()
-        } else {// 单击滑出
+        } else {// 单击飞出
             0f
         }.toFloat()
         return PointF(translationX, translationY)
