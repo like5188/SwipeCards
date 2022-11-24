@@ -275,7 +275,7 @@ class OnCardViewTouchListener(
                     .rotation(0f)
                     .withStartAction {
                         // 执行缩放动画
-                        scale(absMoveProgressPercent, false)
+                        scaleWithAnimation(absMoveProgressPercent, false)
                     }
                     .start()
             }
@@ -296,7 +296,7 @@ class OnCardViewTouchListener(
      * @param initScale     初始缩放系数
      * @param zoom          true：放大；false：缩小；
      */
-    private fun scale(initScale: Float, zoom: Boolean) {
+    private fun scaleWithAnimation(initScale: Float, zoom: Boolean) {
         scaleJob?.cancel()
         scaleJob = lifecycleScope?.launchWhenResumed {
             ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
@@ -322,7 +322,7 @@ class OnCardViewTouchListener(
                 .translationY(exitPoint.y)
                 .withStartAction {
                     // 执行缩放动画
-                    scale(absMoveProgressPercent, true)
+                    scaleWithAnimation(absMoveProgressPercent, true)
                 }
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
