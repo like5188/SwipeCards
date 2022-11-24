@@ -42,12 +42,6 @@ class OnCardViewTouchListener(
     // 旋转中心点
     private val pivotPoint: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
 
-    // 左上角点
-    private val leftTopPoint = PointF(originCardViewX, originCardViewY)
-
-    // 右上角点
-    private val rightTopPoint = PointF(originCardViewX + originCardViewWidth, originCardViewY)
-
     // rotationDegrees 对应的弧度
     private val rotationRadian: Double = Math.PI / 180 * rotationDegrees
 
@@ -86,18 +80,10 @@ class OnCardViewTouchListener(
     // 支持左右滑
     var isNeedSwipe = true
 
-    private val animDuration = 300L
+    var animDuration = 300L
 
     // x 轴方向上的边界百分比
-    private val borderPercent: Float = 0.5f
-
-    // 指定点在 x 轴方向上通过移动和旋转造成的位移
-    private fun getDistanceXByMoveAndRotation(point: PointF): Float {
-        val distanceByMove = Math.abs(curCardViewX - originCardViewX)
-        val distanceByRotation = Math.abs(getNewPointByRotation(point).x - point.x)
-        // x 轴方向上通过移动和旋转造成的位移
-        return distanceByMove + distanceByRotation
-    }
+    var borderPercent: Float = 0.5f
 
     // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
     private fun getNewPointByRotation(
@@ -262,14 +248,13 @@ class OnCardViewTouchListener(
      */
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
-            val isLeft = curCardViewX < originCardViewX
-            val zoom = if (isLeft && absMoveProgressPercent > borderPercent) {
+            val zoom = if ((moveDirection == 1 || moveDirection == 3) && absMoveProgressPercent > borderPercent) {
                 // Left Swipe
-                exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
+                exitWithAnimation(true, getExitPoint(true, event), animDuration, false)
                 true
-            } else if (!isLeft && absMoveProgressPercent > borderPercent) {
+            } else if ((moveDirection == 0 || moveDirection == 2) && absMoveProgressPercent > borderPercent) {
                 // Right Swipe
-                exitWithAnimation(isLeft, getExitPoint(isLeft, event), animDuration, false)
+                exitWithAnimation(false, getExitPoint(false, event), animDuration, false)
                 true
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
