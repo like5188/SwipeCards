@@ -276,13 +276,6 @@ class OnCardViewTouchListener(
             }
             // 执行缩放动画
             scale(absMoveProgressPercent, zoom)
-
-            curCardViewX = 0f
-            curCardViewY = 0f
-            downX = 0f
-            downY = 0f
-            downRawX = 0f
-            downRawY = 0f
         } else {
             // 如果不能滑动，就根据触摸坐标判断点击事件
             val pointerIndex = event.findPointerIndex(activePointerId)
