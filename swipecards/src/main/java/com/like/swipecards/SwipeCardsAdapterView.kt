@@ -243,19 +243,11 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         onCardViewTouchListener?.exitFromLeft()
     }
 
-    fun swipeLeft(duration: Int) {
-        onCardViewTouchListener?.exitFromLeft(duration.toLong())
-    }
-
     /**
      * click to swipe right
      */
     fun swipeRight() {
         onCardViewTouchListener?.exitFromRight()
-    }
-
-    fun swipeRight(duration: Int) {
-        onCardViewTouchListener?.exitFromRight(duration.toLong())
     }
 
     override fun getAdapter(): T? {
