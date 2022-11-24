@@ -3,7 +3,6 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -216,7 +215,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      * 调整 TopView 之下的所有视图的缩放和垂直位移
      */
     private fun adjustChildrenUnderTopView(scale: Float) {
-        Log.d("TAG", "scale=$scale")
         val count = childCount
         if (count <= 1) {
             return
