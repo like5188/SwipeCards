@@ -36,6 +36,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     //缩放层叠效果
     var yOffsetStep = 100 // view叠加垂直偏移量的步长
     var scaleStep = 0.08f // view叠加缩放的步长
+    var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大
 
     var maxVisible = 4 // 值建议最小为4
     var minAdapterStack = 6
@@ -228,12 +229,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             index = topViewIndex - 2
             level = 2
         }
+        var modifyScale = scale / scaleMax// 修正系数
+        if (modifyScale > 1f) {
+            modifyScale = 1f
+        }
         while (index < topViewIndex) {
-            val yOffset = (yOffsetStep * (level - scale)).toInt()
+            val yOffset = (yOffsetStep * (level - modifyScale)).toInt()
             val view = getChildAt(index)
             view.offsetTopAndBottom(yOffset - view.top + initTop)
-            view.scaleX = 1 - scaleStep * level + scaleStep * scale
-            view.scaleY = 1 - scaleStep * level + scaleStep * scale
+            view.scaleX = 1 - scaleStep * level + scaleStep * modifyScale
+            view.scaleY = 1 - scaleStep * level + scaleStep * modifyScale
             index++
             level--
         }
