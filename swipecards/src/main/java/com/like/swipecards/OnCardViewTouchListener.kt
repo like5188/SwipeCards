@@ -281,23 +281,6 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 执行回弹动画
-     */
-    private fun resetWithAnimation() {
-        cardView.animate()
-            .setDuration(animDuration)
-            .setInterpolator(OvershootInterpolator(1.5f))
-            .x(originCardViewX)
-            .y(originCardViewY)
-            .rotation(0f)
-            .withStartAction {
-                // 执行缩放动画
-                scaleWithAnimation(absMoveProgressPercent, false)
-            }
-            .start()
-    }
-
-    /**
      * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作。
      * 这个缩放操作是为了在手指离开屏幕后，补充完成进度回调
      * @param initScale     初始缩放系数
@@ -313,6 +296,23 @@ class OnCardViewTouchListener(
                 start()
             }
         }
+    }
+
+    /**
+     * 执行回弹动画
+     */
+    private fun resetWithAnimation() {
+        cardView.animate()
+            .setDuration(animDuration)
+            .setInterpolator(OvershootInterpolator(1.5f))
+            .x(originCardViewX)
+            .y(originCardViewY)
+            .rotation(0f)
+            .withStartAction {
+                // 执行缩放动画
+                scaleWithAnimation(absMoveProgressPercent, false)
+            }
+            .start()
     }
 
     /**
