@@ -82,7 +82,7 @@ class OnCardViewTouchListener(
 
     var animDuration = 300L
 
-    // x 轴方向上的边界百分比
+    // x 轴方向上的边界百分比，相对于 left 或者 right
     var borderPercent: Float = 0.5f
 
     // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
