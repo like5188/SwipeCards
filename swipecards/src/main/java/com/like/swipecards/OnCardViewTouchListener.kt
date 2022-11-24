@@ -20,6 +20,7 @@ import kotlin.math.tan
 
 /**
  * 单个卡片视图触摸相关的处理
+ * 包括功能：滑动、旋转、飞出、缩放等动画的处理
  *
  * @param rotationDegrees   滑动一个视图宽度时的最大旋转角度
  */
