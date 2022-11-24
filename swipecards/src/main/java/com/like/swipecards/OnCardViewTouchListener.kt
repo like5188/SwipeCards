@@ -292,7 +292,9 @@ class OnCardViewTouchListener(
             ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
                 duration = animDuration
                 interpolator = LinearInterpolator()
-                addUpdateListener { animation -> flingListener.onScroll(moveDirection, animation.animatedValue as Float) }
+                addUpdateListener {
+                    flingListener.onScroll(moveDirection, it.animatedValue as Float)
+                }
                 start()
             }
         }
