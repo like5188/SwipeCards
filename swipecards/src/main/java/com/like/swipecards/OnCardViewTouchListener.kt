@@ -248,6 +248,7 @@ class OnCardViewTouchListener(
      */
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
+            val moveDirection = moveDirection
             val zoom = if ((moveDirection == 1 || moveDirection == 3) && absMoveProgressPercent > borderPercent) {
                 // Left Swipe
                 exitWithAnimation(true, getExitPoint(true, event), animDuration, false)
