@@ -2,6 +2,7 @@ package com.like.swipecards
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.graphics.Matrix
 import android.graphics.PointF
@@ -16,8 +17,8 @@ import android.view.animation.OvershootInterpolator
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import java.util.concurrent.atomic.AtomicBoolean
+
 
 /**
  * 单个卡片触摸监听处理
@@ -296,24 +297,11 @@ class OnCardViewTouchListener(
     private fun scale(initScale: Float, zoom: Boolean) {
         scaleJob?.cancel()
         scaleJob = lifecycleScope?.launchWhenResumed {
-            var scale = initScale
-            if (zoom) {// 放大
-                while (scale < 1) {
-                    scale += 0.1f
-                    if (scale > 1) scale = 1f
-                    flingListener.onScroll(moveDirection, scale)
-                    // 这里必须用 animDuration 作被除数，因为飞出动画 exitWithAnimation 使用的也是这个值。
-                    // 而飞出动画执行完毕后，会导致 SwipeCardsAdapterView 执行 requestLayout，重新 onLayout，
-                    // 如果缩放动画此时还未完成的话，就会受到影响。
-                    delay(animDuration / 20)
-                }
-            } else {// 缩小
-                while (scale > 0) {
-                    scale -= 0.1f
-                    if (scale < 0) scale = 0f
-                    flingListener.onScroll(moveDirection, scale)
-                    delay(animDuration / 20)
-                }
+            ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
+                duration = animDuration
+                interpolator = LinearInterpolator()
+                addUpdateListener { animation -> flingListener.onScroll(moveDirection, animation.animatedValue as Float) }
+                start()
             }
         }
     }
