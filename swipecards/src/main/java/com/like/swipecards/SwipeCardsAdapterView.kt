@@ -3,7 +3,6 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Adapter
@@ -34,15 +33,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private var inLayout = false
 
     /**
-     *视觉看到的最外层的那个视图。
+     * 视觉看到的"最外层"的那个视图。
      */
     private var topView: View? = null
 
     /**
-     *视觉看到的最外层的那个视图的索引。
+     * 视觉看到的"最外层"的那个视图的索引。
      * 注意：AdapterView中，最底层（屏幕最深处）的索引是0。这会影响到相关的添加视图[addViewInLayout]、获取视图[getChildAt]等方法。
      */
-    private var topViewIndex = 0
+    private val topViewIndex: Int
+        get() = Math.min(mAdapter?.count ?: 0, maxVisible) - 1
 
     // 记录 TopView 原始位置的left、top
     private var originTopViewLeft = 0
@@ -93,14 +93,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         inLayout = true
         if (adapterCount == 0) {
             removeAndAddToCache(0)
-        } else if (topView != null && topView == getChildAt(topViewIndex)) {// 如果 topView 存在，还没有飞出屏幕
+        } else if (topView != null) {// 如果 topView 存在
             removeAndAddToCache(1)
             addChildren(1, adapterCount)
         } else {// 如果 topView 不存在
             removeAndAddToCache(0)
             addChildren(0, adapterCount)
             topView = getChildAt(topViewIndex)
-            Log.w("TAG", "topViewIndex=$topViewIndex item=${mAdapter?.getItem(topViewIndex)} topView=$topView")
             setOnCardViewTouchListener()
         }
         inLayout = false
@@ -137,8 +136,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             mAdapter?.getView(position, convertView, this)?.let {
                 if (it.visibility != GONE) {
                     addChild(it, position)
-                    topViewIndex = position
-                    Log.e("TAG", "position=$position topViewIndex=$topViewIndex")
                 }
             }
             position++
