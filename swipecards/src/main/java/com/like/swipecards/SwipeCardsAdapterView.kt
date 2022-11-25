@@ -36,6 +36,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      * 视觉看到的"最外层"的那个视图。
      */
     private var topView: View? = null
+        set(value) {
+            if (originTopViewLeft == 0 && originTopViewTop == 0 && value != null) {
+                originTopViewTop = value.top
+                originTopViewLeft = value.left
+            }
+            field = value
+        }
 
     /**
      * 视觉看到的"最外层"的那个视图的索引。
@@ -104,10 +111,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
         inLayout = false
 
-        if (originTopViewLeft == 0 && originTopViewTop == 0 && topView != null) {
-            originTopViewTop = topView?.top ?: 0
-            originTopViewLeft = topView?.left ?: 0
-        }
         // 通知加载数据
         if (adapterCount < prefetchCount) {
             onSwipeListener?.onLoadData()
