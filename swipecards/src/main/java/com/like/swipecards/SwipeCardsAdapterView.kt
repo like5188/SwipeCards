@@ -194,6 +194,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             Gravity.TOP -> paddingTop + lp.topMargin
             else -> paddingTop + lp.topMargin
         }
+        // 布局child
         child.layout(childLeft, childTop, childLeft + w, childTop + h)
     }
 
