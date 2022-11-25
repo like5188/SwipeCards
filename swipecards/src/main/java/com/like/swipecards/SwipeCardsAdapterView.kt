@@ -112,6 +112,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private fun addChild(child: View, index: Int) {
         val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
         // 添加child，并且不触发requestLayout()方法，性能比addView更好
+        // 注意：此方法的index为0时，添加的视图是在底层的。
         addViewInLayout(child, 0, lp, true)
         // 布局child
         layoutChild(child, lp)
