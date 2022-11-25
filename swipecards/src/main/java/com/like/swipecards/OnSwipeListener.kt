@@ -1,12 +1,6 @@
 package com.like.swipecards
 
 import android.view.View
-import com.like.swipecards.OnCardViewTouchListener.Companion.DIRECTION_BOTTOM_HALF_LEFT
-import com.like.swipecards.OnCardViewTouchListener.Companion.DIRECTION_BOTTOM_HALF_RIGHT
-import com.like.swipecards.OnCardViewTouchListener.Companion.DIRECTION_DOWN
-import com.like.swipecards.OnCardViewTouchListener.Companion.DIRECTION_TOP_HALF_LEFT
-import com.like.swipecards.OnCardViewTouchListener.Companion.DIRECTION_TOP_HALF_RIGHT
-import com.like.swipecards.OnCardViewTouchListener.Companion.DIRECTION_UP
 
 interface OnSwipeListener {
     /**
