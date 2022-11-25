@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -74,7 +73,6 @@ class MainActivity : AppCompatActivity() {
             val list = mutableListOf<Talent>()
             for (i in 0..5) {
                 list.add(Talent().apply {
-                    headerIcon = headerIcons[i % headerIcons.size]
                     str = i.toString()
                 })
             }
@@ -84,21 +82,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        private val headerIcons = intArrayOf(
-            R.drawable.i1,
-            R.drawable.i2,
-            R.drawable.i3,
-            R.drawable.i4,
-            R.drawable.i5,
-            R.drawable.i6
-        )
-    }
-
 }
 
 private class Talent {
-    var headerIcon = 0
     var str: String? = null
 }
 
@@ -152,20 +138,17 @@ private class MyAdapter : BaseAdapter() {
             cv = LayoutInflater.from(parent.context).inflate(R.layout.item_cardview, parent, false)
             holder = ViewHolder()
             cv.tag = holder
-            holder.portraitView = cv.findViewById(R.id.portrait)
             holder.tv = cv.findViewById(R.id.tv)
         } else {
             holder = cv.tag as ViewHolder
         }
         getItem(position)?.let {
-            holder.portraitView?.setImageResource(it.headerIcon)
             holder.tv?.setText(it.str)
         }
         return cv!!
     }
 
     private class ViewHolder {
-        var portraitView: ImageView? = null
         var tv: TextView? = null
     }
 
