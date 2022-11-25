@@ -53,29 +53,29 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
+        // adapter 的数据集中有多少个数据
         val adapterCount = mAdapter?.count ?: return
 
         inLayout = true
         if (adapterCount == 0) {
             removeAndAddToCache(0)
-        } else {
-            val view = getChildAt(topViewIndex)
-            if (view != null && view == topView) {// 如果 topView 还存在
-                removeAndAddToCache(1)
-                layoutChildren(1, adapterCount)
-            } else {
-                removeAndAddToCache(0)
-                layoutChildren(0, adapterCount)
-                setTopView()
-            }
+        } else if (topView != null && topView == getChildAt(topViewIndex)) {// 如果 topView 存在，还没有飞出屏幕
+            removeAndAddToCache(1)
+            layoutChildren(1, adapterCount)
+        } else {// 如果 topView 不存在
+            removeAndAddToCache(0)
+            layoutChildren(0, adapterCount)
+            topView = getChildAt(topViewIndex)
+            setOnCardViewTouchListener()
         }
         inLayout = false
 
-        if (initTop == 0 && initLeft == 0) {
+        if (initTop == 0 && initLeft == 0 && topView != null) {
             initTop = topView?.top ?: 0
             initLeft = topView?.left ?: 0
         }
-        if (adapterCount < prefetchCount) {// 通知加载数据
+        // 通知加载数据
+        if (adapterCount < prefetchCount) {
             onSwipeListener?.onLoadData()
         }
     }
@@ -171,39 +171,35 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    /**
-     * Set the top view and add the fling listener
-     */
-    private fun setTopView() {
-        topView = getChildAt(topViewIndex)?.also { view ->
-            onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : OnSwipeListener {
-                override fun onCardExited(direction: Int, dataObject: Any?) {
-                    removeViewInLayout(view)
-                    topView = null
-                    onSwipeListener?.onCardExited(direction, dataObject)
-                }
-
-                override fun onClick(v: View?, dataObject: Any?) {
-                    onSwipeListener?.onClick(v, dataObject)
-                }
-
-                override fun onScroll(direction: Int, absProgress: Float) {
-                    var scale = absProgress / scaleMax// 修正系数
-                    if (scale > 1f) {
-                        scale = 1f
-                    }
-                    adjustChildrenUnderTopView(scale)
-                    onSwipeListener?.onScroll(direction, absProgress)
-                }
-
-                override fun onLoadData() {
-                }
-
-            }).also {
-                // 设置是否支持左右滑
-                it.isNeedSwipe = isNeedSwipe
-                view.setOnTouchListener(it)
+    private fun setOnCardViewTouchListener() {
+        val view = topView ?: return
+        onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : OnSwipeListener {
+            override fun onCardExited(direction: Int, dataObject: Any?) {
+                removeViewInLayout(view)
+                topView = null
+                onSwipeListener?.onCardExited(direction, dataObject)
             }
+
+            override fun onClick(v: View?, dataObject: Any?) {
+                onSwipeListener?.onClick(v, dataObject)
+            }
+
+            override fun onScroll(direction: Int, absProgress: Float) {
+                var scale = absProgress / scaleMax// 修正系数
+                if (scale > 1f) {
+                    scale = 1f
+                }
+                adjustChildrenUnderTopView(scale)
+                onSwipeListener?.onScroll(direction, absProgress)
+            }
+
+            override fun onLoadData() {
+            }
+
+        }).also {
+            // 设置是否支持左右滑
+            it.isNeedSwipe = isNeedSwipe
+            view.setOnTouchListener(it)
         }
     }
 
