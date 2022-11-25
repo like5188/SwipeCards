@@ -70,11 +70,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadData() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val list = mutableListOf<Talent>()
+            val list = mutableListOf<String>()
             for (i in 0..5) {
-                list.add(Talent().apply {
-                    str = i.toString()
-                })
+                list.add(i.toString())
             }
             withContext(Dispatchers.Main) {
                 myAdapter.addAll(list)
@@ -84,13 +82,9 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-private class Talent {
-    var str: String? = null
-}
-
 private class MyAdapter : BaseAdapter() {
-    private val list = mutableListOf<Talent>()
-    fun addAll(collection: Collection<Talent>) {
+    private val list = mutableListOf<String>()
+    fun addAll(collection: Collection<String>) {
         if (isEmpty) {
             list.addAll(collection)
             notifyDataSetChanged()
@@ -119,7 +113,7 @@ private class MyAdapter : BaseAdapter() {
         return list.size
     }
 
-    override fun getItem(position: Int): Talent? {
+    override fun getItem(position: Int): String? {
         return try {
             list[position]
         } catch (e: Exception) {
@@ -143,7 +137,7 @@ private class MyAdapter : BaseAdapter() {
             holder = cv.tag as ViewHolder
         }
         getItem(position)?.let {
-            holder.tv?.setText(it.str)
+            holder.tv?.setText(it)
         }
         return cv!!
     }
