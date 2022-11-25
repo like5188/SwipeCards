@@ -51,16 +51,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     var onSwipeListener: OnSwipeListener? = null
 
-    override fun getSelectedView(): View? {
-        return topView
-    }
-
-    override fun requestLayout() {
-        if (!inLayout) {
-            super.requestLayout()
-        }
-    }
-
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         val adapter = mAdapter ?: return
@@ -271,6 +261,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
         return FrameLayout.LayoutParams(context, attrs)
+    }
+
+    override fun getSelectedView(): View? {
+        return topView
+    }
+
+    override fun requestLayout() {
+        if (!inLayout) {
+            super.requestLayout()
+        }
     }
 
 }
