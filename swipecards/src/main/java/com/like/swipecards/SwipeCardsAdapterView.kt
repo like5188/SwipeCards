@@ -253,7 +253,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             return
         }
         var index: Int// 可见的最底层视图的索引。所有视图的最底层的视图为0
-        var level: Int// 层级。最外层的topView为0
+        var level: Int// 层级。最外层（topView）的层级为 0，向底层递增
         if (childCount == 2) {
             index = topViewIndex - 1
             level = 1
@@ -265,7 +265,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         while (index < topViewIndex) {
             getChildAt(index)?.apply {
                 val yOffset = (yOffsetStep * (level - absRate)).toInt()
-                offsetTopAndBottom(yOffset - top + originTopViewTop)
+                val curYOffset = top - originTopViewTop
+                offsetTopAndBottom(yOffset - curYOffset)
                 val scale = 1 - scaleStep * level + scaleStep * absRate
                 scaleX = scale
                 scaleY = scale
