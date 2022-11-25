@@ -249,7 +249,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             return
         }
         var index: Int// 最底层的视图为0
-        var level: Int// 最外层的topView为0
+        var level: Int// 层级：最外层的topView为0
         if (childCount == 2) {
             index = topViewIndex - 1
             level = 1
