@@ -236,14 +236,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     /**
-     * click to swipe left
+     * 单击触发往左滑出
      */
     fun swipeLeft() {
         onCardViewTouchListener?.swipeLeft()
     }
 
     /**
-     * click to swipe right
+     * 单击触发往右滑出
      */
     fun swipeRight() {
         onCardViewTouchListener?.swipeRight()

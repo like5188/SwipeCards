@@ -346,14 +346,14 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 单击触发往左滑出的动画
+     * 单击触发往左滑出
      */
     fun swipeLeft() {
         exitWithAnimation(true, getExitPoint(true, null), true)
     }
 
     /**
-     * 单击触发往右滑出的动画
+     * 单击触发往右滑出
      */
     fun swipeRight() {
         exitWithAnimation(false, getExitPoint(false, null), true)
