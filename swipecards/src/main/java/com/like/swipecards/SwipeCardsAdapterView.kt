@@ -60,7 +60,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             removeAndAddToCache(0)
         } else {
             val view = getChildAt(topViewIndex)
-            if (view != null && view == topView) {
+            if (view != null && view == topView) {// 如果 topView 还存在
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
