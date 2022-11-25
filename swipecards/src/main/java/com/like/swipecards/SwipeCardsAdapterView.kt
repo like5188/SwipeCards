@@ -116,7 +116,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     /**
-     * 保留指定数量的视图，其它的移除并存入缓存中
+     * 从最底层开始移除视图并保存到缓存中，需要保留指定数量的视图。
      */
     private fun removeAndAddToCache(remain: Int) {
         while (childCount - remain > 0) {
