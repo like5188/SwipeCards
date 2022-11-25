@@ -137,9 +137,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 convertView = viewCaches.removeAt(0)
             }
             mAdapter?.getView(position, convertView, this)?.let {
-                if (it.visibility != GONE) {
-                    addChild(it, position)
-                }
+                addChild(it, position)
             }
             position++
         }
