@@ -241,16 +241,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     /**
-     * 调整 TopView 之下的所有视图的缩放和垂直位移
+     * 调整 TopView 之下的所有可见视图的缩放和垂直位移，除了最底层那一个视图，因为它不需要缩放和位移。
      */
     private fun adjustChildrenUnderTopView(scale: Float) {
-        val count = childCount
-        if (count <= 1) {
+        val childCount = childCount
+        if (childCount <= 1) {
             return
         }
-        var index: Int
-        var level: Int
-        if (count == 2) {
+        var index: Int// 最底层的视图为0
+        var level: Int// 最外层的topView为0
+        if (childCount == 2) {
             index = topViewIndex - 1
             level = 1
         } else {
