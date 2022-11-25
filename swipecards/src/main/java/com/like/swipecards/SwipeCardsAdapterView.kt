@@ -112,7 +112,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun addChild(child: View, index: Int) {
         val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
-        // 添加child，并且不触发layout请求
+        // 添加child，并且不触发requestLayout()方法
         addViewInLayout(child, 0, lp, true)
         layoutChild(child, lp)
         // 缩放层叠效果
