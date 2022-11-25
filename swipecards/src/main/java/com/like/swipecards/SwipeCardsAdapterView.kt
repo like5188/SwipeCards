@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
-import android.widget.FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
 
 /**
  * 滑动卡片集合视图
@@ -120,6 +119,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun layoutChild(child: View, lp: FrameLayout.LayoutParams) {
+        // 测量child。参考ListView
         val needToMeasure = child.isLayoutRequested
         if (needToMeasure) {
             val childWidthSpec = getChildMeasureSpec(
@@ -136,17 +136,19 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         } else {
             cleanupLayoutState(child)
         }
+
+        // 计算child的位置参数。参考FrameLayout
         val w = child.measuredWidth
         val h = child.measuredHeight
         var gravity = lp.gravity
-        if (gravity == UNSPECIFIED_GRAVITY) {
+        if (gravity == -1) {
             gravity = Gravity.TOP or Gravity.START
         }
         val absoluteGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection)
         val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
         val childLeft: Int = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
             Gravity.CENTER_HORIZONTAL -> (width + paddingLeft - paddingRight - w) / 2 + lp.leftMargin - lp.rightMargin
-            Gravity.END -> width + paddingRight - w - lp.rightMargin
+            Gravity.END -> width - paddingRight - w - lp.rightMargin
             Gravity.START -> paddingLeft + lp.leftMargin
             else -> paddingLeft + lp.leftMargin
         }
