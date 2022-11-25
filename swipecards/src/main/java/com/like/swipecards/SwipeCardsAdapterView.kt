@@ -100,7 +100,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             if (viewCaches.isNotEmpty()) {
                 convertView = viewCaches.removeAt(0)
             }
-            // 获取指定位置的view，如果type一样就重用convertView
             mAdapter?.getView(position, convertView, this)?.let {
                 if (it.visibility != GONE) {
                     addChild(it, position)
