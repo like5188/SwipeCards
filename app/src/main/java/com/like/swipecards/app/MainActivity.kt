@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -74,6 +75,7 @@ class MainActivity : AppCompatActivity() {
             for (i in 0..5) {
                 list.add(Talent().apply {
                     headerIcon = headerIcons[i % headerIcons.size]
+                    str = i.toString()
                 })
             }
             withContext(Dispatchers.Main) {
@@ -97,6 +99,7 @@ class MainActivity : AppCompatActivity() {
 
 private class Talent {
     var headerIcon = 0
+    var str: String? = null
 }
 
 private class MyAdapter : BaseAdapter() {
@@ -150,17 +153,20 @@ private class MyAdapter : BaseAdapter() {
             holder = ViewHolder()
             cv.tag = holder
             holder.portraitView = cv.findViewById(R.id.portrait)
+            holder.tv = cv.findViewById(R.id.tv)
         } else {
             holder = cv.tag as ViewHolder
         }
         getItem(position)?.let {
             holder.portraitView?.setImageResource(it.headerIcon)
+            holder.tv?.setText(it.str)
         }
         return cv!!
     }
 
     private class ViewHolder {
         var portraitView: ImageView? = null
+        var tv: TextView? = null
     }
 
 }
