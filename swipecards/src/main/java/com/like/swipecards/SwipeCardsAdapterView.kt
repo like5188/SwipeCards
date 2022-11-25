@@ -102,10 +102,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             removeAndAddToCache(0)
         } else if (topView != null) {// 如果 topView 存在
             removeAndAddToCache(1)
-            addChildren(1, adapterCount)
+            addChildren(1)
         } else {// 如果 topView 不存在
             removeAndAddToCache(0)
-            addChildren(0, adapterCount)
+            addChildren(0)
             topView = getChildAt(topViewIndex)
             setOnCardViewTouchListener()
         }
@@ -129,7 +129,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    private fun addChildren(startIndex: Int, adapterCount: Int) {
+    private fun addChildren(startIndex: Int) {
         var position = startIndex
         while (position <= topViewIndex) {
             var convertView: View? = null
