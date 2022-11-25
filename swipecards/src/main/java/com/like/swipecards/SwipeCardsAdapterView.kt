@@ -3,6 +3,7 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Adapter
@@ -31,7 +32,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
     private var inLayout = false
+
+    /**
+     *视觉看到的最外层的那个视图。
+     */
     private var topView: View? = null
+
+    /**
+     *视觉看到的最外层的那个视图的索引。
+     * 注意：AdapterView中，最底层（屏幕最深处）的索引是0。这会影响到相关的添加视图[addViewInLayout]、获取视图[getChildAt]等方法。
+     */
     private var topViewIndex = 0
 
     // 记录 TopView 原始位置的left、top
@@ -45,10 +55,24 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var scaleStep = 0.08f // view叠加缩放的步长
     var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大。[0f,1f]
 
-    private var maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
-    var prefetchCount = 5// 预取数量，当数量小于此值时，触发加载数据的操作。建议为 maxVisible + 1，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
-    var rotationDegrees = 20f // 最大旋转角度
-    var isNeedSwipe: Boolean = true // 是否支持滑动
+    private val maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+
+    /**
+     * 预取数量。
+     * 当数量小于此值时，触发加载数据的操作。建议为 maxVisible + 1，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+     */
+    var prefetchCount = 5
+
+    /**
+     * 最大旋转角度。
+     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的角度
+     */
+    var rotationDegrees = 20f
+
+    /**
+     * 是否支持滑动
+     */
+    var isNeedSwipe: Boolean = true
 
     var onSwipeListener: OnSwipeListener? = null
 
@@ -66,6 +90,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             removeAndAddToCache(0)
             addChildren(0, adapterCount)
             topView = getChildAt(topViewIndex)
+            Log.w("TAG", "topViewIndex=$topViewIndex item=${mAdapter?.getItem(topViewIndex)} topView=$topView")
             setOnCardViewTouchListener()
         }
         inLayout = false
@@ -103,6 +128,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 if (it.visibility != GONE) {
                     addChild(it, position)
                     topViewIndex = position
+                    Log.e("TAG", "position=$position topViewIndex=$topViewIndex")
                 }
             }
             position++
@@ -112,7 +138,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private fun addChild(child: View, index: Int) {
         val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
         // 添加child，并且不触发requestLayout()方法，性能比addView更好
-        // 注意：此方法的index为0时，添加的视图是在底层的。
         addViewInLayout(child, 0, lp, true)
         // 布局child
         layoutChild(child, lp)
