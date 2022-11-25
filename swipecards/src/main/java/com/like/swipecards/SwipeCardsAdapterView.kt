@@ -131,7 +131,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun addChildren(startIndex: Int, adapterCount: Int) {
         var position = startIndex
-        while (position < Math.min(adapterCount, maxVisible)) {
+        while (position <= topViewIndex) {
             var convertView: View? = null
             if (viewCaches.isNotEmpty()) {
                 convertView = viewCaches.removeAt(0)
