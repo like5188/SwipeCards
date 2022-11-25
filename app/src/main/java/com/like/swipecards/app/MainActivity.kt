@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         mBinding.swipeCardsAdapterView.setAdapter(myAdapter)
+        mBinding.swipeCardsAdapterView.setOnItemClickListener { parent, view, position, id ->
+            Toast.makeText(this@MainActivity, "setOnItemClickListener", Toast.LENGTH_SHORT).show()
+        }
         mBinding.swipeLeft.setOnClickListener {
             mBinding.swipeCardsAdapterView.swipeLeft()
         }
@@ -68,11 +71,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var count = 0
     private fun loadData() {
         lifecycleScope.launch(Dispatchers.IO) {
             val list = mutableListOf<String>()
             for (i in 0..5) {
-                list.add(i.toString())
+                if (count < 10) {
+                    list.add(count++.toString())
+                }
             }
             withContext(Dispatchers.Main) {
                 myAdapter.addAll(list)
