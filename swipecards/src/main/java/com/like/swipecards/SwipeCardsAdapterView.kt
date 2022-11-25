@@ -113,10 +113,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
         // 添加child，并且不触发requestLayout()方法，性能比addView更好
         addViewInLayout(child, 0, lp, true)
-        layoutChild(child, lp, index)
+        // 布局child
+        layoutChild(child, lp)
+        // 缩放层叠效果
+        adjustChild(child, index)
     }
 
-    private fun layoutChild(child: View, lp: FrameLayout.LayoutParams, index: Int) {
+    private fun layoutChild(child: View, lp: FrameLayout.LayoutParams) {
         // 测量child。参考ListView
         val needToMeasure = child.isLayoutRequested
         if (needToMeasure) {
@@ -156,12 +159,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             Gravity.TOP -> paddingTop + lp.topMargin
             else -> paddingTop + lp.topMargin
         }
-        // 布局child。参考ListView
-        if (needToMeasure) {
-            child.layout(childLeft, childTop, childLeft + w, childTop + h)
-            // 缩放层叠效果
-            adjustChild(child, index)
-        }
+        child.layout(childLeft, childTop, childLeft + w, childTop + h)
     }
 
     /**
