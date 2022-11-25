@@ -111,14 +111,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun addChild(child: View, index: Int) {
         val lp = child.layoutParams as? FrameLayout.LayoutParams ?: return
-        // 添加child，并且不触发requestLayout()方法
+        // 添加child，并且不触发requestLayout()方法，性能比addView更好
         addViewInLayout(child, 0, lp, true)
-        layoutChild(child, lp)
-        // 缩放层叠效果
-        adjustChild(child, index)
+        layoutChild(child, lp, index)
     }
 
-    private fun layoutChild(child: View, lp: FrameLayout.LayoutParams) {
+    private fun layoutChild(child: View, lp: FrameLayout.LayoutParams, index: Int) {
         // 测量child。参考ListView
         val needToMeasure = child.isLayoutRequested
         if (needToMeasure) {
@@ -158,7 +156,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             Gravity.TOP -> paddingTop + lp.topMargin
             else -> paddingTop + lp.topMargin
         }
-        child.layout(childLeft, childTop, childLeft + w, childTop + h)
+        // 布局child。参考ListView
+        if (needToMeasure) {
+            child.layout(childLeft, childTop, childLeft + w, childTop + h)
+            // 缩放层叠效果
+            adjustChild(child, index)
+        }
     }
 
     /**
@@ -166,7 +169,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun adjustChild(child: View, index: Int) {
         if (index > -1 && index < maxVisible) {
-            val level = if (index > 2) 2 else index
+            val level = if (index > 2) 2 else index// 大于2的层级都叠放在一起。
             child.offsetTopAndBottom(yOffsetStep * level)
             child.scaleX = 1 - scaleStep * level
             child.scaleY = 1 - scaleStep * level
