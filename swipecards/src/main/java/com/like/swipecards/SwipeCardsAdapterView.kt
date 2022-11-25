@@ -241,7 +241,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     /**
-     * 调整 TopView 之下的所有可见视图的缩放和垂直位移，除了最底层那一个视图，因为它不需要缩放和位移。
+     * 调整 TopView 之下的所有可见视图随滑动进度的缩放和垂直位移。
+     * 注意：最底层那一个视图不需要处理，因为它不需要缩放和位移。它只是在其上层的视图缩放或者位移时显现出来而已。
      */
     private fun adjustChildrenUnderTopView(scale: Float) {
         val childCount = childCount
@@ -259,11 +260,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
         val absScale = Math.abs(scale)
         while (index < topViewIndex) {
-            val yOffset = (yOffsetStep * (level - absScale)).toInt()
-            val view = getChildAt(index)
-            view.offsetTopAndBottom(yOffset - view.top + originTopViewTop)
-            view.scaleX = 1 - scaleStep * level + scaleStep * absScale
-            view.scaleY = 1 - scaleStep * level + scaleStep * absScale
+            getChildAt(index)?.apply {
+                val yOffset = (yOffsetStep * (level - absScale)).toInt()
+                offsetTopAndBottom(yOffset - top + originTopViewTop)
+                scaleX = 1 - scaleStep * level + scaleStep * absScale
+                scaleY = 1 - scaleStep * level + scaleStep * absScale
+            }
             index++
             level--
         }
