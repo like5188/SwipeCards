@@ -49,13 +49,23 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private var originTopViewTop = 0
 
     private var onCardViewTouchListener: OnCardViewTouchListener? = null
+    private val maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
 
     //缩放层叠效果
-    var yOffsetStep = 100 // view叠加垂直偏移量的步长
-    var scaleStep = 0.08f // view叠加缩放的步长
-    var scaleMax = 0.5f // 当滑动进度为0.5时，缩放到最大。[0f,1f]
+    /**
+     * view叠加垂直偏移量的步长
+     */
+    var yOffsetStep = 100
 
-    private val maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+    /**
+     * view叠加缩放的步长
+     */
+    var scaleStep = 0.08f
+
+    /**
+     * 当滑动进度为0.5时，缩放到最大。[0f,1f]
+     */
+    var scaleMax = 0.5f
 
     /**
      * 预取数量。
