@@ -77,9 +77,9 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     /**
      * 预取数量。
-     * 当数量小于此值时，触发加载数据的操作。建议为 maxVisible + 1，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+     * 当数量等于此值时，触发加载数据的操作。建议为 maxVisible，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
      */
-    var prefetchCount = 5
+    var prefetchCount = 4
 
     /**
      * 最大旋转角度。
@@ -111,11 +111,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             setOnCardViewTouchListener()
         }
         inLayout = false
-
-        // 通知加载数据
-        if (adapterCount < prefetchCount) {
-            onSwipeListener?.onLoadData()
-        }
     }
 
     /**
@@ -219,6 +214,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 removeViewInLayout(view)
                 topView = null
                 onSwipeListener?.onCardExited(direction, dataObject)
+                // 通知加载数据
+                if ((mAdapter?.count ?: 0) == prefetchCount) {
+                    onSwipeListener?.onLoadData()
+                }
             }
 
             override fun onClick(v: View?, dataObject: Any?) {
