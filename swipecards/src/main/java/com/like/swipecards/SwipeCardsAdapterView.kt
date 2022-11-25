@@ -248,8 +248,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         if (childCount <= 1) {
             return
         }
-        var index: Int// 最底层的视图为0
-        var level: Int// 层级：最外层的topView为0
+        var index: Int// 可见的最底层视图的索引。所有视图的最底层的视图为0
+        var level: Int// 层级。最外层的topView为0
         if (childCount == 2) {
             index = topViewIndex - 1
             level = 1
