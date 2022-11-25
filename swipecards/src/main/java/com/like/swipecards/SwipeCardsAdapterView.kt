@@ -53,9 +53,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        val adapter = mAdapter ?: return
+        val adapterCount = mAdapter?.count ?: return
         inLayout = true
-        val adapterCount = adapter.count
         if (adapterCount == 0) {
             removeAndAddToCache(0)
         } else {
