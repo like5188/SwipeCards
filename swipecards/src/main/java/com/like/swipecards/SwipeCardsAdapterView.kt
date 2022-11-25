@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
+import kotlin.math.abs
 
 /**
  * 滑动卡片集合视图
@@ -202,9 +203,11 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private fun adjustChild(child: View, index: Int) {
         if (index > -1 && index < maxVisible) {
             val level = if (index > 2) 2 else index// 大于2的层级都叠放在一起。
-            child.offsetTopAndBottom(yOffsetStep * level)
-            child.scaleX = 1 - scaleStep * level
-            child.scaleY = 1 - scaleStep * level
+            val yOffset = yOffsetStep * level
+            child.offsetTopAndBottom(yOffset)
+            val scale = 1 - scaleStep * level
+            child.scaleX = scale
+            child.scaleY = scale
         }
     }
 
@@ -222,11 +225,11 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
 
             override fun onScroll(direction: Int, absProgress: Float) {
-                var scale = absProgress / scaleMax// 修正系数
-                if (scale > 1f) {
-                    scale = 1f
+                var rate = absProgress / scaleMax// 修正系数
+                if (rate > 1f) {
+                    rate = 1f
                 }
-                adjustChildrenUnderTopView(scale)
+                adjustChildrenUnderTopView(rate)
                 onSwipeListener?.onScroll(direction, absProgress)
             }
 
@@ -244,7 +247,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      * 调整 TopView 之下的所有可见视图随滑动进度的缩放和垂直位移。
      * 注意：最底层那一个视图不需要处理，因为它不需要缩放和位移。它只是在其上层的视图缩放或者位移时显现出来而已。
      */
-    private fun adjustChildrenUnderTopView(scale: Float) {
+    private fun adjustChildrenUnderTopView(rate: Float) {
         val childCount = childCount
         if (childCount <= 1) {
             return
@@ -258,13 +261,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             index = topViewIndex - 2
             level = 2
         }
-        val absScale = Math.abs(scale)
+        val absRate = abs(rate)
         while (index < topViewIndex) {
             getChildAt(index)?.apply {
-                val yOffset = (yOffsetStep * (level - absScale)).toInt()
+                val yOffset = (yOffsetStep * (level - absRate)).toInt()
                 offsetTopAndBottom(yOffset - top + originTopViewTop)
-                scaleX = 1 - scaleStep * level + scaleStep * absScale
-                scaleY = 1 - scaleStep * level + scaleStep * absScale
+                val scale = 1 - scaleStep * level + scaleStep * absRate
+                scaleX = scale
+                scaleY = scale
             }
             index++
             level--
