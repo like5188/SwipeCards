@@ -54,12 +54,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         val adapterCount = mAdapter?.count ?: return
+
         inLayout = true
         if (adapterCount == 0) {
             removeAndAddToCache(0)
         } else {
-            val topView = getChildAt(topViewIndex)
-            if (this.topView != null && topView == this.topView) {
+            val view = getChildAt(topViewIndex)
+            if (view != null && view == topView) {
                 removeAndAddToCache(1)
                 layoutChildren(1, adapterCount)
             } else {
@@ -69,13 +70,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
         }
         inLayout = false
+
         if (initTop == 0 && initLeft == 0) {
-            topView?.apply {
-                initTop = this.top
-                initLeft = this.left
-            }
+            initTop = topView?.top ?: 0
+            initLeft = topView?.left ?: 0
         }
-        if (adapterCount < prefetchCount) {// 通知添加数据
+        if (adapterCount < prefetchCount) {// 通知加载数据
             onSwipeListener?.onLoadData()
         }
     }
