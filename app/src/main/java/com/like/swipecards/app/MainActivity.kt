@@ -94,6 +94,9 @@ class MainActivity : AppCompatActivity() {
 private class MyAdapter : BaseAdapter() {
     private val list = mutableListOf<String>()
     fun addAll(collection: Collection<String>) {
+        if (collection.isEmpty()) {
+            return
+        }
         if (isEmpty) {
             list.addAll(collection)
             notifyDataSetChanged()
