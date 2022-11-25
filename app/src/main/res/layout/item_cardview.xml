@@ -10,6 +10,6 @@
     android:background="@drawable/bg_card"
     android:gravity="center"
     android:orientation="vertical"
-    android:textColor="@color/white"
-    android:textSize="30sp" />
+    android:textColor="#00a7ff"
+    android:textSize="50sp" />
 
