@@ -20,8 +20,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 ) : BaseAdapterView<T>(context, attrs, defStyle, defStyleRes) {
     private val viewCaches = mutableListOf<View?>()
     private var mAdapter: T? = null
-    private val adapterDataSetObserver: AdapterDataSetObserver by lazy {
-        AdapterDataSetObserver()
+    private val dataSetObserver: DataSetObserver by lazy {
+        object : DataSetObserver() {
+            override fun onChanged() {
+                requestLayout()
+            }
+
+            override fun onInvalidated() {
+                requestLayout()
+            }
+        }
     }
     private var inLayout = false
     private var topView: View? = null
@@ -256,23 +264,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     override fun setAdapter(adapter: T) {
-        mAdapter?.unregisterDataSetObserver(adapterDataSetObserver)
+        mAdapter?.unregisterDataSetObserver(dataSetObserver)
         mAdapter = adapter
-        mAdapter?.registerDataSetObserver(adapterDataSetObserver)
+        mAdapter?.registerDataSetObserver(dataSetObserver)
     }
 
     override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
         return FrameLayout.LayoutParams(context, attrs)
-    }
-
-    private inner class AdapterDataSetObserver : DataSetObserver() {
-        override fun onChanged() {
-            requestLayout()
-        }
-
-        override fun onInvalidated() {
-            requestLayout()
-        }
     }
 
 }
