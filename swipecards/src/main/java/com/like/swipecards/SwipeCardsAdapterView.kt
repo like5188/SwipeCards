@@ -34,8 +34,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private var inLayout = false
     private var topView: View? = null
     private var topViewIndex = 0
-    private var initTop = 0
-    private var initLeft = 0
+
+    // 记录 TopView 原始位置的left、top
+    private var originTopViewLeft = 0
+    private var originTopViewTop = 0
 
     private var onCardViewTouchListener: OnCardViewTouchListener? = null
 
@@ -70,9 +72,9 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
         inLayout = false
 
-        if (initTop == 0 && initLeft == 0 && topView != null) {
-            initTop = topView?.top ?: 0
-            initLeft = topView?.left ?: 0
+        if (originTopViewLeft == 0 && originTopViewTop == 0 && topView != null) {
+            originTopViewTop = topView?.top ?: 0
+            originTopViewLeft = topView?.left ?: 0
         }
         // 通知加载数据
         if (adapterCount < prefetchCount) {
@@ -224,7 +226,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         while (index < topViewIndex) {
             val yOffset = (yOffsetStep * (level - absScale)).toInt()
             val view = getChildAt(index)
-            view.offsetTopAndBottom(yOffset - view.top + initTop)
+            view.offsetTopAndBottom(yOffset - view.top + originTopViewTop)
             view.scaleX = 1 - scaleStep * level + scaleStep * absScale
             view.scaleY = 1 - scaleStep * level + scaleStep * absScale
             index++
