@@ -93,19 +93,19 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun layoutChildren(startIndex: Int, adapterCount: Int) {
-        var index = startIndex
-        while (index < Math.min(adapterCount, maxVisible)) {
-            var view: View? = null
+        var position = startIndex
+        while (position < Math.min(adapterCount, maxVisible)) {
+            var convertView: View? = null
             if (viewCaches.isNotEmpty()) {
-                view = viewCaches.removeAt(0)
+                convertView = viewCaches.removeAt(0)
             }
-            mAdapter?.getView(index, view, this)?.let {
+            mAdapter?.getView(position, convertView, this)?.let {
                 if (it.visibility != GONE) {
-                    addChild(it, index)
-                    topViewIndex = index
+                    addChild(it, position)
+                    topViewIndex = position
                 }
             }
-            index++
+            position++
         }
     }
 
