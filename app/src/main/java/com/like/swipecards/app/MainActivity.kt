@@ -69,6 +69,9 @@ class MainActivity : AppCompatActivity() {
         mBinding.swipeRight.setOnClickListener {
             mBinding.swipeCardsAdapterView.swipeRight()
         }
+        mBinding.clear.setOnClickListener {
+            myAdapter.clear()
+        }
     }
 
     private var count = 0

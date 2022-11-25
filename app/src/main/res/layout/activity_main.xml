@@ -73,9 +73,23 @@
             android:background="@drawable/bg_button"
             android:text="left"
             android:textColor="#ffffff"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/clear"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/clear"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_button"
+            android:text="clear"
+            android:textColor="#ffffff"
+            android:textSize="10sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/swipeRight"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toEndOf="@id/swipeLeft" />
 
         <Button
             android:id="@+id/swipeRight"
@@ -85,9 +99,10 @@
             android:background="@drawable/bg_button"
             android:text="right"
             android:textColor="#ffffff"
+            android:textSize="10sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/swipeLeft" />
+            app:layout_constraintStart_toEndOf="@id/clear" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
