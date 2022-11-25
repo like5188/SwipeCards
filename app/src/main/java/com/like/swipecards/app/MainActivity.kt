@@ -139,17 +139,17 @@ private class MyAdapter : BaseAdapter() {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var cv = convertView
-        val holder: ViewHolder
+        val holder: ViewHolder?
         if (cv == null) {
             cv = LayoutInflater.from(parent.context).inflate(R.layout.item_cardview, parent, false)
             holder = ViewHolder()
             cv.tag = holder
             holder.tv = cv.findViewById(R.id.tv)
         } else {
-            holder = cv.tag as ViewHolder
+            holder = cv.tag as? ViewHolder
         }
         getItem(position)?.let {
-            holder.tv?.setText(it)
+            holder?.tv?.setText(it)
         }
         return cv!!
     }
