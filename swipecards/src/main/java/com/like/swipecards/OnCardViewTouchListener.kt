@@ -165,6 +165,8 @@ class OnCardViewTouchListener(
 
     /**
      * 是否水平快速滑动
+     * 注意：这里不直接使用[GestureDetector]或者[VelocityTracker]来计算，
+     * 是因为它们没有计算手指停留的时间（因为此期间没有事件产生），即手指停留很久再松开，也会触发快速滑动操作。
      */
     private val isHorizontalQuickSwipe: Boolean
         get() {
