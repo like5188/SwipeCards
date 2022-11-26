@@ -98,18 +98,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     var onSwipeListener: OnSwipeListener? = null
 
-    /**
-     * 从最底层开始移除视图并保存到缓存中，需要保留指定数量的视图。
-     */
-    private fun removeAndAddToCache(remain: Int) {
-        while (childCount - remain > 0) {
-            getChildAt(0)?.apply {
-                removeViewInLayout(this)
-                viewCaches.add(this)
-            }
-        }
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         addChildren()
         measureChildren(widthMeasureSpec, heightMeasureSpec)
@@ -126,6 +114,18 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         } else {// 如果 topView 不存在
             removeAndAddToCache(0)
             addChildren(0)
+        }
+    }
+
+    /**
+     * 从最底层开始移除视图并保存到缓存中，需要保留指定数量的视图。
+     */
+    private fun removeAndAddToCache(remain: Int) {
+        while (childCount - remain > 0) {
+            getChildAt(0)?.apply {
+                removeViewInLayout(this)
+                viewCaches.add(this)
+            }
         }
     }
 
