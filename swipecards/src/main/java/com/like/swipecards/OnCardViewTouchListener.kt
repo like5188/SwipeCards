@@ -171,7 +171,7 @@ class OnCardViewTouchListener(
     private val isHorizontalQuickSwipe: Boolean
         get() {
             val time = (System.currentTimeMillis() - downTime) / 1000f
-            val dX = abs(curRawX - downRawY)
+            val dX = abs(curRawX - downRawX)
             val xVelocity = dX / time
             return xVelocity > minimumVelocity
         }
