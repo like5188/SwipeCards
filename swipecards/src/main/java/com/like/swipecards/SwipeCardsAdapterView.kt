@@ -144,23 +144,20 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
     }
 
-    override
-    fun measureChildren(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        (0 until childCount).forEach {
-            val child = getChildAt(it)
-            val lp = child.layoutParams as LayoutParams
-            val childWidthSpec = getChildMeasureSpec(
-                widthMeasureSpec,
-                paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin,
-                lp.width
-            )
-            val childHeightSpec = getChildMeasureSpec(
-                heightMeasureSpec,
-                paddingTop + paddingBottom + lp.topMargin + lp.bottomMargin,
-                lp.height
-            )
-            child.measure(childWidthSpec, childHeightSpec)
-        }
+    // 此处重写此方法，而不使用FrameLayout自带的测量方法，是因为它把margin也计算到了child的宽中，这样会导致滑动判断边界的时候更麻烦。
+    override fun measureChild(child: View, parentWidthMeasureSpec: Int, parentHeightMeasureSpec: Int) {
+        val lp = child.layoutParams as LayoutParams
+        val childWidthSpec = getChildMeasureSpec(
+            parentWidthMeasureSpec,
+            paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin,
+            lp.width
+        )
+        val childHeightSpec = getChildMeasureSpec(
+            parentHeightMeasureSpec,
+            paddingTop + paddingBottom + lp.topMargin + lp.bottomMargin,
+            lp.height
+        )
+        child.measure(childWidthSpec, childHeightSpec)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
