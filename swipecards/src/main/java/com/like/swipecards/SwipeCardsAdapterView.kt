@@ -217,20 +217,20 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun adjustChildren(rate: Float = 0f, isInit: Boolean = true) {
         val absRate = abs(rate)
-        (0 until topViewIndex).forEach {
+        // index代表可见的最底层视图的索引。所有视图的最底层的视图为0
+        for (index in (0 until topViewIndex)) {
+            // 如果不是初始化，并且"最底层那一个被遮住的视图"存在
+            if (!isInit && childCount >= maxVisible) {
+                if (index == 0) {// 排除"最底层那一个被遮住的视图"
+                    continue
+                }
+            }
             // 层级。最外层（topView）的层级为 0，向底层递增
-            var level = topViewIndex - it
+            var level = topViewIndex - index
             if (level > maxVisible - 2) {
                 level = maxVisible - 2
             }
-            // 可见的最底层视图的索引。所有视图的最底层的视图为0
-            var index = it
-            if (!isInit && childCount >= maxVisible) {
-                if (index == 0) {// 排除最底层那一个被遮住的视图
-                    index = 1
-                }
-            }
-
+            // 进行缩放和垂直平移
             getChildAt(index)?.apply {
                 val yOffset = (yOffsetStep * (level - absRate)).toInt()
                 val curYOffset = if (isInit) 0 else top - originTopViewTop
