@@ -4,7 +4,6 @@ import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
@@ -161,44 +160,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        layoutChildren()
-        // 设置OnCardViewTouchListener监听必须放在layoutChildren()后面，否则OnCardViewTouchListener中获取不到cardView的相关参数。
+        super.onLayout(changed, left, top, right, bottom)
+        adjustChildren()
+        // 设置OnCardViewTouchListener监听必须放在layout最后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
         if (childCount == 0) {
             onCardViewTouchListener = null
         } else if (topView == null) {
             topView = getChildAt(topViewIndex)
             setOnCardViewTouchListener()
-        }
-    }
-
-    private fun layoutChildren() {
-        (0 until childCount).forEach {
-            val child = getChildAt(it)
-            val lp = child.layoutParams as LayoutParams
-            val w = child.measuredWidth
-            val h = child.measuredHeight
-            var gravity = lp.gravity
-            if (gravity == -1) {
-                gravity = Gravity.TOP or Gravity.START
-            }
-            val absoluteGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection)
-            val verticalGravity = gravity and Gravity.VERTICAL_GRAVITY_MASK
-            val childLeft: Int = when (absoluteGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
-                Gravity.CENTER_HORIZONTAL -> (width + paddingLeft - paddingRight - w) / 2 + lp.leftMargin - lp.rightMargin
-                Gravity.END -> width - paddingRight - w - lp.rightMargin
-                Gravity.START -> paddingLeft + lp.leftMargin
-                else -> paddingLeft + lp.leftMargin
-            }
-            val childTop: Int = when (verticalGravity) {
-                Gravity.CENTER_VERTICAL -> (height + paddingTop - paddingBottom - h) / 2 + lp.topMargin - lp.bottomMargin
-                Gravity.BOTTOM -> height - paddingBottom - h - lp.bottomMargin
-                Gravity.TOP -> paddingTop + lp.topMargin
-                else -> paddingTop + lp.topMargin
-            }
-            // 布局child
-            child.layout(childLeft, childTop, childLeft + w, childTop + h)
-            // 缩放层叠效果
-            adjustChild(child, it)
         }
     }
 
@@ -241,13 +210,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     /**
      * 调整视图垂直位置及缩放系数，达到缩放层叠效果
      */
-    private fun adjustChild(child: View, index: Int) {
-        if (index > -1 && index < maxVisible) {
+    private fun adjustChildren() {
+        (0 until topViewIndex).forEach { index ->
+            // 缩放层叠效果
             var level = topViewIndex - index
             if (level > 2) {
                 level = 2
             }
-            Log.w("TAG", "adjustChild index=$index level=$level")
+            val child = getChildAt(index)
             val yOffset = yOffsetStep * level
             child.offsetTopAndBottom(yOffset)
             val scale = 1 - scaleStep * level
