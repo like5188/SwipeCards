@@ -165,8 +165,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         layoutChildren()
-        val adapterCount = mAdapter?.count ?: 0
-        if (adapterCount == 0) {
+        // 设置OnCardViewTouchListener监听必须放在layoutChildren()后面，否则OnCardViewTouchListener中获取不到cardView的相关参数。
+        if (childCount == 0) {
             onCardViewTouchListener = null
         } else if (topView == null) {
             topView = getChildAt(topViewIndex)
@@ -202,6 +202,42 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             child.layout(childLeft, childTop, childLeft + w, childTop + h)
             // 缩放层叠效果
             adjustChild(child, it)
+        }
+    }
+
+    private fun setOnCardViewTouchListener() {
+        val view = topView ?: return
+        onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : OnSwipeListener {
+            override fun onCardExited(direction: Int, dataObject: Any?) {
+                removeViewInLayout(view)
+                topView = null
+                onSwipeListener?.onCardExited(direction, dataObject)
+                // 通知加载数据
+                if ((mAdapter?.count ?: 0) == prefetchCount) {
+                    onSwipeListener?.onLoadData()
+                }
+            }
+
+            override fun onClick(v: View?, dataObject: Any?) {
+                onSwipeListener?.onClick(v, dataObject)
+            }
+
+            override fun onScroll(direction: Int, absProgress: Float) {
+                var rate = absProgress / scaleMax// 修正系数
+                if (rate > 1f) {
+                    rate = 1f
+                }
+                adjustChildrenUnderTopView(rate)
+                onSwipeListener?.onScroll(direction, absProgress)
+            }
+
+            override fun onLoadData() {
+            }
+
+        }).also {
+            // 设置是否支持左右滑
+            it.isNeedSwipe = isNeedSwipe
+            view.setOnTouchListener(it)
         }
     }
 
@@ -253,42 +289,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
             index++
             level--
-        }
-    }
-
-    private fun setOnCardViewTouchListener() {
-        val view = topView ?: return
-        onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : OnSwipeListener {
-            override fun onCardExited(direction: Int, dataObject: Any?) {
-                removeViewInLayout(view)
-                topView = null
-                onSwipeListener?.onCardExited(direction, dataObject)
-                // 通知加载数据
-                if ((mAdapter?.count ?: 0) == prefetchCount) {
-                    onSwipeListener?.onLoadData()
-                }
-            }
-
-            override fun onClick(v: View?, dataObject: Any?) {
-                onSwipeListener?.onClick(v, dataObject)
-            }
-
-            override fun onScroll(direction: Int, absProgress: Float) {
-                var rate = absProgress / scaleMax// 修正系数
-                if (rate > 1f) {
-                    rate = 1f
-                }
-                adjustChildrenUnderTopView(rate)
-                onSwipeListener?.onScroll(direction, absProgress)
-            }
-
-            override fun onLoadData() {
-            }
-
-        }).also {
-            // 设置是否支持左右滑
-            it.isNeedSwipe = isNeedSwipe
-            view.setOnTouchListener(it)
         }
     }
 
