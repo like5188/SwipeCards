@@ -97,12 +97,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var onSwipeListener: OnSwipeListener? = null
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        addChildren()
+        makeAndAddView()
         measureChildren(widthMeasureSpec, heightMeasureSpec)
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
     }
 
-    private fun addChildren() {
+    private fun makeAndAddView() {
         val adapterCount = mAdapter?.count ?: 0
         if (adapterCount == 0) {
             removeAndAddToCache(0)
