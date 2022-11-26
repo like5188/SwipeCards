@@ -225,8 +225,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
             // 可见的最底层视图的索引。所有视图的最底层的视图为0
             var index = it
-            if (!isInit && childCount >= maxVisible && index == 0) {
-                index = 1
+            if (!isInit && childCount >= maxVisible) {
+                if (index == 0) {// 排除最底层那一个被遮住的视图
+                    index = 1
+                }
             }
 
             getChildAt(index)?.apply {
