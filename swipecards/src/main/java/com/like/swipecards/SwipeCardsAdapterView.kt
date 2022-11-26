@@ -63,15 +63,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     /**
      * 显示在屏幕中的最大 cardView 数量。包括"最底层那一个被遮住的视图"。
      */
-    var maxVisible = 4
+    var maxVisible = 5
 
     /**
      * 预取数量。
      * 当数量等于此值时，触发加载数据的操作。建议 >=[maxVisible]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
      */
-    var prefetchCount = 4
+    var prefetchCount = 5
 
-    //缩放层叠效果
     /**
      * view叠加垂直偏移量的步长
      */
