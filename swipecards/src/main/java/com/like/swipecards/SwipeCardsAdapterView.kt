@@ -59,7 +59,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private var originTopViewTop = 0
 
     private var onCardViewTouchListener: OnCardViewTouchListener? = null
-    private val maxVisible = 4 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+    private val maxVisible = 5 // 值建议最小为4，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
 
     //缩放层叠效果
     /**
