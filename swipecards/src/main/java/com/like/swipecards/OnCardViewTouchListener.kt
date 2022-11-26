@@ -159,6 +159,21 @@ class OnCardViewTouchListener(
         return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
     }
 
+    // 每秒移动的最小像素
+    private var minimumVelocity = 500
+    private var downTime: Long = 0L
+
+    /**
+     * 是否水平快速滑动
+     */
+    private val isHorizontalQuickSwipe: Boolean
+        get() {
+            val time = (System.currentTimeMillis() - downTime) / 1000f
+            val dX = abs(curRawX - downRawY)
+            val xVelocity = dX / time
+            return xVelocity > minimumVelocity
+        }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         if (isAnimRunning.get()) {
@@ -180,7 +195,7 @@ class OnCardViewTouchListener(
                 if (activePointerId != INVALID_POINTER_ID) {
                     return true
                 }
-
+                downTime = System.currentTimeMillis()
                 downRawX = curRawX
                 downRawY = curRawY
 
@@ -248,10 +263,13 @@ class OnCardViewTouchListener(
     private fun resetCardViewOnStack(event: MotionEvent) {
         if (isNeedSwipe) {
             val moveDirection = moveDirection
-            if ((moveDirection == DIRECTION_TOP_HALF_LEFT || moveDirection == DIRECTION_BOTTOM_HALF_LEFT) && absMoveProgressPercent > borderPercent) {
-                // Left Swipe
+            if ((moveDirection == DIRECTION_TOP_HALF_LEFT || moveDirection == DIRECTION_BOTTOM_HALF_LEFT)// 左滑
+                && (absMoveProgressPercent > borderPercent || isHorizontalQuickSwipe)// 超出边界或者是快速滑动
+            ) {
                 exitWithAnimation(true, getExitPoint(true, event), false)
-            } else if ((moveDirection == DIRECTION_TOP_HALF_RIGHT || moveDirection == DIRECTION_BOTTOM_HALF_RIGHT) && absMoveProgressPercent > borderPercent) {
+            } else if ((moveDirection == DIRECTION_TOP_HALF_RIGHT || moveDirection == DIRECTION_BOTTOM_HALF_RIGHT)// 右滑
+                && (absMoveProgressPercent > borderPercent || isHorizontalQuickSwipe)// 超出边界或者是快速滑动
+            ) {
                 // Right Swipe
                 exitWithAnimation(false, getExitPoint(false, event), false)
             } else {
