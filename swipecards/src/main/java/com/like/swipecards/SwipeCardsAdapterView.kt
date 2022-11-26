@@ -193,7 +193,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 if (rate > 1f) {
                     rate = 1f
                 }
-                adjustChildrenUnderTopView(rate)
+                adjustChildren(rate, false)
                 onSwipeListener?.onScroll(direction, absProgress)
             }
 
@@ -208,54 +208,35 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     /**
-     * 调整视图垂直位置及缩放系数，达到缩放层叠效果
+     * 调整视图达到缩放层叠效果
+     * 注意：
+     * 1、如果是初始化，那么就调整TopView 之下的所有视图。
+     * 2、如果不是初始化，那么就调整TopView 之下的所有"可见"视图。"可见"是指最底层那一个视图不需要处理，因为它不需要缩放和位移。它只是在其上层的视图缩放或者位移时显现出来而已。
+     * @param rate      滑动进度
+     * @param isInit    是否初始化
      */
-    private fun adjustChildren() {
-        (0 until topViewIndex).forEach { index ->
-            // 缩放层叠效果
-            var level = topViewIndex - index
-            if (level > 2) {
-                level = 2
-            }
-            val child = getChildAt(index)
-            val yOffset = yOffsetStep * level
-            child.offsetTopAndBottom(yOffset)
-            val scale = 1 - scaleStep * level
-            child.scaleX = scale
-            child.scaleY = scale
-        }
-    }
-
-    /**
-     * 调整 TopView 之下的所有可见视图随滑动进度的缩放和垂直位移。
-     * 注意：最底层那一个视图不需要处理，因为它不需要缩放和位移。它只是在其上层的视图缩放或者位移时显现出来而已。
-     */
-    private fun adjustChildrenUnderTopView(rate: Float) {
-        val childCount = childCount
-        if (childCount <= 1) {
-            return
-        }
-        var index: Int// 可见的最底层视图的索引。所有视图的最底层的视图为0
-        var level: Int// 层级。最外层（topView）的层级为 0，向底层递增
-        if (childCount == 2) {
-            index = topViewIndex - 1
-            level = 1
-        } else {
-            index = topViewIndex - 2
-            level = 2
-        }
+    private fun adjustChildren(rate: Float = 0f, isInit: Boolean = true) {
         val absRate = abs(rate)
-        while (index < topViewIndex) {
+        (0 until topViewIndex).forEach {
+            // 层级。最外层（topView）的层级为 0，向底层递增
+            var level = topViewIndex - it
+            if (level > maxVisible - 2) {
+                level = maxVisible - 2
+            }
+            // 可见的最底层视图的索引。所有视图的最底层的视图为0
+            var index = it
+            if (!isInit && childCount >= maxVisible && index == 0) {
+                index = 1
+            }
+
             getChildAt(index)?.apply {
                 val yOffset = (yOffsetStep * (level - absRate)).toInt()
-                val curYOffset = top - originTopViewTop
+                val curYOffset = if (isInit) 0 else top - originTopViewTop
                 offsetTopAndBottom(yOffset - curYOffset)
                 val scale = 1 - scaleStep * level + scaleStep * absRate
                 scaleX = scale
                 scaleY = scale
             }
-            index++
-            level--
         }
     }
 
