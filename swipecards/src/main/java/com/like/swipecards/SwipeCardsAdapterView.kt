@@ -17,7 +17,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
     defStyleRes: Int = 0
-) : BaseAdapterView<T>(context, attrs, defStyle, defStyleRes) {
+) : FrameLayout(context, attrs, defStyle, defStyleRes) {
     private val viewCaches = mutableListOf<View?>()
     private var mAdapter: T? = null
     private val dataSetObserver: DataSetObserver by lazy {
@@ -93,6 +93,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var isNeedSwipe: Boolean = true
 
     var onSwipeListener: OnSwipeListener? = null
+    private var heightMeasureSpec = 0
+    private var widthMeasureSpec = 0
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        this.widthMeasureSpec = widthMeasureSpec
+        this.heightMeasureSpec = heightMeasureSpec
+    }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
@@ -101,6 +109,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         inLayout = true
         if (adapterCount == 0) {
             removeAndAddToCache(0)
+            onCardViewTouchListener = null
         } else if (topView != null) {// 如果 topView 存在
             removeAndAddToCache(1)
             addChildren(1)
@@ -290,22 +299,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         onCardViewTouchListener?.swipeRight()
     }
 
-    override fun getAdapter(): T? {
-        return mAdapter
-    }
-
-    override fun setAdapter(adapter: T) {
+    fun setAdapter(adapter: T) {
         mAdapter?.unregisterDataSetObserver(dataSetObserver)
         mAdapter = adapter
         mAdapter?.registerDataSetObserver(dataSetObserver)
-    }
-
-    override fun generateLayoutParams(attrs: AttributeSet?): LayoutParams {
-        return FrameLayout.LayoutParams(context, attrs)
-    }
-
-    override fun getSelectedView(): View? {
-        return topView
     }
 
     override fun requestLayout() {
