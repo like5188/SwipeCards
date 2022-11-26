@@ -72,12 +72,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     var prefetchCount = 5
 
     /**
-     * view叠加垂直偏移量的步长
+     * 缩放层叠时的垂直偏移量步长
      */
     var yOffsetStep = 100
 
     /**
-     * view叠加缩放的步长
+     *缩放层叠时的缩放步长
      */
     var scaleStep = 0.08f
 
