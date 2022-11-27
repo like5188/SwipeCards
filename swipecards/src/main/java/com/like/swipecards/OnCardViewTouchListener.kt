@@ -325,6 +325,7 @@ class OnCardViewTouchListener(
      * @param byClick   是否单击事件引起的
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean) {
+        // 移动方向。包括手指滑动和单击自动移动。
         val direction = if (byClick) {
             if (isLeft) DIRECTION_TOP_HALF_LEFT else DIRECTION_TOP_HALF_RIGHT
         } else {
