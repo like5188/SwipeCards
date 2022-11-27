@@ -48,11 +48,11 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         }
 
     /**
-     * 视觉看到的"最外层"的那个视图的索引。
-     * 注意：AdapterView中，最底层（屏幕最深处）的索引是0。这会影响到相关的添加视图[addViewInLayout]、获取视图[getChildAt]等方法。
+     * topView 的索引。
+     * 注意：最底层（屏幕最深处）的索引是0。
      */
     private val topViewIndex: Int
-        get() = Math.min(mAdapter?.count ?: 0, maxVisible) - 1
+        get() = Math.min(mAdapter?.count ?: 0, maxCount) - 1
 
     // 记录 TopView 原始位置的left、top
     private var originTopViewLeft = 0
@@ -61,13 +61,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     private var onCardViewTouchListener: OnCardViewTouchListener? = null
 
     /**
-     * 显示在屏幕中的最大 cardView 数量。包括"最底层那一个被遮住的视图"。
+     * 存在屏幕中的最大 cardView 数量。包括"最底层那一个被遮住的视图"。
      */
-    var maxVisible = 5
+    var maxCount = 5
 
     /**
      * 预取数量。
-     * 当数量等于此值时，触发加载数据的操作。建议 >=[maxVisible]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+     * 当数量等于此值时，触发加载数据的操作。建议 >=[maxCount]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
      */
     var prefetchCount = 5
 
@@ -138,7 +138,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 convertView = viewCaches.removeAt(0)
             }
             mAdapter?.getView(position, convertView, this)?.let {
-                // 添加child，并且不触发requestLayout()方法，性能比addView更好
+                // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
                 addViewInLayout(it, 0, it.layoutParams, true)
             }
             position++
@@ -222,15 +222,15 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         // index代表可见的最底层视图的索引。所有视图的最底层的视图为0
         for (index in (0 until topViewIndex)) {
             // 如果不是初始化，并且"最底层那一个被遮住的视图"存在
-            if (!isInit && childCount >= maxVisible) {
+            if (!isInit && childCount >= maxCount) {
                 if (index == 0) {// 排除"最底层那一个被遮住的视图"
                     continue
                 }
             }
             // 层级。最外层（topView）的层级为 0，向底层递增
             var level = topViewIndex - index
-            if (level > maxVisible - 2) {
-                level = maxVisible - 2
+            if (level > maxCount - 2) {
+                level = maxCount - 2
             }
             // 进行缩放和垂直平移
             getChildAt(index)?.apply {
