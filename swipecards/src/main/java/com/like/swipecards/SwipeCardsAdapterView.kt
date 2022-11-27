@@ -107,13 +107,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun makeAndAddView() {
         val adapterCount = mAdapter?.count ?: 0
-        if (adapterCount == 0) {
-            removeAndAddToCache(0)
-        } else if (topView != null) {// 如果 topView 存在
-            removeAndAddToCache(1)
-            addChildren(1)
-        } else {// 如果 topView 不存在
-            removeAndAddToCache(0)
+        removeAndAddToCache(0)
+        if (adapterCount > 0) {
             addChildren(0)
         }
     }
