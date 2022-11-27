@@ -3,6 +3,7 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
@@ -106,6 +107,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun makeAndAddView() {
+        Log.w("TAG", "1")
         val adapterCount = mAdapter?.count ?: 0
         removeAndAddToCache(0)
         if (adapterCount > 0) {
@@ -157,50 +159,54 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        Log.e("TAG", "2")
         super.onLayout(changed, left, top, right, bottom)
         adjustChildren()
-        // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
-        if (childCount == 0) {
-            onCardViewTouchListener = null
-        } else if (topView == null) {
-            topView = getChildAt(topViewIndex)
-            setOnCardViewTouchListener()
-        }
+        resetTopView()
     }
 
-    private fun setOnCardViewTouchListener() {
-        val view = topView ?: return
-        onCardViewTouchListener = OnCardViewTouchListener(view, mAdapter?.getItem(0), rotationDegrees, object : OnSwipeListener {
-            override fun onCardExited(direction: Int, dataObject: Any?) {
-                removeViewInLayout(view)
-                topView = null
-                onSwipeListener?.onCardExited(direction, dataObject)
-                // 通知加载数据
-                if ((mAdapter?.count ?: 0) == prefetchCount) {
-                    onSwipeListener?.onLoadData()
+    // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
+    private fun resetTopView() {
+        topView = null
+        onCardViewTouchListener = null
+        if (childCount > 0) {
+            topView = getChildAt(topViewIndex)?.apply {
+                // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
+                onCardViewTouchListener = OnCardViewTouchListener(this, mAdapter?.getItem(0), rotationDegrees,
+                    object : OnSwipeListener {
+                        override fun onCardExited(direction: Int, dataObject: Any?) {
+                            removeViewInLayout(topView)
+                            resetTopView()
+                            onSwipeListener?.onCardExited(direction, dataObject)
+                            // 通知加载数据
+                            if ((mAdapter?.count ?: 0) == prefetchCount) {
+                                onSwipeListener?.onLoadData()
+                            }
+                        }
+
+                        override fun onClick(v: View?, dataObject: Any?) {
+                            onSwipeListener?.onClick(v, dataObject)
+                        }
+
+                        override fun onScroll(direction: Int, absProgress: Float) {
+                            var rate = absProgress / scaleMax// 修正系数
+                            if (rate > 1f) {
+                                rate = 1f
+                            }
+                            adjustChildren(rate, false)
+                            onSwipeListener?.onScroll(direction, absProgress)
+                        }
+
+                        override fun onLoadData() {
+                        }
+
+                    }
+                ).also {
+                    // 设置是否支持左右滑
+                    it.isNeedSwipe = isNeedSwipe
+                    this.setOnTouchListener(it)
                 }
             }
-
-            override fun onClick(v: View?, dataObject: Any?) {
-                onSwipeListener?.onClick(v, dataObject)
-            }
-
-            override fun onScroll(direction: Int, absProgress: Float) {
-                var rate = absProgress / scaleMax// 修正系数
-                if (rate > 1f) {
-                    rate = 1f
-                }
-                adjustChildren(rate, false)
-                onSwipeListener?.onScroll(direction, absProgress)
-            }
-
-            override fun onLoadData() {
-            }
-
-        }).also {
-            // 设置是否支持左右滑
-            it.isNeedSwipe = isNeedSwipe
-            view.setOnTouchListener(it)
         }
     }
 
