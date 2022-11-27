@@ -3,11 +3,9 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
-import android.widget.TextView
 import kotlin.math.abs
 
 /*
@@ -105,7 +103,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         makeAndAddView()
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
         if (childCount == 0) return
-        Log.w("TAG", "measureChildren")
         measureChildren(widthMeasureSpec, heightMeasureSpec)
     }
 
@@ -113,17 +110,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         val adapterCount = mAdapter?.count ?: 0
         if (adapterCount == 0) {
             if (childCount > 0) {// 清除adapter中的所有数据时触发
-                Log.w("TAG", "1 adapterCount=$adapterCount childCount=$childCount topViewIndex=$topViewIndex")
                 removeAndAddToCache(0)
             }
         } else if (topView == null) {
             if (childCount == 0) {// 初始化时触发
-                Log.w("TAG", "2 adapterCount=$adapterCount childCount=$childCount topViewIndex=$topViewIndex")
                 addChildren(0)
             }
         } else {
             if (childCount <= topViewIndex) {// 删除topView后触发
-                Log.w("TAG", "3 adapterCount=$adapterCount childCount=$childCount topViewIndex=$topViewIndex")
                 addChildren(childCount)
             }
         }
@@ -151,7 +145,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 //                convertView = viewCaches.removeAt(0)
 //            }
             mAdapter?.getView(index, convertView, this)?.let {
-                Log.d("TAG", "addView=${(it as? TextView)?.text} position=$index topViewIndex=$topViewIndex ${it == convertView}")
                 // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
                 addViewInLayout(it, 0, it.layoutParams, true)
             }
@@ -183,14 +176,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
     private fun resetTopView() {
-        Log.e(
-            "TAG",
-            "onLayout-resetTopView adapterCount=${mAdapter?.count} childCount=$childCount topViewIndex=$topViewIndex topView=${
-                (getChildAt(
-                    topViewIndex
-                ) as? TextView)?.text
-            }"
-        )
         onCardViewTouchListener = null
         topView = getChildAt(topViewIndex)?.apply {
             // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
