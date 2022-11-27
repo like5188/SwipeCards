@@ -4,7 +4,6 @@ import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Adapter
 import android.widget.FrameLayout
 import kotlin.math.abs
@@ -285,19 +284,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     companion object {
-        class LayoutParams : FrameLayout.LayoutParams {
+        class LayoutParams(c: Context, attrs: AttributeSet?) : FrameLayout.LayoutParams(c, attrs) {
             /**
              * View type for this view, as returned by
              * [android.widget.Adapter.getItemViewType]
              */
             var viewType = 0
-
-            constructor(source: ViewGroup.LayoutParams) : super(source)
-            constructor(c: Context, attrs: AttributeSet?) : super(c, attrs)
-            constructor(w: Int, h: Int) : super(w, h)
-            constructor(w: Int, h: Int, viewType: Int) : super(w, h) {
-                this.viewType = viewType
-            }
         }
     }
 
