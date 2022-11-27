@@ -219,12 +219,12 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun adjustChildren(rate: Float = 0f, isInit: Boolean = true) {
         val absRate = abs(rate)
-        // index代表可见的最底层视图的索引。所有视图的最底层的视图为0
-        for (index in (0 until topViewIndex)) {
+        // index代表可见的最底层视图的索引。所有视图的最底层的视图为0。topViewIndex-1代表TopView 之下
+        for (index in (topViewIndex - 1 downTo 0)) {
             // 如果不是初始化，并且"最底层那一个被遮住的视图"存在
             if (!isInit && childCount >= maxCount) {
                 if (index == 0) {// 排除"最底层那一个被遮住的视图"
-                    continue
+                    return
                 }
             }
             // 层级。最外层（topView）的层级为 0，向底层递增
