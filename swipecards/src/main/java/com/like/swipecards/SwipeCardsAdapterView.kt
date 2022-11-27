@@ -108,29 +108,19 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 
     private fun makeAndAddView() {
         val adapterCount = mAdapter?.count ?: 0
-        if (adapterCount == 0) {
-            if (childCount > 0) {// 清除adapter中的所有数据时触发
-                removeAndAddToCache(0)
+        if (adapterCount == 0) {// 一个个删除完所有，或者清除adapter中的所有数据时触发
+            if (childCount > 0) {
+                removeAllViewsInLayout()// 移除完成后会重新触发onMeasure，从而触发resetTopView()方法
+            } else if (childCount == 0) {
+                resetTopView()// 不管是清除，还是一个个删除，当数据为空时，都需要重置topView
             }
-        } else if (topView == null) {
-            if (childCount == 0) {// 初始化时触发
+        } else if (topView == null) {// 初始化时触发
+            if (childCount == 0) {
                 addChildren(0)
             }
-        } else {
-            if (childCount <= topViewIndex) {// 删除topView后触发
+        } else {// 一个个删除topView后，但是还没有全部删除完成触发
+            if (childCount <= topViewIndex) {
                 addChildren(childCount)
-            }
-        }
-    }
-
-    /**
-     * 从最底层开始移除视图并保存到缓存中，需要保留指定数量的视图。
-     */
-    private fun removeAndAddToCache(remain: Int) {
-        while (childCount - remain > 0) {
-            getChildAt(0)?.apply {
-                removeViewInLayout(this)
-                viewCaches.add(this)
             }
         }
     }
