@@ -144,7 +144,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         (startIndex..topViewIndex).forEach { index ->
             val scrapView = mRecycler.getScrapView(index)
             adapter.getView(index, scrapView, this)?.let {
-                (it.layoutParams as LayoutParams).viewType = adapter.getItemViewType(index)
+                (it.layoutParams as? LayoutParams)?.viewType = adapter.getItemViewType(index)
                 // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
                 addViewInLayout(it, 0, it.layoutParams, true)
             }
@@ -278,14 +278,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         mRecycler.clear()
-    }
-
-    override fun generateDefaultLayoutParams(): FrameLayout.LayoutParams {
-        return LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, 0)
-    }
-
-    override fun generateLayoutParams(lp: ViewGroup.LayoutParams): ViewGroup.LayoutParams {
-        return LayoutParams(lp)
     }
 
     override fun generateLayoutParams(attrs: AttributeSet?): FrameLayout.LayoutParams {
