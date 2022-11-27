@@ -22,14 +22,19 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyle, defStyleRes) {
     private val viewCaches = mutableListOf<View?>()
-    private var mAdapter: T? = null
+    private var adapter: T? = null
+
+    // 是否是刷新操作
+    private var isRefreshData: Boolean = false
     private val dataSetObserver: DataSetObserver by lazy {
         object : DataSetObserver() {
             override fun onChanged() {
+                isRefreshData = false
                 requestLayout()
             }
 
             override fun onInvalidated() {
+                isRefreshData = true
                 requestLayout()
             }
         }
@@ -52,7 +57,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      * 注意：最底层（屏幕最深处）的索引是0。
      */
     private val topViewIndex: Int
-        get() = Math.min(mAdapter?.count ?: 0, maxCount) - 1
+        get() = Math.min(adapter?.count ?: 0, maxCount) - 1
 
     // 记录 TopView 原始位置的left、top
     private var originTopViewLeft = 0
@@ -107,13 +112,13 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun makeAndAddView() {
-        val adapterCount = mAdapter?.count ?: 0
-        if (adapterCount == 0) {// 一个个删除完所有，或者清除adapter中的所有数据时触发
+        val adapterCount = adapter?.count ?: 0
+        if (adapterCount == 0 || isRefreshData) {// 一个个删除完所有，或者清除adapter中的所有数据时触发
+            isRefreshData = false
             if (childCount > 0) {
                 removeAllViewsInLayout()// 移除完成后会重新触发onMeasure，从而触发resetTopView()方法
-            } else if (childCount == 0) {
-                resetTopView()// 不管是清除，还是一个个删除，当数据为空时，都需要重置topView
             }
+            resetTopView()// 不管是清除，还是一个个删除，当数据为空时，都需要重置topView
         } else if (topView == null) {// 初始化时触发
             if (childCount == 0) {
                 addChildren(0)
@@ -134,7 +139,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
 //            if (viewCaches.isNotEmpty()) {
 //                convertView = viewCaches.removeAt(0)
 //            }
-            mAdapter?.getView(index, convertView, this)?.let {
+            adapter?.getView(index, convertView, this)?.let {
                 // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
                 addViewInLayout(it, 0, it.layoutParams, true)
             }
@@ -169,14 +174,14 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         onCardViewTouchListener = null
         topView = getChildAt(topViewIndex)?.apply {
             // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
-            onCardViewTouchListener = OnCardViewTouchListener(this, mAdapter?.getItem(0), rotationDegrees,
+            onCardViewTouchListener = OnCardViewTouchListener(this, adapter?.getItem(0), rotationDegrees,
                 object : OnSwipeListener {
                     override fun onCardExited(direction: Int, dataObject: Any?) {
                         removeViewInLayout(topView)
                         viewCaches.add(topView)
                         onSwipeListener?.onCardExited(direction, dataObject)
                         // 通知加载数据
-                        if ((mAdapter?.count ?: 0) == prefetchCount) {
+                        if ((adapter?.count ?: 0) == prefetchCount) {
                             onSwipeListener?.onLoadData()
                         }
                     }
@@ -256,9 +261,9 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     fun setAdapter(adapter: T) {
-        mAdapter?.unregisterDataSetObserver(dataSetObserver)
-        mAdapter = adapter
-        mAdapter?.registerDataSetObserver(dataSetObserver)
+        this.adapter?.unregisterDataSetObserver(dataSetObserver)
+        this.adapter = adapter
+        this.adapter?.registerDataSetObserver(dataSetObserver)
     }
 
 }

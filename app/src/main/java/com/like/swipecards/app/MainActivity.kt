@@ -70,25 +70,42 @@ class MainActivity : AppCompatActivity() {
             myAdapter.clear()
         }
         mBinding.refresh.setOnClickListener {
-            count = 0
-            myAdapter.clear()
-            loadData()
+            refresh()
         }
     }
 
-    private var count = 0
+    private var page = 1
     private fun loadData() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val list = mutableListOf<String>()
-            for (i in 0..5) {
-                if (count < 10) {
-                    list.add(count++.toString())
-                }
-            }
+            val list = getData(page++)
             withContext(Dispatchers.Main) {
                 myAdapter.addAll(list)
             }
         }
+    }
+
+    private fun refresh() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            page = 1
+            val list = getData(page++)
+            withContext(Dispatchers.Main) {
+                myAdapter.clearAndAddAll(list)
+            }
+        }
+    }
+
+    private suspend fun getData(page: Int = 1, pageSize: Int = 10): List<String> = withContext(Dispatchers.IO) {
+        val list = mutableListOf<String>()
+        if (page == 1) {
+            for (i in 0 until pageSize) {
+                list.add(i.toString())
+            }
+        } else if (page == 2) {
+            for (i in pageSize until pageSize + 5) {
+                list.add(i.toString())
+            }
+        }
+        list
     }
 
 }
@@ -96,20 +113,19 @@ class MainActivity : AppCompatActivity() {
 private class MyAdapter : BaseAdapter() {
     private val list = mutableListOf<String>()
     fun addAll(collection: Collection<String>) {
-        if (collection.isEmpty()) {
-            return
-        }
-        if (isEmpty) {
-            list.addAll(collection)
-            notifyDataSetChanged()
-        } else {
-            list.addAll(collection)
-        }
+        list.addAll(collection)
+        notifyDataSetChanged()
     }
 
     fun clear() {
         list.clear()
         notifyDataSetChanged()
+    }
+
+    fun clearAndAddAll(collection: Collection<String>) {
+        list.clear()
+        list.addAll(collection)
+        notifyDataSetInvalidated()
     }
 
     override fun isEmpty(): Boolean {
