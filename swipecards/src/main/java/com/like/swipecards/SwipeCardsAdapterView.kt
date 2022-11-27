@@ -3,7 +3,6 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.Adapter
 import android.widget.FrameLayout
@@ -107,7 +106,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun makeAndAddView() {
-        Log.w("TAG", "1")
         val adapterCount = mAdapter?.count ?: 0
         removeAndAddToCache(0)
         if (adapterCount > 0) {
@@ -159,7 +157,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        Log.e("TAG", "2")
         super.onLayout(changed, left, top, right, bottom)
         adjustChildren()
         resetTopView()
