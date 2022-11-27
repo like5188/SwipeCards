@@ -120,7 +120,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
         } else {// 一个个删除topView后，但是还没有全部删除完成触发
             if (childCount <= topViewIndex) {
-                addChildren(childCount)
+                addChildren(childCount)// 添加一个视图到最底层
             }
         }
     }
