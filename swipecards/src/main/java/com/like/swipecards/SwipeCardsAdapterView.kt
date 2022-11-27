@@ -4,8 +4,10 @@ import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
 import android.view.View
-import android.widget.Adapter
+import android.view.ViewGroup
+import android.widget.BaseAdapter
 import android.widget.FrameLayout
+import androidx.databinding.ViewDataBinding
 import kotlin.math.abs
 
 /*
@@ -15,14 +17,14 @@ View的职责，根据测量模式和ViewGroup给出的建议的宽和高，计�
 /**
  * 滑动卡片集合视图
  */
-class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
+class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
     defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyle, defStyleRes) {
     private val mRecycler by lazy {
-        RecycleBin()
+        Recycler()
     }
     private lateinit var adapter: T
 
@@ -121,7 +123,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                 (childCount - 1 downTo 0).forEach {
                     val child = getChildAt(it)
                     removeViewInLayout(child)// 移除完成后会重新触发onMeasure，从而触发resetTopView()方法
-                    mRecycler.addScrapView(child)
+                    mRecycler.addScrapView(child.tag as ViewHolder<*>)
                 }
             }
             resetTopView()// 不管是清除，还是一个个删除，当数据为空时，都需要重置topView
@@ -141,12 +143,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun addChildren(startIndex: Int) {
         (startIndex..topViewIndex).forEach { index ->
-            val scrapView = mRecycler.getScrapView(index)
-            adapter.getView(index, scrapView, this)?.let {
-                (it.layoutParams as? LayoutParams)?.viewType = adapter.getItemViewType(index)
-                // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
-                addViewInLayout(it, 0, it.layoutParams, true)
-            }
+            val scrapView = mRecycler.getScrapView(index)?.itemView
+            val child = adapter.getView(index, scrapView, this)
+            // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
+            addViewInLayout(child, 0, child.layoutParams, true)
         }
     }
 
@@ -183,7 +183,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
                     override fun onCardExited(direction: Int, dataObject: Any?) {
                         topView?.let {
                             removeViewInLayout(it)
-                            mRecycler.addScrapView(it)
+                            mRecycler.addScrapView(it.tag as ViewHolder<*>)
                         }
                         onSwipeListener?.onCardExited(direction, dataObject)
                         // 通知加载数据
@@ -279,29 +279,53 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         mRecycler.clear()
     }
 
-    override fun generateLayoutParams(attrs: AttributeSet?): FrameLayout.LayoutParams {
-        return LayoutParams(context, attrs)
+    class ViewHolder<VB : ViewDataBinding>(val binding: VB) {
+        val itemView: View = binding.root
+        var itemViewType: Int = -1
     }
 
-    companion object {
-        class LayoutParams(c: Context, attrs: AttributeSet?) : FrameLayout.LayoutParams(c, attrs) {
-            /**
-             * View type for this view, as returned by
-             * [android.widget.Adapter.getItemViewType]
-             */
-            var viewType = 0
+    abstract class Adapter<VH : ViewHolder<*>> : BaseAdapter() {
+
+        abstract fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH
+
+        abstract fun onBindViewHolder(holder: VH, position: Int)
+
+        private fun createViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val holder = onCreateViewHolder(parent, viewType)
+            check(holder.itemView.parent == null) {
+                ("ViewHolder views must not be attached when"
+                        + " created. Ensure that you are not passing 'true' to the attachToRoot"
+                        + " parameter of LayoutInflater.inflate(..., boolean attachToRoot)")
+            }
+            holder.itemViewType = viewType
+            return holder
+        }
+
+        private fun bindViewHolder(holder: VH, position: Int) {
+            onBindViewHolder(holder, position)
+        }
+
+        final override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            var viewHolder: VH? = convertView?.tag as? VH
+            if (viewHolder == null) {
+                viewHolder = createViewHolder(parent, getItemViewType(position)).apply {
+                    itemView.tag = this
+                }
+            }
+            bindViewHolder(viewHolder, position)
+            return viewHolder.itemView
         }
     }
 
-    private inner class RecycleBin {
-        // key：viewType；value：view
-        private var mScrapViewMap = mutableMapOf<Int, MutableList<View>>()
+    private inner class Recycler {
+        // key：viewType
+        private var mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
 
         fun clear() {
             mScrapViewMap.clear()
         }
 
-        fun getScrapView(position: Int): View? {
+        fun getScrapView(position: Int): ViewHolder<*>? {
             val viewType = adapter.getItemViewType(position)
             val scrapViewList = mScrapViewMap[viewType]
             val scrapView = scrapViewList?.removeLastOrNull()
@@ -311,10 +335,9 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             return scrapView
         }
 
-        fun addScrapView(scrap: View) {
+        fun addScrapView(scrap: ViewHolder<*>) {
             resetView(scrap)
-            val lp = scrap.layoutParams as LayoutParams
-            val viewType = lp.viewType
+            val viewType = scrap.itemViewType
             if (mScrapViewMap.containsKey(viewType)) {
                 mScrapViewMap[viewType]?.add(scrap)
             } else {
@@ -325,8 +348,8 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         /**
          * 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
          */
-        private fun resetView(view: View) {
-            with(view) {
+        private fun resetView(viewHolder: ViewHolder<*>) {
+            with(viewHolder.itemView) {
                 x = originTopViewLeft.toFloat()
                 y = originTopViewTop.toFloat()
                 translationX = 0f

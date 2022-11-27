@@ -6,14 +6,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import com.like.swipecards.*
 import com.like.swipecards.app.databinding.ActivityMainBinding
+import com.like.swipecards.app.databinding.ItemCardviewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -111,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-private class MyAdapter : BaseAdapter() {
+private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>>() {
     private val list = mutableListOf<String>()
     fun addAll(collection: Collection<String>) {
         list.addAll(collection)
@@ -160,30 +159,25 @@ private class MyAdapter : BaseAdapter() {
         return if (list[position].toInt() < 3) 100 else 200
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var cv = convertView
-        val holder: ViewHolder?
-        if (cv == null) {
-            cv = LayoutInflater.from(parent.context).inflate(R.layout.item_cardview, parent, false)
-            holder = ViewHolder()
-            cv.tag = holder
-            holder.tv = cv.findViewById(R.id.tv)
-        } else {
-            holder = cv.tag as? ViewHolder
-        }
-        getItem(position)?.let {
-            holder?.tv?.text = it
-            if (it.toInt() < 3) {
-                holder?.tv?.setTextColor(Color.RED)
-            } else {
-                holder?.tv?.setTextColor(Color.BLUE)
-            }
-        }
-        return cv!!
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding> {
+        val binding = DataBindingUtil.inflate<ItemCardviewBinding>(
+            LayoutInflater.from(parent.context),
+            R.layout.item_cardview,
+            parent,
+            false
+        )
+        return SwipeCardsAdapterView.ViewHolder(binding)
     }
 
-    private class ViewHolder {
-        var tv: TextView? = null
+    override fun onBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, position: Int) {
+        getItem(position)?.let {
+            holder.binding.tv.text = it
+            if (it.toInt() < 3) {
+                holder.binding.tv.setTextColor(Color.RED)
+            } else {
+                holder.binding.tv.setTextColor(Color.BLUE)
+            }
+        }
     }
 
 }
