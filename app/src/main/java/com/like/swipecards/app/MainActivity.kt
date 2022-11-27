@@ -69,6 +69,11 @@ class MainActivity : AppCompatActivity() {
         mBinding.clear.setOnClickListener {
             myAdapter.clear()
         }
+        mBinding.refresh.setOnClickListener {
+            count = 0
+            myAdapter.clear()
+            loadData()
+        }
     }
 
     private var count = 0
