@@ -3,9 +3,12 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Adapter
 import android.widget.FrameLayout
+import android.widget.TextView
 import kotlin.math.abs
 
 /*
@@ -21,8 +24,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     defStyle: Int = 0,
     defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyle, defStyleRes) {
-    private val viewCaches = mutableListOf<View?>()
-    private var adapter: T? = null
+    private val mRecycler by lazy {
+        RecycleBin()
+    }
+    private lateinit var adapter: T
 
     // 是否是刷新操作
     private var isRefreshData: Boolean = false
@@ -57,7 +62,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      * 注意：最底层（屏幕最深处）的索引是0。
      */
     private val topViewIndex: Int
-        get() = Math.min(adapter?.count ?: 0, maxCount) - 1
+        get() = Math.min(adapter.count, maxCount) - 1
 
     // 记录 TopView 原始位置的left、top
     private var originTopViewLeft = 0
@@ -112,11 +117,15 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     private fun makeAndAddView() {
-        val adapterCount = adapter?.count ?: 0
+        val adapterCount = adapter.count
         if (adapterCount == 0 || isRefreshData) {// 一个个删除完所有，或者清除adapter中的所有数据时触发
             isRefreshData = false
             if (childCount > 0) {
-                removeAllViewsInLayout()// 移除完成后会重新触发onMeasure，从而触发resetTopView()方法
+                (childCount - 1 downTo 0).forEach {
+                    val child = getChildAt(it)
+                    removeViewInLayout(child)// 移除完成后会重新触发onMeasure，从而触发resetTopView()方法
+                    mRecycler.addScrapView(child)
+                }
             }
             resetTopView()// 不管是清除，还是一个个删除，当数据为空时，都需要重置topView
         } else if (topView == null) {// 初始化时触发
@@ -135,11 +144,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
      */
     private fun addChildren(startIndex: Int) {
         (startIndex..topViewIndex).forEach { index ->
-            var convertView: View? = null
-//            if (viewCaches.isNotEmpty()) {
-//                convertView = viewCaches.removeAt(0)
-//            }
-            adapter?.getView(index, convertView, this)?.let {
+            val scrapView = mRecycler.getScrapView(index)
+            adapter.getView(index, scrapView, this)?.let {
+                Log.e("TAG", "addView index=$index reused=${it == scrapView} ${(scrapView as? TextView)?.text}")
+                (it.layoutParams as LayoutParams).viewType = adapter.getItemViewType(index)
                 // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
                 addViewInLayout(it, 0, it.layoutParams, true)
             }
@@ -174,14 +182,16 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         onCardViewTouchListener = null
         topView = getChildAt(topViewIndex)?.apply {
             // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
-            onCardViewTouchListener = OnCardViewTouchListener(this, adapter?.getItem(0), rotationDegrees,
+            onCardViewTouchListener = OnCardViewTouchListener(this, adapter.getItem(0), rotationDegrees,
                 object : OnSwipeListener {
                     override fun onCardExited(direction: Int, dataObject: Any?) {
-                        removeViewInLayout(topView)
-                        viewCaches.add(topView)
+                        topView?.let {
+                            removeViewInLayout(it)
+                            mRecycler.addScrapView(it)
+                        }
                         onSwipeListener?.onCardExited(direction, dataObject)
                         // 通知加载数据
-                        if ((adapter?.count ?: 0) == prefetchCount) {
+                        if (adapter.count == prefetchCount) {
                             onSwipeListener?.onLoadData()
                         }
                     }
@@ -261,9 +271,100 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     }
 
     fun setAdapter(adapter: T) {
-        this.adapter?.unregisterDataSetObserver(dataSetObserver)
+        if (this::adapter.isInitialized) {
+            this.adapter.unregisterDataSetObserver(dataSetObserver)
+        }
         this.adapter = adapter
-        this.adapter?.registerDataSetObserver(dataSetObserver)
+        this.adapter.registerDataSetObserver(dataSetObserver)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        mRecycler.clear()
+    }
+
+    override fun generateDefaultLayoutParams(): FrameLayout.LayoutParams {
+        return LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, 0)
+    }
+
+    override fun generateLayoutParams(lp: ViewGroup.LayoutParams): ViewGroup.LayoutParams {
+        return LayoutParams(lp)
+    }
+
+    override fun generateLayoutParams(attrs: AttributeSet?): FrameLayout.LayoutParams {
+        return LayoutParams(context, attrs)
+    }
+
+    companion object {
+        class LayoutParams : FrameLayout.LayoutParams {
+            /**
+             * View type for this view, as returned by
+             * [android.widget.Adapter.getItemViewType]
+             */
+            var viewType = 0
+
+            constructor(source: ViewGroup.LayoutParams) : super(source)
+            constructor(c: Context, attrs: AttributeSet?) : super(c, attrs)
+            constructor(w: Int, h: Int) : super(w, h)
+            constructor(w: Int, h: Int, viewType: Int) : super(w, h) {
+                this.viewType = viewType
+            }
+        }
+    }
+
+    private inner class RecycleBin {
+        // key：viewType；value：view
+        private var mScrapViewMap = mutableMapOf<Int, MutableList<View>>()
+
+        fun clear() {
+            mScrapViewMap.clear()
+        }
+
+        fun getScrapView(position: Int): View? {
+            val viewType = adapter.getItemViewType(position)
+            val scrapViewList = mScrapViewMap[viewType]
+            val scrapView = scrapViewList?.removeLastOrNull()
+            if (mScrapViewMap[viewType].isNullOrEmpty()) {
+                mScrapViewMap.remove(viewType)
+            }
+            print()
+            return scrapView
+        }
+
+        fun addScrapView(scrap: View) {
+            Log.i("TAG", "addScrapView ${(scrap as? TextView)?.text}")
+            resetView(scrap)
+            val lp = scrap.layoutParams as LayoutParams
+            val viewType = lp.viewType
+            if (mScrapViewMap.containsKey(viewType)) {
+                mScrapViewMap[viewType]?.add(scrap)
+            } else {
+                mScrapViewMap[viewType] = mutableListOf(scrap)
+            }
+            print()
+        }
+
+        /**
+         * 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
+         */
+        private fun resetView(view: View) {
+            with(view) {
+                x = originTopViewLeft.toFloat()
+                y = originTopViewTop.toFloat()
+                translationX = 0f
+                translationY = 0f
+                rotation = 0f
+                scaleX = 1f
+                scaleY = 1f
+            }
+        }
+
+        private fun print() {
+            if (mScrapViewMap.isEmpty()) return
+            mScrapViewMap.entries.forEach {
+                Log.w("TAG", "viewType=${it.key} count=${it.value.size}")
+            }
+        }
     }
 
 }
