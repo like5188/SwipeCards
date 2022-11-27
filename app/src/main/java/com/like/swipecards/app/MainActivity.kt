@@ -1,5 +1,6 @@
 package com.like.swipecards.app
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -155,6 +156,10 @@ private class MyAdapter : BaseAdapter() {
         return position.toLong()
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return if (list[position].toInt() < 3) 100 else 200
+    }
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var cv = convertView
         val holder: ViewHolder?
@@ -167,7 +172,12 @@ private class MyAdapter : BaseAdapter() {
             holder = cv.tag as? ViewHolder
         }
         getItem(position)?.let {
-            holder?.tv?.setText(it)
+            holder?.tv?.text = it
+            if (it.toInt() < 3) {
+                holder?.tv?.setTextColor(Color.RED)
+            } else {
+                holder?.tv?.setTextColor(Color.BLUE)
+            }
         }
         return cv!!
     }

@@ -3,12 +3,10 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Adapter
 import android.widget.FrameLayout
-import android.widget.TextView
 import kotlin.math.abs
 
 /*
@@ -146,7 +144,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
         (startIndex..topViewIndex).forEach { index ->
             val scrapView = mRecycler.getScrapView(index)
             adapter.getView(index, scrapView, this)?.let {
-                Log.e("TAG", "addView index=$index reused=${it == scrapView} ${(scrapView as? TextView)?.text}")
                 (it.layoutParams as LayoutParams).viewType = adapter.getItemViewType(index)
                 // 添加child，并且不触发requestLayout()方法，性能比addView更好。index为0代表往屏幕最底层插入。
                 addViewInLayout(it, 0, it.layoutParams, true)
@@ -327,12 +324,10 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             if (mScrapViewMap[viewType].isNullOrEmpty()) {
                 mScrapViewMap.remove(viewType)
             }
-            print()
             return scrapView
         }
 
         fun addScrapView(scrap: View) {
-            Log.i("TAG", "addScrapView ${(scrap as? TextView)?.text}")
             resetView(scrap)
             val lp = scrap.layoutParams as LayoutParams
             val viewType = lp.viewType
@@ -341,7 +336,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             } else {
                 mScrapViewMap[viewType] = mutableListOf(scrap)
             }
-            print()
         }
 
         /**
@@ -359,12 +353,6 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
             }
         }
 
-        private fun print() {
-            if (mScrapViewMap.isEmpty()) return
-            mScrapViewMap.entries.forEach {
-                Log.w("TAG", "viewType=${it.key} count=${it.value.size}")
-            }
-        }
     }
 
 }
