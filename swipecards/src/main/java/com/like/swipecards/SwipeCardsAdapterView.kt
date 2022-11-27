@@ -159,7 +159,7 @@ class SwipeCardsAdapterView<T : Adapter> @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         adjustChildren()
-        // 设置OnCardViewTouchListener监听必须放在layout最后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
+        // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
         if (childCount == 0) {
             onCardViewTouchListener = null
         } else if (topView == null) {
