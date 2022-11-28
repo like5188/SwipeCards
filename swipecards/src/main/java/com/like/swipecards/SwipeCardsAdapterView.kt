@@ -3,7 +3,6 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -319,31 +318,26 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     private inner class Recycler {
-        // key：viewType
+        /**
+         * 按 viewType 缓存视图
+         * key：viewType；
+         * value：视图集合，这个集合每种 viewType 的视图最多只会有[maxCount]个。
+         *        因为都是添加一个使用一个。最多的时候就是清除或者一个个删除到最后[maxCount]个的时候。
+         */
         private var mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
 
         fun clear() {
             mScrapViewMap.clear()
         }
 
-        /**
-         * 获取原始没有重置状态的视图，保留放入时候的状态
-         */
-        fun getDirtyScrapView(position: Int): ViewHolder<*>? {
+        fun getScrapView(position: Int): ViewHolder<*>? {
             val viewType = adapter.getItemViewType(position)
             val scrapViewList = mScrapViewMap[viewType]
             val scrapView = scrapViewList?.removeLastOrNull()
             if (mScrapViewMap[viewType].isNullOrEmpty()) {
                 mScrapViewMap.remove(viewType)
             }
-            return scrapView
-        }
-
-        /**
-         * 获取重置了状态后的视图
-         */
-        fun getScrapView(position: Int): ViewHolder<*>? {
-            return getDirtyScrapView(position)?.apply {
+            return scrapView?.apply {
                 resetView(this)
             }
         }
@@ -362,13 +356,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
          */
         private fun resetView(viewHolder: ViewHolder<*>) {
             with(viewHolder.itemView) {
-                Log.d("TAG", "resetView left=$left top=$top right=$right bottom=$bottom")
-                Log.i(
-                    "TAG",
-                    "resetView x=$x y=$y translationX=$translationX translationY=$translationY rotation=$rotation scaleX=$scaleX scaleY=$scaleY"
-                )
-                x = originTopViewLeft.toFloat()
-                y = originTopViewTop.toFloat()
                 translationX = 0f
                 translationY = 0f
                 rotation = 0f
