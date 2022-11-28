@@ -286,12 +286,13 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     fun undo() {
         val undoViewStatus = mUndo.pop() ?: return
-        val removeView = if (childCount == maxCount) {// 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个视图。
-            // 最底层
+        val removeView = if (childCount == maxCount) {
+            // 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个被遮住的视图，当然此视图也必须要移除才对。
             getChildAt(0).apply {
                 removeViewInLayout(this)
             }
-        } else {// 此时 mRecycler 中有缓存
+        } else {
+            // 此时不存在最底层被遮住的视图，但是 mRecycler 中肯定会有缓存，因为缓存都是用来复用到最底层被遮住的视图了。
             mRecycler.getLastAddScrapView()
         } ?: return
         addViewInLayout(removeView, childCount, removeView.layoutParams, true)
