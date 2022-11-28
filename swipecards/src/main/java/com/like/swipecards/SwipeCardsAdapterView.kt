@@ -284,7 +284,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     fun undo() {
         mUndo.pop()?.apply {
-            if (childCount == maxCount) {
+            if (childCount == maxCount) {// 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个视图。
                 // 移除最底层
                 val removeView = getChildAt(0)
                 removeViewInLayout(removeView)
@@ -297,6 +297,8 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 )
                 requestLayout()
 //                onCardViewTouchListener?.resetWithAnimation()
+            } else {
+
             }
         }
     }
