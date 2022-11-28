@@ -297,7 +297,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             addViewInLayout(removeView, childCount, removeView.layoutParams, true)
             // 还原ViewStatus
             removeView.viewStatus = this
-            adapter.bindView(removeView, this.data)
+            adapter.undo(removeView, this.data)
             // 飞回初始位置
             removeView.viewStatus = ViewStatus(
                 originTopViewLeft.toFloat(),
@@ -327,7 +327,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
         abstract fun onBindViewHolder(holder: VH, data: Any?)
 
-        abstract fun onReBindViewHolder(holder: VH, data: Any?)
+        /**
+         * 恢复时调用
+         */
+        abstract fun onUndo(data: Any?)
 
         private fun createViewHolder(parent: ViewGroup, viewType: Int): VH {
             val holder = onCreateViewHolder(parent, viewType)
@@ -344,10 +347,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             onBindViewHolder(holder, data)
         }
 
-        fun bindView(view: View, data: Any?) {
+        fun undo(view: View, data: Any?) {
             val viewHolder = view.tag as? VH ?: return
             bindViewHolder(viewHolder, data)
-            onReBindViewHolder(viewHolder, data)
+            onUndo(data)
         }
 
         final override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

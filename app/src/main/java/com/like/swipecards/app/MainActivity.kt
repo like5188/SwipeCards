@@ -199,7 +199,7 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
         }
     }
 
-    override fun onReBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, data: Any?) {
+    override fun onUndo(data: Any?) {
         print()
         Log.v("TAG", "--------------------------")
         list.add(0, data as String)
