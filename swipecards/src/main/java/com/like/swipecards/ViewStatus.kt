@@ -3,7 +3,7 @@ package com.like.swipecards
 import android.view.View
 
 /**
- * 视图状态数据，用于保持或者恢复视图时使用
+ * 视图状态数据，用于保持或者回退视图时使用
  */
 data class ViewStatus(
     val x: Float,
@@ -15,7 +15,7 @@ data class ViewStatus(
     val scaleY: Float
 ) {
     /**
-     * 用于绑定到视图的数据，在恢复时需要。
+     * 用于绑定到视图的数据，在回退时需要。
      */
     var data: Any? = null
 

@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.FrameLayout
 import androidx.databinding.ViewDataBinding
-import java.util.*
 import kotlin.math.abs
 
 /*
@@ -339,7 +338,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         abstract fun onBindViewHolder(holder: VH, data: Any?)
 
         /**
-         * 恢复时调用
+         * 回退时调用，在此把数据[data]还原到列表中。
          */
         abstract fun onUndo(data: Any?)
 
@@ -427,42 +426,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         fun getLastAddScrapView(): View? {
             val viewType = mLastScrapViewType ?: return null
             return getScrapViewByViewType(viewType)?.itemView
-        }
-
-    }
-
-    private class Undo {
-        /**
-         * 缓存数量改变回调
-         */
-        var onChange: ((Int) -> Unit)? = null
-
-        /**
-         * 最大缓存数量，用于恢复操作
-         */
-        var maxCacheCount = 2
-        private val mCache = LinkedList<ViewStatus>()
-
-        fun push(viewStatus: ViewStatus) {
-            if (maxCacheCount == 0) return
-            if (mCache.size >= maxCacheCount) {
-                mCache.removeLast()
-            }
-            mCache.push(viewStatus)
-            onChange?.invoke(mCache.size)
-        }
-
-        fun pop(): ViewStatus? {
-            if (mCache.isEmpty()) return null
-            return mCache.pop().apply {
-                Log.d("TAG", "恢复：$this")
-                onChange?.invoke(mCache.size)
-            }
-        }
-
-        fun clear() {
-            mCache.clear()
-            onChange?.invoke(mCache.size)
         }
 
     }
