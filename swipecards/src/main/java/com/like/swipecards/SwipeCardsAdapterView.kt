@@ -295,7 +295,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 mRecycler.getLastAddScrapView()
             } ?: return
             addViewInLayout(removeView, childCount, removeView.layoutParams, true)
-            // 还原ViewStatus
+            // 还原ViewStatus，即View飞出后的状态。
             removeView.viewStatus = this
             adapter.undo(removeView, this.data)
             // 飞回初始位置
