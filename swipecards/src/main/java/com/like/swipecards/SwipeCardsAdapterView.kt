@@ -418,6 +418,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     private class Undo {
+        /**
+         * 最大缓存数量，用于恢复操作
+         */
         var maxCacheCount = 1
         private val mCache = LinkedList<ViewStatus>()
 
