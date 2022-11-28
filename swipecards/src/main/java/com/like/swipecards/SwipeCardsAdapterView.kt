@@ -29,7 +29,11 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         Recycler()
     }
     private val mUndo by lazy {
-        Undo()
+        Undo().apply {
+            onChange = {
+                onSwipeListener?.onUndoChange(it)
+            }
+        }
     }
     private lateinit var adapter: T
 
@@ -216,6 +220,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                     }
 
                     override fun onLoadData() {
+                    }
+
+                    override fun onUndoChange(size: Int) {
+                        onSwipeListener?.onUndoChange(size)
                     }
 
                 }
@@ -425,6 +433,11 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     private class Undo {
         /**
+         * 缓存数量改变回调
+         */
+        var onChange: ((Int) -> Unit)? = null
+
+        /**
          * 最大缓存数量，用于恢复操作
          */
         var maxCacheCount = 2
@@ -436,17 +449,20 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 mCache.removeLast()
             }
             mCache.push(viewStatus)
+            onChange?.invoke(mCache.size)
         }
 
         fun pop(): ViewStatus? {
             if (mCache.isEmpty()) return null
             return mCache.pop().apply {
                 Log.d("TAG", "恢复：$this")
+                onChange?.invoke(mCache.size)
             }
         }
 
         fun clear() {
             mCache.clear()
+            onChange?.invoke(mCache.size)
         }
 
     }

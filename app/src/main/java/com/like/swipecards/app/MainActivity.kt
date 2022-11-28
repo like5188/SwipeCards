@@ -42,6 +42,10 @@ class MainActivity : AppCompatActivity() {
                 loadData()
             }
 
+            override fun onUndoChange(size: Int) {
+                mBinding.undo.isEnabled = size > 0
+            }
+
             override fun onScroll(direction: Int, absProgress: Float) {
 //                Log.v("TAG", "onScroll direction=$direction absProgress=$absProgress")
             }
@@ -73,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         mBinding.refresh.setOnClickListener {
             refresh()
         }
+        mBinding.undo.isEnabled = false
         mBinding.undo.setOnClickListener {
             mBinding.swipeCardsAdapterView.undo()
         }

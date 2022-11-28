@@ -29,4 +29,8 @@ interface OnSwipeListener {
      */
     fun onLoadData()
 
+    /**
+     * 恢复缓存数量改变回调
+     */
+    fun onUndoChange(size: Int)
 }
