@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
 private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>>() {
     private val list = mutableListOf<String>()
-    private val multiViewType = false
+    private val multiViewType = true
 
     fun print() {
         list.forEachIndexed { index, s ->
