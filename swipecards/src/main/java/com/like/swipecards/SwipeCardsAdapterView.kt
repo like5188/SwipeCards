@@ -3,6 +3,7 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -325,7 +326,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             mScrapViewMap.clear()
         }
 
-        fun getScrapView(position: Int): ViewHolder<*>? {
+        /**
+         * 获取原始没有重置状态的视图，保留放入时候的状态
+         */
+        fun getDirtyScrapView(position: Int): ViewHolder<*>? {
             val viewType = adapter.getItemViewType(position)
             val scrapViewList = mScrapViewMap[viewType]
             val scrapView = scrapViewList?.removeLastOrNull()
@@ -335,8 +339,16 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             return scrapView
         }
 
+        /**
+         * 获取重置了状态后的视图
+         */
+        fun getScrapView(position: Int): ViewHolder<*>? {
+            return getDirtyScrapView(position)?.apply {
+                resetView(this)
+            }
+        }
+
         fun addScrapView(scrap: ViewHolder<*>) {
-            resetView(scrap)
             val viewType = scrap.itemViewType
             if (mScrapViewMap.containsKey(viewType)) {
                 mScrapViewMap[viewType]?.add(scrap)
@@ -350,6 +362,11 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
          */
         private fun resetView(viewHolder: ViewHolder<*>) {
             with(viewHolder.itemView) {
+                Log.d("TAG", "resetView left=$left top=$top right=$right bottom=$bottom")
+                Log.i(
+                    "TAG",
+                    "resetView x=$x y=$y translationX=$translationX translationY=$translationY rotation=$rotation scaleX=$scaleX scaleY=$scaleY"
+                )
                 x = originTopViewLeft.toFloat()
                 y = originTopViewTop.toFloat()
                 translationX = 0f
