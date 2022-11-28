@@ -338,7 +338,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 mScrapViewMap.remove(viewType)
             }
             return scrapView?.apply {
-                resetView(this)
+                this.itemView.setViewStatus()// 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
             }
         }
 
@@ -348,19 +348,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 mScrapViewMap[viewType]?.add(scrap)
             } else {
                 mScrapViewMap[viewType] = mutableListOf(scrap)
-            }
-        }
-
-        /**
-         * 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
-         */
-        private fun resetView(viewHolder: ViewHolder<*>) {
-            with(viewHolder.itemView) {
-                translationX = 0f
-                translationY = 0f
-                rotation = 0f
-                scaleX = 1f
-                scaleY = 1f
             }
         }
 
