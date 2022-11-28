@@ -318,7 +318,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             1f,
             1,
             onEnd = {
-                requestLayout()
+                resetTopView()// 需要重新设置topView
             }
         ) { direction, progress ->
             onSwipeListener?.onScroll(direction, progress)
