@@ -285,28 +285,27 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     fun undo() {
-        mUndo.pop()?.apply {
-            val removeView = if (childCount == maxCount) {// 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个视图。
-                // 最底层
-                getChildAt(0).apply {
-                    removeViewInLayout(this)
-                }
-            } else {// 此时 mRecycler 中有缓存
-                mRecycler.getLastAddScrapView()
-            } ?: return
-            addViewInLayout(removeView, childCount, removeView.layoutParams, true)
-            // 还原ViewStatus，即View飞出后的状态。
-            removeView.viewStatus = this
-            adapter.undo(removeView, this.data)
-            // 飞回初始位置
-            removeView.viewStatus = ViewStatus(
-                originTopViewLeft.toFloat(),
-                originTopViewTop.toFloat(),
-                0f, 0f, 0f, 1f, 1f
-            )
-            requestLayout()
+        val undoViewStatus = mUndo.pop() ?: return
+        val removeView = if (childCount == maxCount) {// 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个视图。
+            // 最底层
+            getChildAt(0).apply {
+                removeViewInLayout(this)
+            }
+        } else {// 此时 mRecycler 中有缓存
+            mRecycler.getLastAddScrapView()
+        } ?: return
+        addViewInLayout(removeView, childCount, removeView.layoutParams, true)
+        // 还原ViewStatus，即View飞出后的状态。
+        removeView.viewStatus = undoViewStatus
+        adapter.undo(removeView, undoViewStatus.data)
+        // 飞回初始位置 todo
+        removeView.viewStatus = ViewStatus(
+            originTopViewLeft.toFloat(),
+            originTopViewTop.toFloat(),
+            0f, 0f, 0f, 1f, 1f
+        )
+        requestLayout()
 //                onCardViewTouchListener?.resetWithAnimation()
-        }
     }
 
     fun clearUndoCache() {
