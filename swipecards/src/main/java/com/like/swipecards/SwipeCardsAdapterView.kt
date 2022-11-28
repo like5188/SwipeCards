@@ -320,6 +320,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         mUndo.clear()
     }
 
+    fun setMaxUndoCacheSize(maxSize: Int) {
+        mUndo.maxCacheSize = maxSize
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         mRecycler.clear()

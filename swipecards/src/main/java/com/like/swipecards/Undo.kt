@@ -15,12 +15,12 @@ internal class Undo {
     /**
      * 最大缓存数量，用于回退操作
      */
-    var maxCacheCount = 2
+    var maxCacheSize = 1
     private val mCache = LinkedList<ViewStatus>()
 
     fun push(viewStatus: ViewStatus) {
-        if (maxCacheCount == 0) return
-        if (mCache.size >= maxCacheCount) {
+        if (maxCacheSize == 0) return
+        if (mCache.size >= maxCacheSize) {
             mCache.removeLast()
         }
         mCache.push(viewStatus)

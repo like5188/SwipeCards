@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         mBinding.undo.setOnClickListener {
             mBinding.swipeCardsAdapterView.undo()
         }
+        mBinding.swipeCardsAdapterView.setMaxUndoCacheSize(2)
     }
 
     private var page = 1
