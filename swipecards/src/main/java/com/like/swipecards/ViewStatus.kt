@@ -14,6 +14,9 @@ data class ViewStatus(
     val scaleX: Float,
     val scaleY: Float
 ) {
+    /**
+     * 用于绑定到视图的数据，在恢复时需要。
+     */
     var data: Any? = null
 }
 
