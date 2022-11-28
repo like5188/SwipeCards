@@ -292,6 +292,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     fun undo() {
+        if (AnimatorHelper.isAnimRunning.get()) {
+            return
+        }
         val undoViewStatus = mUndo.pop() ?: return
         val removeView = if (childCount == maxCount) {
             // 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个被遮住的视图，当然此视图也必须要移除才对。
@@ -306,14 +309,20 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         // 还原ViewStatus，即View飞出后的状态。
         removeView.viewStatus = undoViewStatus
         adapter.undo(removeView, undoViewStatus.data)
-        // 飞回初始位置 todo
-        removeView.viewStatus = ViewStatus(
+        // 飞回初始位置
+        AnimatorHelper.reset(
+            removeView,
+            3000,
             originTopViewLeft.toFloat(),
             originTopViewTop.toFloat(),
-            0f, 0f, 0f, 1f, 1f
-        )
-        requestLayout()
-//                onCardViewTouchListener?.resetWithAnimation()
+            1f,
+            1,
+            onEnd = {
+                requestLayout()
+            }
+        ) { direction, progress ->
+            onSwipeListener?.onScroll(direction, progress)
+        }
     }
 
     fun clearUndoCache() {
