@@ -362,9 +362,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         }
 
         fun undo(view: View, data: Any?) {
+            onUndo(data)
             val viewHolder = view.tag as? VH ?: return
             bindViewHolder(viewHolder, data)
-            onUndo(data)
         }
 
         final override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

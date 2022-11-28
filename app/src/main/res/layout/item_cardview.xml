@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TextView
-        android:id="@+id/tv"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1400px"
         android:layout_gravity="center_horizontal"
         android:layout_marginStart="100px"
         android:layout_marginTop="100px"
-        android:layout_marginEnd="100px"
-        android:background="@drawable/shape_cardview_bg"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:textColor="#00a7ff"
-        android:textSize="50sp" />
+        android:layout_marginEnd="100px">
+
+        <TextView
+            android:id="@+id/tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_cardview_bg"
+            android:gravity="center"
+            android:textColor="#00a7ff"
+            android:textSize="50sp" />
+
+        <TextView
+            android:id="@+id/tvViewType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="100px"
+            android:background="#999999"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+    </FrameLayout>
 </layout>
 

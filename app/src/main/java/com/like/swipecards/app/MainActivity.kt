@@ -193,16 +193,23 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
     }
 
     override fun onBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, data: Any?) {
-        (data as? String)?.let {
-            holder.binding.tv.text = it
-            if (multiViewType) {
-                if (it.toInt() < 3) {
-                    holder.binding.tv.setTextColor(Color.RED)
-                } else {
-                    holder.binding.tv.setTextColor(Color.BLUE)
-                }
+        val item = data as? String ?: return
+        holder.binding.tv.text = item
+        if (multiViewType) {
+            if (item.toInt() < 3) {
+                holder.binding.tv.setTextColor(Color.RED)
             } else {
                 holder.binding.tv.setTextColor(Color.BLUE)
+            }
+        } else {
+            holder.binding.tv.setTextColor(Color.BLUE)
+        }
+        holder.binding.tvViewType.apply {
+            val position = list.indexOf(item)
+            val viewType = getItemViewType(position)
+            text = "viewType：$viewType"
+            setOnClickListener {
+                Toast.makeText(context, "$viewType", Toast.LENGTH_SHORT).show()
             }
         }
     }
