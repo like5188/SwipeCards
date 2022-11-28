@@ -324,7 +324,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
          * value：视图集合，这个集合每种 viewType 的视图最多只会有[maxCount]个。
          *        因为都是添加一个使用一个。最多的时候就是清除或者一个个删除到最后[maxCount]个的时候。
          */
-        private var mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
+        private val mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
 
         fun clear() {
             mScrapViewMap.clear()
