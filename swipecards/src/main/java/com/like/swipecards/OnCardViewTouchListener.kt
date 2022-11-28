@@ -298,7 +298,7 @@ class OnCardViewTouchListener(
     /**
      * 执行回弹动画
      */
-    private fun resetWithAnimation() {
+    fun resetWithAnimation() {
         if (isAnimRunning.compareAndSet(false, true)) {
             cardView.animate()
                 .setDuration(animDuration)

@@ -3,11 +3,13 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.FrameLayout
 import androidx.databinding.ViewDataBinding
+import java.util.*
 import kotlin.math.abs
 
 /*
@@ -25,6 +27,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 ) : FrameLayout(context, attrs, defStyle, defStyleRes) {
     private val mRecycler by lazy {
         Recycler()
+    }
+    private val mUndo by lazy {
+        Undo()
     }
     private lateinit var adapter: T
 
@@ -116,6 +121,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     private fun makeAndAddView() {
+        Log.e("TAG", "makeAndAddView")
         val adapterCount = adapter.count
         if (adapterCount == 0 || isRefreshData) {// 一个个删除完所有，或者清除adapter中的所有数据时触发
             isRefreshData = false
@@ -167,6 +173,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        Log.e("TAG", "onLayout")
         if (childCount == 0) return
         super.onLayout(changed, left, top, right, bottom)
         adjustChildren()
@@ -183,6 +190,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                     override fun onCardExited(direction: Int, dataObject: Any?) {
                         topView?.let {
                             removeViewInLayout(it)
+                            mUndo.push(it.viewStatus)
                             mRecycler.addScrapView(it.tag as ViewHolder<*>)
                         }
                         onSwipeListener?.onCardExited(direction, dataObject)
@@ -274,6 +282,25 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         this.adapter.registerDataSetObserver(dataSetObserver)
     }
 
+    fun undo() {
+        mUndo.pop()?.apply {
+            if (childCount == maxCount) {
+                // 移除最底层
+                val removeView = getChildAt(0)
+                removeViewInLayout(removeView)
+                addViewInLayout(removeView, childCount, removeView.layoutParams, true)
+                // 飞回初始位置
+                removeView.viewStatus = ViewStatus(
+                    originTopViewLeft.toFloat(),
+                    originTopViewTop.toFloat(),
+                    0f, 0f, 0f, 1f, 1f
+                )
+                requestLayout()
+//                onCardViewTouchListener?.resetWithAnimation()
+            }
+        }
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         mRecycler.clear()
@@ -338,7 +365,12 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 mScrapViewMap.remove(viewType)
             }
             return scrapView?.apply {
-                this.itemView.setViewStatus()// 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
+                // 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
+                this.itemView.viewStatus = ViewStatus(
+                    originTopViewLeft.toFloat(),
+                    originTopViewTop.toFloat(),
+                    0f, 0f, 0f, 1f, 1f
+                )
             }
         }
 
@@ -349,6 +381,29 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             } else {
                 mScrapViewMap[viewType] = mutableListOf(scrap)
             }
+        }
+
+    }
+
+    private class Undo {
+        var maxCacheCount = 1
+        private val mCache = LinkedList<ViewStatus>()
+
+        fun push(viewStatus: ViewStatus) {
+            if (maxCacheCount == 0) return
+            if (mCache.size >= maxCacheCount) {
+                mCache.removeFirst()
+            }
+            mCache.push(viewStatus)
+        }
+
+        fun pop(): ViewStatus? {
+            if (mCache.isEmpty()) return null
+            return mCache.pop()
+        }
+
+        fun clear() {
+            mCache.clear()
         }
 
     }

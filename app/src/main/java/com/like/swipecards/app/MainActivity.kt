@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             refresh()
         }
         mBinding.undo.setOnClickListener {
-//            mBinding.swipeCardsAdapterView.undo()
+            mBinding.swipeCardsAdapterView.undo()
         }
     }
 
