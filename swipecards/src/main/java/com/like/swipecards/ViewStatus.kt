@@ -12,8 +12,10 @@ data class ViewStatus(
     val translationY: Float,
     val rotation: Float,
     val scaleX: Float,
-    val scaleY: Float,
-)
+    val scaleY: Float
+) {
+    var data: Any? = null
+}
 
 var View.viewStatus: ViewStatus
     get() = ViewStatus(

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onScroll(direction: Int, absProgress: Float) {
-                Log.v("TAG", "onScroll direction=$direction absProgress=$absProgress")
+//                Log.v("TAG", "onScroll direction=$direction absProgress=$absProgress")
             }
 
             override fun onCardExited(direction: Int, dataObject: Any?) {
@@ -117,6 +117,12 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
     private val list = mutableListOf<String>()
     private val multiViewType = false
 
+    fun print() {
+        list.forEachIndexed { index, s ->
+            Log.v("TAG", "index=$index item=$s")
+        }
+    }
+
     fun addAll(collection: Collection<String>) {
         list.addAll(collection)
         notifyDataSetChanged()
@@ -178,8 +184,8 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
         return SwipeCardsAdapterView.ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, position: Int) {
-        getItem(position)?.let {
+    override fun onBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, data: Any?) {
+        (data as? String)?.let {
             holder.binding.tv.text = it
             if (multiViewType) {
                 if (it.toInt() < 3) {
@@ -191,6 +197,13 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
                 holder.binding.tv.setTextColor(Color.BLUE)
             }
         }
+    }
+
+    override fun onReBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, data: Any?) {
+        print()
+        Log.v("TAG", "--------------------------")
+        list.add(0, data as String)
+        print()
     }
 
 }

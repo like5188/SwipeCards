@@ -114,6 +114,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     var onSwipeListener: OnSwipeListener? = null
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        Log.w("TAG", "onMeasure")
         makeAndAddView()
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
         if (childCount == 0) return
@@ -121,7 +122,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     private fun makeAndAddView() {
-        Log.e("TAG", "makeAndAddView")
         val adapterCount = adapter.count
         if (adapterCount == 0 || isRefreshData) {// 一个个删除完所有，或者清除adapter中的所有数据时触发
             isRefreshData = false
@@ -190,7 +190,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                     override fun onCardExited(direction: Int, dataObject: Any?) {
                         topView?.let {
                             removeViewInLayout(it)
-                            mUndo.push(it.viewStatus)
+                            mUndo.push(it.viewStatus.apply {
+                                this.data = dataObject
+                            })
                             mRecycler.addScrapView(it.tag as ViewHolder<*>)
                         }
                         onSwipeListener?.onCardExited(direction, dataObject)
@@ -284,28 +286,34 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     fun undo() {
         mUndo.pop()?.apply {
-            if (childCount == maxCount) {// 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个视图。
-                // 移除最底层
-                val removeView = getChildAt(0)
-                removeViewInLayout(removeView)
-                addViewInLayout(removeView, childCount, removeView.layoutParams, true)
-                // 飞回初始位置
-                removeView.viewStatus = ViewStatus(
-                    originTopViewLeft.toFloat(),
-                    originTopViewTop.toFloat(),
-                    0f, 0f, 0f, 1f, 1f
-                )
-                requestLayout()
+            val removeView = if (childCount == maxCount) {// 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个视图。
+                // 最底层
+                getChildAt(0).apply {
+                    removeViewInLayout(this)
+                }
+            } else {// 此时 mRecycler 中有缓存
+                mRecycler.getLastAddScrapView()
+            } ?: return
+            addViewInLayout(removeView, childCount, removeView.layoutParams, true)
+            // 还原ViewStatus
+            removeView.viewStatus = this
+            adapter.bindView(removeView, this.data)
+            // 飞回初始位置
+            removeView.viewStatus = ViewStatus(
+                originTopViewLeft.toFloat(),
+                originTopViewTop.toFloat(),
+                0f, 0f, 0f, 1f, 1f
+            )
+            Log.i("TAG", "bindView data=$data removeView=$removeView")
+            requestLayout()
 //                onCardViewTouchListener?.resetWithAnimation()
-            } else {
-
-            }
         }
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         mRecycler.clear()
+        mUndo.clear()
     }
 
     class ViewHolder<VB : ViewDataBinding>(val binding: VB) {
@@ -317,7 +325,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
         abstract fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH
 
-        abstract fun onBindViewHolder(holder: VH, position: Int)
+        abstract fun onBindViewHolder(holder: VH, data: Any?)
+
+        abstract fun onReBindViewHolder(holder: VH, data: Any?)
 
         private fun createViewHolder(parent: ViewGroup, viewType: Int): VH {
             val holder = onCreateViewHolder(parent, viewType)
@@ -330,8 +340,14 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             return holder
         }
 
-        private fun bindViewHolder(holder: VH, position: Int) {
-            onBindViewHolder(holder, position)
+        private fun bindViewHolder(holder: VH, data: Any?) {
+            onBindViewHolder(holder, data)
+        }
+
+        fun bindView(view: View, data: Any?) {
+            val viewHolder = view.tag as? VH ?: return
+            bindViewHolder(viewHolder, data)
+            onReBindViewHolder(viewHolder, data)
         }
 
         final override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -341,7 +357,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                     itemView.tag = this
                 }
             }
-            bindViewHolder(viewHolder, position)
+            bindViewHolder(viewHolder, getItem(position))
             return viewHolder.itemView
         }
     }
@@ -354,6 +370,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
          *        因为都是添加一个使用一个。最多的时候就是清除或者一个个删除到最后[maxCount]个的时候。
          */
         private val mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
+        private var mLastScrapViewType: Int? = null
 
         fun clear() {
             mScrapViewMap.clear()
@@ -361,6 +378,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
         fun getScrapView(position: Int): ViewHolder<*>? {
             val viewType = adapter.getItemViewType(position)
+            return getScrapViewByViewType(viewType)
+        }
+
+        fun getScrapViewByViewType(viewType: Int): ViewHolder<*>? {
             val scrapViewList = mScrapViewMap[viewType]
             val scrapView = scrapViewList?.removeLastOrNull()
             if (mScrapViewMap[viewType].isNullOrEmpty()) {
@@ -378,11 +399,17 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
         fun addScrapView(scrap: ViewHolder<*>) {
             val viewType = scrap.itemViewType
+            mLastScrapViewType = viewType
             if (mScrapViewMap.containsKey(viewType)) {
                 mScrapViewMap[viewType]?.add(scrap)
             } else {
                 mScrapViewMap[viewType] = mutableListOf(scrap)
             }
+        }
+
+        fun getLastAddScrapView(): View? {
+            val viewType = mLastScrapViewType ?: return null
+            return getScrapViewByViewType(viewType)?.itemView
         }
 
     }
