@@ -1,8 +1,5 @@
 package com.like.swipecards
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.graphics.Matrix
 import android.graphics.PointF
@@ -12,9 +9,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
 import android.view.ViewGroup
-import android.view.animation.LinearInterpolator
-import android.view.animation.OvershootInterpolator
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.tan
 
@@ -72,9 +66,6 @@ class OnCardViewTouchListener(
      * 触摸的位置。参考 [TOUCH_PART_TOP_HALF]、[TOUCH_PART_BOTTOM_HALF]
      */
     private var touchPart = TOUCH_PART_TOP_HALF
-
-    // 动画是否正在执行
-    private val isAnimRunning = AtomicBoolean(false)
 
     /**
      * 是否支持左右滑
@@ -178,7 +169,7 @@ class OnCardViewTouchListener(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        if (isAnimRunning.get()) {
+        if (AnimatorHelper.isAnimRunning.get()) {
             return true
         }
         curRawX = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -282,7 +273,16 @@ class OnCardViewTouchListener(
                     onSwipeListener.onClick(cardView, data)
                 }
                 // 回弹到初始位置
-                resetWithAnimation()
+                AnimatorHelper.reset(
+                    cardView,
+                    animDuration,
+                    originCardViewX,
+                    originCardViewY,
+                    absMoveProgressPercent,
+                    moveDirection
+                ) { direction, progress ->
+                    onSwipeListener.onScroll(direction, progress)
+                }
             }
         } else {
             // 如果不能滑动，就根据触摸坐标判断点击事件
@@ -296,79 +296,25 @@ class OnCardViewTouchListener(
     }
 
     /**
-     * 执行回弹动画
-     */
-    fun resetWithAnimation() {
-        if (isAnimRunning.compareAndSet(false, true)) {
-            cardView.animate()
-                .setDuration(animDuration)
-                .setInterpolator(OvershootInterpolator(1.5f))
-                .x(originCardViewX)
-                .y(originCardViewY)
-                .rotation(0f)
-                .withStartAction {
-                    // 执行缩放动画
-                    scaleWithAnimation(absMoveProgressPercent, false, moveDirection)
-                }
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        isAnimRunning.set(false)
-                    }
-                })
-                .start()
-        }
-    }
-
-    /**
      * 执行飞出屏幕动画，即点(originCardViewX,originCardViewY)移动到 exitPoint 位置。
      *
      * @param byClick   是否单击事件引起的
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean) {
         // 移动方向。包括手指滑动和单击自动移动。
-        val direction = if (byClick) {
-            if (isLeft) DIRECTION_TOP_HALF_LEFT else DIRECTION_TOP_HALF_RIGHT
-        } else {
-            moveDirection
-        }
-        if (isAnimRunning.compareAndSet(false, true)) {
-            val animator = cardView.animate()
-                .setDuration(animDuration)
-                .setInterpolator(LinearInterpolator())
-                .translationX(exitPoint.x)
-                .translationY(exitPoint.y)
-                .withStartAction {
-                    // 执行缩放动画
-                    scaleWithAnimation(absMoveProgressPercent, true, direction)
-                }
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        onSwipeListener.onCardExited(direction, data)
-                        isAnimRunning.set(false)
-                    }
-                })
-            if (byClick) {
-                animator.rotation(if (isLeft) -rotationDegrees else rotationDegrees)
-            }
-            animator.start()
-        }
-    }
-
-    /**
-     * 计算缩放系数，并发送数据给 SwipeCardsAdapterView 执行缩放操作。
-     * 这个缩放操作是为了在手指离开屏幕后，补充完成进度回调
-     * @param initScale     初始缩放系数
-     * @param zoom          true：放大；false：缩小；
-     * @param direction     移动方向。包括手指滑动和单击自动移动。
-     */
-    private fun scaleWithAnimation(initScale: Float, zoom: Boolean, direction: Int) {
-        ValueAnimator.ofFloat(initScale, if (zoom) 1f else 0f).apply {
-            duration = animDuration
-            interpolator = LinearInterpolator()
-            addUpdateListener {
-                onSwipeListener.onScroll(direction, it.animatedValue as Float)
-            }
-            start()
+        AnimatorHelper.exit(
+            cardView,
+            animDuration,
+            isLeft,
+            exitPoint,
+            byClick,
+            rotationDegrees,
+            absMoveProgressPercent,
+            moveDirection,
+            onEnd = {
+                onSwipeListener.onCardExited(it, data)
+            }) { direction, progress ->
+            onSwipeListener.onScroll(direction, progress)
         }
     }
 
