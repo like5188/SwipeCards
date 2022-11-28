@@ -309,6 +309,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         }
     }
 
+    fun clearUndoCache() {
+        mUndo.clear()
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         mRecycler.clear()

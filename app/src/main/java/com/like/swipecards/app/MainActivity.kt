@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
             mBinding.swipeCardsAdapterView.swipeRight()
         }
         mBinding.clear.setOnClickListener {
+            mBinding.swipeCardsAdapterView.clearUndoCache()
             myAdapter.clear()
         }
         mBinding.refresh.setOnClickListener {
@@ -92,6 +93,7 @@ class MainActivity : AppCompatActivity() {
             page = 1
             val list = getData(page++)
             withContext(Dispatchers.Main) {
+                mBinding.swipeCardsAdapterView.clearUndoCache()
                 myAdapter.clearAndAddAll(list)
             }
         }
