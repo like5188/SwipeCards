@@ -114,7 +114,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     var onSwipeListener: OnSwipeListener? = null
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        Log.w("TAG", "onMeasure")
+        Log.i("TAG", "onMeasure")
         makeAndAddView()
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
         if (childCount == 0) return
@@ -173,7 +173,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        Log.e("TAG", "onLayout")
+        Log.i("TAG", "onLayout")
         if (childCount == 0) return
         super.onLayout(changed, left, top, right, bottom)
         adjustChildren()
@@ -304,7 +304,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 originTopViewTop.toFloat(),
                 0f, 0f, 0f, 1f, 1f
             )
-            Log.i("TAG", "bindView data=$data removeView=$removeView")
             requestLayout()
 //                onCardViewTouchListener?.resetWithAnimation()
         }
@@ -390,6 +389,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             if (mScrapViewMap[viewType].isNullOrEmpty()) {
                 mScrapViewMap.remove(viewType)
             }
+            if (scrapView != null) {
+                Log.d("TAG", "从缓存中获取到视图：${scrapView.hashCode()}")
+            }
             return scrapView?.apply {
                 // 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
                 this.itemView.viewStatus = ViewStatus(
@@ -434,7 +436,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
         fun pop(): ViewStatus? {
             if (mCache.isEmpty()) return null
-            return mCache.pop()
+            return mCache.pop().apply {
+                Log.d("TAG", "恢复：$this")
+            }
         }
 
         fun clear() {

@@ -18,6 +18,11 @@ data class ViewStatus(
      * 用于绑定到视图的数据，在恢复时需要。
      */
     var data: Any? = null
+
+    override fun toString(): String {
+        return "ViewStatus(x=$x, y=$y, translationX=$translationX, translationY=$translationY, rotation=$rotation, scaleX=$scaleX, scaleY=$scaleY, data=$data)"
+    }
+
 }
 
 var View.viewStatus: ViewStatus
