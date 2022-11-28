@@ -101,8 +101,21 @@
             android:textColor="#ffffff"
             android:textSize="10sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/swipeRight"
+            app:layout_constraintEnd_toStartOf="@id/undo"
             app:layout_constraintStart_toEndOf="@id/clear" />
+
+        <Button
+            android:id="@+id/undo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_button"
+            android:text="undo"
+            android:textColor="#ffffff"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/swipeRight"
+            app:layout_constraintStart_toEndOf="@id/refresh" />
 
         <Button
             android:id="@+id/swipeRight"
@@ -115,7 +128,7 @@
             android:textSize="10sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/refresh" />
+            app:layout_constraintStart_toEndOf="@id/undo" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

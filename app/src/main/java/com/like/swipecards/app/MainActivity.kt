@@ -72,6 +72,9 @@ class MainActivity : AppCompatActivity() {
         mBinding.refresh.setOnClickListener {
             refresh()
         }
+        mBinding.undo.setOnClickListener {
+            mBinding.swipeCardsAdapterView.undo()
+        }
     }
 
     private var page = 1
@@ -112,6 +115,8 @@ class MainActivity : AppCompatActivity() {
 
 private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>>() {
     private val list = mutableListOf<String>()
+    private val multiViewType = false
+
     fun addAll(collection: Collection<String>) {
         list.addAll(collection)
         notifyDataSetChanged()
@@ -156,7 +161,11 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (list[position].toInt() < 3) 100 else 200
+        return if (multiViewType) {
+            if (list[position].toInt() < 3) 100 else 200
+        } else {
+            0
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding> {
@@ -172,8 +181,12 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
     override fun onBindViewHolder(holder: SwipeCardsAdapterView.ViewHolder<ItemCardviewBinding>, position: Int) {
         getItem(position)?.let {
             holder.binding.tv.text = it
-            if (it.toInt() < 3) {
-                holder.binding.tv.setTextColor(Color.RED)
+            if (multiViewType) {
+                if (it.toInt() < 3) {
+                    holder.binding.tv.setTextColor(Color.RED)
+                } else {
+                    holder.binding.tv.setTextColor(Color.BLUE)
+                }
             } else {
                 holder.binding.tv.setTextColor(Color.BLUE)
             }
