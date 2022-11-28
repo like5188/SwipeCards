@@ -421,13 +421,13 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         /**
          * 最大缓存数量，用于恢复操作
          */
-        var maxCacheCount = 1
+        var maxCacheCount = 2
         private val mCache = LinkedList<ViewStatus>()
 
         fun push(viewStatus: ViewStatus) {
             if (maxCacheCount == 0) return
             if (mCache.size >= maxCacheCount) {
-                mCache.removeFirst()
+                mCache.removeLast()
             }
             mCache.push(viewStatus)
         }
