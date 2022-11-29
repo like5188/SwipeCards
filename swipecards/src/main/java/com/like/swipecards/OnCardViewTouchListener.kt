@@ -15,13 +15,9 @@ import kotlin.math.tan
 /**
  * 单个卡片视图触摸相关的处理
  * 包括功能：滑动、旋转、飞出、缩放等动画的处理
- *
- * @param rotationDegrees   滑动一个视图宽度时的最大旋转角度
  */
 class OnCardViewTouchListener(
-    private val cardView: View,
-    private val data: Any?,
-    private val rotationDegrees: Float
+    private val cardView: View
 ) : OnTouchListener {
     private val originCardViewX: Float = cardView.x
     private val originCardViewY: Float = cardView.y
@@ -149,6 +145,16 @@ class OnCardViewTouchListener(
             val xVelocity = dX / time
             return xVelocity > minimumVelocity
         }
+
+    /**
+     * 对应的数据
+     */
+    var data: Any? = null
+
+    /**
+     * 滑动一个视图宽度时的最大旋转角度
+     */
+    var rotationDegrees: Float = 20f
 
     /**
      * 是否支持左右滑

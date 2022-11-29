@@ -264,8 +264,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         onCardViewTouchListener = null
         topView = getChildAt(topViewIndex)?.apply {
             // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
-            onCardViewTouchListener = OnCardViewTouchListener(this, adapter.getItem(0), rotationDegrees).also {
-                // 设置是否支持左右滑
+            onCardViewTouchListener = OnCardViewTouchListener(this).also {
+                it.data = adapter.getItem(0)
+                it.rotationDegrees = rotationDegrees
                 it.isNeedSwipe = isNeedSwipe
                 it.animDuration = animDuration
                 it.borderPercent = borderPercent
