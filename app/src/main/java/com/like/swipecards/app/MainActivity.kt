@@ -36,34 +36,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        mBinding.swipeCardsAdapterView.setNeedSwipe(true)
-        mBinding.swipeCardsAdapterView.onSwipeListener = object : OnSwipeListener {
-            override fun onLoadData() {
-                loadData()
-            }
+        with(mBinding.swipeCardsAdapterView) {
+            maxCount = 5
+            prefetchCount = 5
+            yOffsetStep = 100
+            scaleStep = 0.08f
+            scaleMax = 0.75f
+            onSwipeListener = object : OnSwipeListener {
+                override fun onLoadData() {
+                    loadData()
+                }
 
-            override fun onUndoChange(size: Int) {
-                mBinding.undo.isEnabled = size > 0
-            }
+                override fun onUndoChange(size: Int) {
+                    mBinding.undo.isEnabled = size > 0
+                }
 
-            override fun onScroll(direction: Int, absProgress: Float) {
+                override fun onScroll(direction: Int, absProgress: Float) {
 //                Log.v("TAG", "onScroll direction=$direction absProgress=$absProgress")
-            }
+                }
 
-            override fun onCardExited(direction: Int, dataObject: Any?) {
-                myAdapter.remove(0)
-                if (direction == DIRECTION_TOP_HALF_LEFT || direction == DIRECTION_BOTTOM_HALF_LEFT) {
-                    Toast.makeText(this@MainActivity, "leftExit", Toast.LENGTH_SHORT).show()
-                } else if (direction == DIRECTION_TOP_HALF_RIGHT || direction == DIRECTION_BOTTOM_HALF_RIGHT) {
-                    Toast.makeText(this@MainActivity, "rightExit", Toast.LENGTH_SHORT).show()
+                override fun onCardExited(direction: Int, dataObject: Any?) {
+                    myAdapter.remove(0)
+                    if (direction == DIRECTION_TOP_HALF_LEFT || direction == DIRECTION_BOTTOM_HALF_LEFT) {
+                        Toast.makeText(this@MainActivity, "leftExit", Toast.LENGTH_SHORT).show()
+                    } else if (direction == DIRECTION_TOP_HALF_RIGHT || direction == DIRECTION_BOTTOM_HALF_RIGHT) {
+                        Toast.makeText(this@MainActivity, "rightExit", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onClick(v: View?, dataObject: Any?) {
+                    Toast.makeText(this@MainActivity, "onClick", Toast.LENGTH_SHORT).show()
                 }
             }
-
-            override fun onClick(v: View?, dataObject: Any?) {
-                Toast.makeText(this@MainActivity, "onClick", Toast.LENGTH_SHORT).show()
-            }
+            setAnimDuration(3000)
+            setMaxRotationAngle(20f)
+            setBorderPercent(0.5f)
+            setNeedSwipe(true)
+            setMaxUndoCacheSize(2)
+            setAdapter(myAdapter)
         }
-        mBinding.swipeCardsAdapterView.setAdapter(myAdapter)
         mBinding.swipeLeft.setOnClickListener {
             mBinding.swipeCardsAdapterView.swipeLeft()
         }
@@ -81,7 +92,6 @@ class MainActivity : AppCompatActivity() {
         mBinding.undo.setOnClickListener {
             mBinding.swipeCardsAdapterView.undo()
         }
-        mBinding.swipeCardsAdapterView.setMaxUndoCacheSize(2)
     }
 
     private var page = 1

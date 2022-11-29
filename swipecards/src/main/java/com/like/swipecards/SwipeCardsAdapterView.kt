@@ -124,13 +124,13 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     /**
      * 存在屏幕中的最大 cardView 数量。包括"最底层那一个被遮住的视图"。
      */
-    var maxCount = 5
+    var maxCount = 4
 
     /**
      * 预取数量。
      * 当数量等于此值时，触发加载数据的操作。建议 >=[maxCount]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
      */
-    var prefetchCount = 5
+    var prefetchCount = 4
 
     /**
      * 缩放层叠时的垂直偏移量步长
@@ -177,6 +177,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      */
     fun setNeedSwipe(needSwipe: Boolean) {
         onCardViewTouchListener.isNeedSwipe = needSwipe
+    }
+
+    fun setMaxUndoCacheSize(maxSize: Int) {
+        mUndo.maxCacheSize = maxSize
     }
 
     /**
@@ -239,10 +243,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     fun clearUndoCache() {
         mUndo.clear()
-    }
-
-    fun setMaxUndoCacheSize(maxSize: Int) {
-        mUndo.maxCacheSize = maxSize
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
