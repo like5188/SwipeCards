@@ -97,7 +97,12 @@ class MainActivity : AppCompatActivity() {
             mBinding.swipeCardsAdapterView.undo()
         }
         mBinding.tvSetting.setOnClickListener {
-            startActivityForResult(Intent(this, SettingActivity::class.java), 0)
+            startActivityForResult(
+                Intent(this, SettingActivity::class.java).apply {
+                    putExtra("config", mBinding.swipeCardsAdapterView.config)
+                },
+                0
+            )
         }
     }
 

@@ -18,6 +18,7 @@ class SettingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mBinding.config = intent?.getParcelableExtra("config")
         mBinding.btnConfirm.setOnClickListener {
             Intent().apply {
                 putExtra("config", getConfig())

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <data>
+
+        <variable
+            name="config"
+            type="com.like.swipecards.SwipeCardsAdapterView.Config" />
+    </data>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -19,7 +26,7 @@
                 android:id="@+id/et_maxChildCount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="5" />
+                android:text="@{String.valueOf(config.maxChildCount)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -35,7 +42,7 @@
                 android:id="@+id/et_prefetchCount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="5" />
+                android:text="@{String.valueOf(config.prefetchCount)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -51,7 +58,7 @@
                 android:id="@+id/et_yOffsetStep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="100" />
+                android:text="@{String.valueOf(config.yOffsetStep)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -67,7 +74,7 @@
                 android:id="@+id/et_scaleStep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0.08" />
+                android:text="@{String.valueOf(config.scaleStep)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -83,7 +90,7 @@
                 android:id="@+id/et_scaleMax"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0.75" />
+                android:text="@{String.valueOf(config.scaleMax)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -99,7 +106,7 @@
                 android:id="@+id/et_animDuration"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="3000" />
+                android:text="@{String.valueOf(config.animDuration)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -115,7 +122,7 @@
                 android:id="@+id/et_maxRotationAngle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="20" />
+                android:text="@{String.valueOf(config.maxRotationAngle)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -131,7 +138,7 @@
                 android:id="@+id/et_borderPercent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0.5" />
+                android:text="@{String.valueOf(config.borderPercent)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -147,7 +154,7 @@
                 android:id="@+id/et_isNeedSwipe"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="true" />
+                android:text="@{String.valueOf(config.isNeedSwipe)}" />
         </LinearLayout>
 
         <LinearLayout
@@ -163,7 +170,7 @@
                 android:id="@+id/et_maxUndoCacheSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="2" />
+                android:text="@{String.valueOf(config.maxUndoCacheSize)}" />
         </LinearLayout>
 
         <Button
