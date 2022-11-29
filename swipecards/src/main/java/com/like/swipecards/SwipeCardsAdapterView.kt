@@ -69,16 +69,11 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * 注意：最底层（屏幕最深处）的索引是0。
      */
     private val topViewIndex: Int
-        get() = Math.min(adapter.count, maxCount) - 1
+        get() = Math.min(adapter.count, config.maxChildCount) - 1
 
     // 记录 TopView 原始位置的left、top
     private var originTopViewLeft = 0
     private var originTopViewTop = 0
-
-    /**
-     * 动画执行时长
-     */
-    private var animDuration = 300L
 
     private val onCardViewTouchListener by lazy {
         OnCardViewTouchListener().also {
@@ -93,7 +88,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                     }
                     onSwipeListener?.onCardExited(direction, dataObject)
                     // 通知加载数据
-                    if (adapter.count == prefetchCount) {
+                    if (adapter.count == config.prefetchCount) {
                         onSwipeListener?.onLoadData()
                     }
                 }
@@ -103,7 +98,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 }
 
                 override fun onScroll(direction: Int, absProgress: Float) {
-                    var rate = absProgress / scaleMax// 修正系数
+                    var rate = absProgress / config.scaleMax// 修正系数
                     if (rate > 1f) {
                         rate = 1f
                     }
@@ -121,67 +116,17 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         }
     }
 
-    /**
-     * 存在屏幕中的最大 cardView 数量。包括"最底层那一个被遮住的视图"。
-     */
-    var maxCount = 4
-
-    /**
-     * 预取数量。
-     * 当数量等于此值时，触发加载数据的操作。建议 >=[maxCount]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
-     */
-    var prefetchCount = 4
-
-    /**
-     * 缩放层叠时的垂直偏移量步长
-     */
-    var yOffsetStep = 100
-
-    /**
-     *缩放层叠时的缩放步长
-     */
-    var scaleStep = 0.08f
-
-    /**
-     * 当滑动进度为这个值时，缩放到最大。[0f,1f]
-     */
-    var scaleMax = 0.5f
+    var config: Config = Config()
+        set(value) {
+            onCardViewTouchListener.animDuration = value.animDuration
+            onCardViewTouchListener.maxRotationAngle = value.maxRotationAngle
+            onCardViewTouchListener.borderPercent = value.borderPercent
+            onCardViewTouchListener.isNeedSwipe = value.isNeedSwipe
+            mUndo.maxCacheSize = value.maxUndoCacheSize
+            field = value
+        }
 
     var onSwipeListener: OnSwipeListener? = null
-
-    /**
-     * 动画执行时长
-     */
-    fun setAnimDuration(duration: Long) {
-        animDuration = duration
-        onCardViewTouchListener.animDuration = duration
-    }
-
-    /**
-     * 最大旋转角度。
-     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的角度
-     */
-    fun setMaxRotationAngle(angle: Float) {
-        onCardViewTouchListener.maxRotationAngle = angle
-    }
-
-    /**
-     * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
-     */
-    fun setBorderPercent(percent: Float) {
-        onCardViewTouchListener.borderPercent = percent
-    }
-
-    /**
-     * 是否支持手指滑动
-     */
-    fun setNeedSwipe(needSwipe: Boolean) {
-        onCardViewTouchListener.isNeedSwipe = needSwipe
-    }
-
-    fun setMaxUndoCacheSize(maxSize: Int) {
-        mUndo.maxCacheSize = maxSize
-    }
 
     /**
      * 单击触发往左滑出
@@ -210,7 +155,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             return
         }
         val undoViewStatus = mUndo.pop() ?: return
-        val removeView = if (childCount == maxCount) {
+        val removeView = if (childCount == config.maxChildCount) {
             // 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个被遮住的视图，当然此视图也必须要移除才对。
             getChildAt(0).apply {
                 removeViewInLayout(this)
@@ -226,7 +171,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         // 飞回初始位置
         AnimatorHelper.reset(
             removeView,
-            animDuration,
+            config.animDuration,
             originTopViewLeft.toFloat(),
             originTopViewTop.toFloat(),
             1f,
@@ -333,22 +278,22 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         // index代表可见的最底层视图的索引。所有视图的最底层的视图为0。topViewIndex-1代表TopView 之下
         for (index in (topViewIndex - 1 downTo 0)) {
             // 如果不是初始化，并且"最底层那一个被遮住的视图"存在
-            if (!isInit && childCount >= maxCount) {
+            if (!isInit && childCount >= config.maxChildCount) {
                 if (index == 0) {// 排除"最底层那一个被遮住的视图"
                     return
                 }
             }
             // 层级。最外层（topView）的层级为 0，向底层递增
             var level = topViewIndex - index
-            if (level > maxCount - 2) {
-                level = maxCount - 2
+            if (level > config.maxChildCount - 2) {
+                level = config.maxChildCount - 2
             }
             // 进行缩放和垂直平移
             getChildAt(index)?.apply {
-                val yOffset = (yOffsetStep * (level - absRate)).toInt()
+                val yOffset = (config.yOffsetStep * (level - absRate)).toInt()
                 val curYOffset = if (isInit) 0 else top - originTopViewTop
                 offsetTopAndBottom(yOffset - curYOffset)
-                val scale = 1 - scaleStep * level + scaleStep * absRate
+                val scale = 1 - config.scaleStep * level + config.scaleStep * absRate
                 scaleX = scale
                 scaleY = scale
             }
@@ -414,7 +359,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         /**
          * 按 viewType 缓存视图
          * key：viewType；
-         * value：视图集合，这个集合每种 viewType 的视图最多只会有[maxCount]个。
+         * value：视图集合，这个集合每种 viewType 的视图最多只会有[maxChildCount]个。
          *        因为都是添加一个使用一个。最多的时候就是清除或者一个个删除到最后[maxCount]个的时候。
          */
         private val mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
@@ -465,4 +410,30 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     }
 
+    /**
+     * [SwipeCardsAdapterView] 需要的配置参数
+     * @param maxChildCount     存在屏幕中的最大子视图数量。包括"最底层那一个被遮住的视图"。
+     * @param prefetchCount     预取数据阈值
+     * 当数量等于此值时，触发加载数据的操作。建议 >=[maxChildCount]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
+     * @param yOffsetStep       缩放层叠时的垂直偏移量步长
+     * @param scaleStep         缩放层叠时的缩放步长
+     * @param scaleMax          当滑动进度为这个值时，缩放到最大。[0f,1f]
+     * @param animDuration      动画执行时长
+     * @param maxRotationAngle  比如左滑时：就是卡片左上角滑动到卡片原始 left 时，卡片的旋转角度
+     * @param borderPercent     x 轴方向上的边界百分比[0f,1f]，相对于卡片的 left 或者 right
+     * @param isNeedSwipe       是否支持左右滑
+     * @param maxUndoCacheSize  回退栈大小
+     */
+    data class Config(
+        val maxChildCount: Int = 4,
+        val prefetchCount: Int = 4,
+        val yOffsetStep: Int = 100,
+        val scaleStep: Float = 0.08f,
+        val scaleMax: Float = 0.5f,
+        val animDuration: Long = 300,
+        val maxRotationAngle: Float = 20f,
+        val borderPercent: Float = 0.5f,
+        val isNeedSwipe: Boolean = true,
+        val maxUndoCacheSize: Int = 2,
+    )
 }

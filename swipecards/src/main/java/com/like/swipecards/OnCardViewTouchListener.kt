@@ -170,7 +170,7 @@ class OnCardViewTouchListener : OnTouchListener {
         }
 
     /**
-     * 滑动一个视图宽度时的最大旋转角度
+     * 比如左滑时：就是卡片左上角滑动到卡片原始 left 时，卡片的旋转角度
      */
     var maxRotationAngle: Float = 20f
 

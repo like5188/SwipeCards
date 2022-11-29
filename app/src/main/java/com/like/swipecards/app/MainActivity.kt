@@ -37,11 +37,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         with(mBinding.swipeCardsAdapterView) {
-            maxCount = 5
-            prefetchCount = 5
-            yOffsetStep = 100
-            scaleStep = 0.08f
-            scaleMax = 0.75f
+            config = SwipeCardsAdapterView.Config(
+                maxChildCount = 5,
+                prefetchCount = 5,
+                yOffsetStep = -100,
+                scaleStep = 0.08f,
+                scaleMax = 0.75f,
+                animDuration = 300,
+                maxRotationAngle = 20f,
+                borderPercent = 0.5f,
+                isNeedSwipe = true,
+                maxUndoCacheSize = 2,
+            )
             onSwipeListener = object : OnSwipeListener {
                 override fun onLoadData() {
                     loadData()
@@ -68,11 +75,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "onClick", Toast.LENGTH_SHORT).show()
                 }
             }
-            setAnimDuration(300)
-            setMaxRotationAngle(20f)
-            setBorderPercent(0.5f)
-            setNeedSwipe(true)
-            setMaxUndoCacheSize(2)
             setAdapter(myAdapter)
         }
         mBinding.swipeLeft.setOnClickListener {
