@@ -134,14 +134,14 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * 单击触发往左滑出
      */
     fun swipeLeft() {
-        onCardViewTouchListener?.swipeLeft()
+        onCardViewTouchListener.swipeLeft()
     }
 
     /**
      * 单击触发往右滑出
      */
     fun swipeRight() {
-        onCardViewTouchListener?.swipeRight()
+        onCardViewTouchListener.swipeRight()
     }
 
     fun setAdapter(adapter: T) {
@@ -361,7 +361,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         /**
          * 按 viewType 缓存视图
          * key：viewType；
-         * value：视图集合，这个集合每种 viewType 的视图最多只会有[maxChildCount]个。
+         * value：视图集合，这个集合每种 viewType 的视图最多只会有[Config.maxChildCount]个。
          *        因为都是添加一个使用一个。最多的时候就是清除或者一个个删除到最后[maxCount]个的时候。
          */
         private val mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
