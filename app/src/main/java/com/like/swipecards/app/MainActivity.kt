@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             config = SwipeCardsAdapterView.Config(
                 maxChildCount = 5,
                 prefetchCount = 5,
-                yOffsetStep = -100,
+                yOffsetStep = 100,
                 scaleStep = 0.08f,
                 scaleMax = 0.75f,
                 animDuration = 3000,
