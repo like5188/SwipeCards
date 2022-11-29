@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        mBinding.swipeCardsAdapterView.isNeedSwipe = true
+        mBinding.swipeCardsAdapterView.setNeedSwipe(true)
         mBinding.swipeCardsAdapterView.onSwipeListener = object : OnSwipeListener {
             override fun onLoadData() {
                 loadData()

@@ -75,7 +75,51 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     private var originTopViewLeft = 0
     private var originTopViewTop = 0
 
-    private var onCardViewTouchListener: OnCardViewTouchListener? = null
+    /**
+     * 动画执行时长
+     */
+    private var animDuration = 300L
+
+    private val onCardViewTouchListener by lazy {
+        OnCardViewTouchListener().also {
+            it.onSwipeListener = object : OnSwipeListener {
+                override fun onCardExited(direction: Int, dataObject: Any?) {
+                    topView?.let {
+                        removeViewInLayout(it)
+                        mUndo.push(it.viewStatus.apply {
+                            this.data = dataObject
+                        })
+                        mRecycler.addScrapView(it.tag as ViewHolder<*>)
+                    }
+                    onSwipeListener?.onCardExited(direction, dataObject)
+                    // 通知加载数据
+                    if (adapter.count == prefetchCount) {
+                        onSwipeListener?.onLoadData()
+                    }
+                }
+
+                override fun onClick(v: View?, dataObject: Any?) {
+                    onSwipeListener?.onClick(v, dataObject)
+                }
+
+                override fun onScroll(direction: Int, absProgress: Float) {
+                    var rate = absProgress / scaleMax// 修正系数
+                    if (rate > 1f) {
+                        rate = 1f
+                    }
+                    adjustChildren(rate, false)
+                    onSwipeListener?.onScroll(direction, absProgress)
+                }
+
+                override fun onLoadData() {
+                }
+
+                override fun onUndoChange(size: Int) {
+                    onSwipeListener?.onUndoChange(size)
+                }
+            }
+        }
+    }
 
     /**
      * 存在屏幕中的最大 cardView 数量。包括"最底层那一个被遮住的视图"。
@@ -103,28 +147,37 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      */
     var scaleMax = 0.5f
 
-    /**
-     * 最大旋转角度。
-     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的角度
-     */
-    var rotationDegrees = 20f
-
-    /**
-     * 是否支持滑动
-     */
-    var isNeedSwipe: Boolean = true
+    var onSwipeListener: OnSwipeListener? = null
 
     /**
      * 动画执行时长
      */
-    var animDuration = 300L
+    fun setAnimDuration(duration: Long) {
+        animDuration = duration
+        onCardViewTouchListener.animDuration = duration
+    }
+
+    /**
+     * 最大旋转角度。
+     * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的角度
+     */
+    fun setMaxRotationAngle(angle: Float) {
+        onCardViewTouchListener.maxRotationAngle = angle
+    }
 
     /**
      * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
      */
-    var borderPercent: Float = 0.5f
+    fun setBorderPercent(percent: Float) {
+        onCardViewTouchListener.borderPercent = percent
+    }
 
-    var onSwipeListener: OnSwipeListener? = null
+    /**
+     * 是否支持手指滑动
+     */
+    fun setNeedSwipe(needSwipe: Boolean) {
+        onCardViewTouchListener.isNeedSwipe = needSwipe
+    }
 
     /**
      * 单击触发往左滑出
@@ -261,54 +314,9 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
     // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
     private fun resetTopView() {
-        onCardViewTouchListener = null
         topView = getChildAt(topViewIndex)?.apply {
-            // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
-            onCardViewTouchListener = OnCardViewTouchListener(this).also {
-                it.data = adapter.getItem(0)
-                it.rotationDegrees = rotationDegrees
-                it.isNeedSwipe = isNeedSwipe
-                it.animDuration = animDuration
-                it.borderPercent = borderPercent
-                it.onSwipeListener = object : OnSwipeListener {
-                    override fun onCardExited(direction: Int, dataObject: Any?) {
-                        topView?.let {
-                            removeViewInLayout(it)
-                            mUndo.push(it.viewStatus.apply {
-                                this.data = dataObject
-                            })
-                            mRecycler.addScrapView(it.tag as ViewHolder<*>)
-                        }
-                        onSwipeListener?.onCardExited(direction, dataObject)
-                        // 通知加载数据
-                        if (adapter.count == prefetchCount) {
-                            onSwipeListener?.onLoadData()
-                        }
-                    }
-
-                    override fun onClick(v: View?, dataObject: Any?) {
-                        onSwipeListener?.onClick(v, dataObject)
-                    }
-
-                    override fun onScroll(direction: Int, absProgress: Float) {
-                        var rate = absProgress / scaleMax// 修正系数
-                        if (rate > 1f) {
-                            rate = 1f
-                        }
-                        adjustChildren(rate, false)
-                        onSwipeListener?.onScroll(direction, absProgress)
-                    }
-
-                    override fun onLoadData() {
-                    }
-
-                    override fun onUndoChange(size: Int) {
-                        onSwipeListener?.onUndoChange(size)
-                    }
-
-                }
-            }
-            this.setOnTouchListener(onCardViewTouchListener)
+            // attachView必须在layout完成后，否则获取不到view的相关参数。
+            onCardViewTouchListener.attach(this, adapter.getItem(0))
         }
     }
 

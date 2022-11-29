@@ -16,24 +16,47 @@ import kotlin.math.tan
  * 单个卡片视图触摸相关的处理
  * 包括功能：滑动、旋转、飞出、缩放等动画的处理
  */
-class OnCardViewTouchListener(
-    private val cardView: View
-) : OnTouchListener {
-    private val originCardViewX: Float = cardView.x
-    private val originCardViewY: Float = cardView.y
-    private val originCardViewWidth: Int = cardView.width
-    private val originCardViewHeight: Int = cardView.height
-    private val halfCardViewWidth: Float = originCardViewWidth / 2f
-    private val halfCardViewHeight: Float = originCardViewHeight / 2f
-    private val parentWidth: Int = (cardView.parent as ViewGroup).width
+class OnCardViewTouchListener : OnTouchListener {
+    private lateinit var cardView: View
+    private var originCardViewX: Float = 0f
+    private var originCardViewY: Float = 0f
+    private var originCardViewWidth: Int = 0
+    private var originCardViewHeight: Int = 0
+    private var halfCardViewWidth: Float = 0f
+    private var halfCardViewHeight: Float = 0f
+    private var parentWidth: Int = 0
 
     // 旋转中心点
-    private val pivotPoint: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
+    private lateinit var pivotPoint: PointF
 
     // 视图顶部的屏幕坐标
-    private val originCardViewRawY: Int = Rect().apply {
-        cardView.getGlobalVisibleRect(this)
-    }.top
+    private var originCardViewRawY: Int = 0
+
+    /**
+     * 对应的数据
+     */
+    private var data: Any? = null
+
+    /**
+     * 附到指定视图上。
+     * 此方法必须在 layout 完成后，否则获取不到 view 的相关参数。
+     */
+    fun attach(view: View, data: Any?) {
+        with(view) {
+            cardView = this
+            originCardViewX = x
+            originCardViewY = y
+            originCardViewWidth = width
+            originCardViewHeight = height
+            halfCardViewWidth = originCardViewWidth / 2f
+            halfCardViewHeight = originCardViewHeight / 2f
+            parentWidth = (parent as ViewGroup).width
+            pivotPoint = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
+            originCardViewRawY = Rect().also { getGlobalVisibleRect(it) }.top
+            setOnTouchListener(this@OnCardViewTouchListener)
+        }
+        this.data = data
+    }
 
     // cardView 的当前坐标。不包含旋转引起的位移
     private var curCardViewX = 0f
@@ -120,7 +143,7 @@ class OnCardViewTouchListener(
      */
     private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
         // rotationDegrees 对应的弧度
-        val rotationRadian: Double = Math.PI / 180 * rotationDegrees
+        val rotationRadian: Double = Math.PI / 180 * maxRotationAngle
         val offset = if (touchPart == TOUCH_PART_TOP_HALF) {
             abs((y - originCardViewRawY) * tan(rotationRadian)).toFloat()
         } else {
@@ -147,14 +170,9 @@ class OnCardViewTouchListener(
         }
 
     /**
-     * 对应的数据
-     */
-    var data: Any? = null
-
-    /**
      * 滑动一个视图宽度时的最大旋转角度
      */
-    var rotationDegrees: Float = 20f
+    var maxRotationAngle: Float = 20f
 
     /**
      * 是否支持左右滑
@@ -241,7 +259,7 @@ class OnCardViewTouchListener(
                 curCardViewY += dy
 
                 // 根据滑动距离计算旋转角度
-                var rotation = (curRawX - downRawX) / getMaxMoveDistanceXByY() * rotationDegrees
+                var rotation = (curRawX - downRawX) / getMaxMoveDistanceXByY() * maxRotationAngle
                 if (touchPart == TOUCH_PART_BOTTOM_HALF) {
                     rotation = -rotation
                 }
@@ -329,7 +347,7 @@ class OnCardViewTouchListener(
             isLeft,
             exitPoint,
             byClick,
-            rotationDegrees,
+            maxRotationAngle,
             initScale,
             moveDirection,
             onEnd = {
@@ -347,7 +365,7 @@ class OnCardViewTouchListener(
             // 如果是手指触摸滑动，那么是先旋转，再取值，则 cardView.rotation 有值。
             getNewPointByRotation(rotation = cardView.rotation)
         } else {// 如果是单击飞出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
-            getNewPointByRotation(rotation = rotationDegrees)
+            getNewPointByRotation(rotation = maxRotationAngle)
         }
         val distanceXByRotation = abs(newPointByRotation.x - originCardViewX)
         // 求 exitPoint 需要在x方向的平移距离
