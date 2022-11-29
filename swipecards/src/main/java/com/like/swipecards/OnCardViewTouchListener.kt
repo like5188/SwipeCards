@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Build
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
 import android.view.ViewGroup
+import androidx.core.graphics.toRectF
 import kotlin.math.abs
 import kotlin.math.tan
 
@@ -32,9 +34,10 @@ class OnCardViewTouchListener : OnTouchListener {
     // 视图顶部的屏幕坐标
     private var originCardViewRawY: Int = 0
 
-    /**
-     * 对应的数据
-     */
+    // 原始视图的矩形
+    private lateinit var originRectF: RectF
+
+    // 对应的数据
     private var data: Any? = null
 
     /**
@@ -53,6 +56,10 @@ class OnCardViewTouchListener : OnTouchListener {
             parentWidth = (parent as ViewGroup).width
             pivotPoint = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
             originCardViewRawY = Rect().also { getGlobalVisibleRect(it) }.top
+            Rect().apply {
+                getHitRect(this)
+                originRectF = toRectF()
+            }
             setOnTouchListener(this@OnCardViewTouchListener)
         }
         this.data = data
@@ -81,21 +88,6 @@ class OnCardViewTouchListener : OnTouchListener {
      * 触摸的位置。参考 [TOUCH_PART_TOP_HALF]、[TOUCH_PART_BOTTOM_HALF]
      */
     private var touchPart = TOUCH_PART_TOP_HALF
-
-    // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
-    private fun getNewPointByRotation(
-        src: PointF = PointF(originCardViewX, originCardViewY),
-        pivot: PointF = this.pivotPoint,
-        rotation: Float = cardView.rotation
-    ): PointF {
-        val matrix = Matrix()
-        matrix.setRotate(rotation, pivot.x, pivot.y)
-        val old = FloatArray(2)
-        old[0] = src.x
-        old[1] = src.y
-        matrix.mapPoints(old)
-        return PointF(old[0], old[1])
-    }
 
     // 手指滑动方向。
     private val moveDirection: Int
@@ -358,23 +350,24 @@ class OnCardViewTouchListener : OnTouchListener {
     }
 
     /**
-     * 如果要视图飞出屏幕，需要计算点(originCardViewX,originCardViewY)移动多少，这里称这个移动后的点为飞出点：exitPoint。
+     * 获取视图完全飞出屏幕时的偏移距离，需要考虑旋转造成的宽度变化。
      */
     private fun getExitPoint(isLeft: Boolean, event: MotionEvent?): PointF {
-        val newPointByRotation = if (event != null) {
+        val rotation = if (event != null) {
             // 如果是手指触摸滑动，那么是先旋转，再取值，则 cardView.rotation 有值。
-            getNewPointByRotation(rotation = cardView.rotation)
-        } else {// 如果是单击飞出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 rotationDegrees
-            getNewPointByRotation(rotation = maxRotationAngle)
+            cardView.rotation
+        } else {// 如果是单击飞出，那么是先取值，再旋转，则 cardView.rotation 没有值，只能用 maxRotationAngle
+            maxRotationAngle
         }
-        val distanceXByRotation = abs(newPointByRotation.x - originCardViewX)
-        // 求 exitPoint 需要在x方向的平移距离
+        val newRectFByRotation = getNewRectFByRotation(rotation = if (isLeft) -rotation else rotation)
+        // 求需要在x方向的平移距离。根据x方向来判断，不管y方向。
         val translationX = if (isLeft) {
-            -(originCardViewX + originCardViewWidth) - distanceXByRotation
+            -newRectFByRotation.right
         } else {
-            parentWidth - originCardViewX + distanceXByRotation
+            -newRectFByRotation.left + parentWidth
         }
-        // 求 exitPoint 需要在y方向的平移距离
+        // 求需要在y方向的平移距离
+        val yOffset = originRectF.top - newRectFByRotation.top// 由于旋转造成的y轴方向的偏移
         val translationY = if (event != null) {// 手指触摸滑动
             // 已知点(downRawX,downRawY)和点(curRawX,curRawY)构成的直线，
             // 平移这条直线，使点(downRawX,downRawY)和点(curCardViewX,curCardViewY)重合，
@@ -384,11 +377,44 @@ class OnCardViewTouchListener : OnTouchListener {
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
             val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
             // 根据直线方程 y = ax+b 求飞出点的y坐标
-            regression.slope() * translationX + regression.intercept()
-        } else {// 单击飞出
-            0f
+            regression.slope() * translationX + regression.intercept() - yOffset
+        } else {// 单击飞出，需要保持最上面那个顶点的y坐标不变，所以就需要设置为旋转导致的y轴方向上的偏移。
+            0f + yOffset
         }.toFloat()
         return PointF(translationX, translationY)
+    }
+
+    /**
+     * 获取原始矩形围绕中心点 [pivot] 旋转 [rotation] 角度得到的新矩形
+     */
+    private fun getNewRectFByRotation(
+        pivot: PointF = this.pivotPoint,
+        rotation: Float = cardView.rotation
+    ): RectF {
+        // 原始矩形
+        val rectF = RectF(originRectF)
+        // 旋转
+        val matrix = Matrix()
+        matrix.setRotate(rotation, pivot.x, pivot.y)
+        matrix.mapRect(rectF)
+        return rectF
+    }
+
+    /**
+     * 获取点[src]围绕中心点 [pivot] 旋转 [rotation] 角度得到的新点
+     */
+    private fun getNewPointByRotation(
+        src: PointF = PointF(originCardViewX, originCardViewY),
+        pivot: PointF = this.pivotPoint,
+        rotation: Float = cardView.rotation
+    ): PointF {
+        val matrix = Matrix()
+        matrix.setRotate(rotation, pivot.x, pivot.y)
+        val old = FloatArray(2)
+        old[0] = src.x
+        old[1] = src.y
+        matrix.mapPoints(old)
+        return PointF(old[0], old[1])
     }
 
     companion object {
