@@ -10,7 +10,9 @@ import android.view.animation.OvershootInterpolator
 import java.util.concurrent.atomic.AtomicBoolean
 
 object AnimatorHelper {
-    // 动画是否正在执行
+    /**
+     * 动画是否正在执行
+     */
     val isAnimRunning = AtomicBoolean(false)
 
     /**
@@ -53,6 +55,7 @@ object AnimatorHelper {
      * 执行飞出屏幕动画，即点(originCardViewX,originCardViewY)移动到 exitPoint 位置。
      *
      * @param byClick   是否单击事件引起的
+     * @param initScale 初始缩放系数，用于控制缩放动画
      */
     fun exit(
         view: View,
