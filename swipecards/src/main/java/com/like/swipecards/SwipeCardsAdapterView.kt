@@ -321,11 +321,8 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 resetTopView()// 需要重新设置topView
             }
         ) { direction, progress ->
-            var rate = progress / scaleMax// 修正系数
-            if (rate > 1f) {
-                rate = 1f
-            }
-            adjustChildren(rate, false)
+            // 回退时不需要修正缩放系数，这样效果更好
+            adjustChildren(progress, false)
             onSwipeListener?.onScroll(direction, progress)
         }
     }
