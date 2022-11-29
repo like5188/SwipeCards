@@ -34,9 +34,6 @@ class OnCardViewTouchListener(
     // 旋转中心点
     private val pivotPoint: PointF = PointF(originCardViewX + halfCardViewWidth, originCardViewY + halfCardViewHeight)
 
-    // rotationDegrees 对应的弧度
-    private val rotationRadian: Double = Math.PI / 180 * rotationDegrees
-
     // 视图顶部的屏幕坐标
     private val originCardViewRawY: Int = Rect().apply {
         cardView.getGlobalVisibleRect(this)
@@ -126,6 +123,8 @@ class OnCardViewTouchListener(
      * 比如左滑时：就是滑动使得右上角的点滑动到原始左上角点的位置的距离，在不同的 y 坐标时不一致。
      */
     private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
+        // rotationDegrees 对应的弧度
+        val rotationRadian: Double = Math.PI / 180 * rotationDegrees
         val offset = if (touchPart == TOUCH_PART_TOP_HALF) {
             abs((y - originCardViewRawY) * tan(rotationRadian)).toFloat()
         } else {
