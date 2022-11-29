@@ -1,5 +1,7 @@
 package com.like.swipecards.app
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -93,6 +95,19 @@ class MainActivity : AppCompatActivity() {
         mBinding.undo.isEnabled = false
         mBinding.undo.setOnClickListener {
             mBinding.swipeCardsAdapterView.undo()
+        }
+        mBinding.tvSetting.setOnClickListener {
+            startActivityForResult(Intent(this, SettingActivity::class.java), 0)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && requestCode == 0) {
+            data?.getParcelableExtra<SwipeCardsAdapterView.Config>("config")?.let {
+                mBinding.swipeCardsAdapterView.config = it
+                refresh()
+            }
         }
     }
 

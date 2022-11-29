@@ -16,6 +16,7 @@
                 android:text="最大子视图数量：" />
 
             <EditText
+                android:id="@+id/et_maxChildCount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="5" />
@@ -31,6 +32,7 @@
                 android:text="预取数据阈值：" />
 
             <EditText
+                android:id="@+id/et_prefetchCount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="5" />
@@ -46,6 +48,7 @@
                 android:text="y轴偏移步进(像素)：" />
 
             <EditText
+                android:id="@+id/et_yOffsetStep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="-100" />
@@ -61,6 +64,7 @@
                 android:text="缩放步进[0f,1f]：" />
 
             <EditText
+                android:id="@+id/et_scaleStep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="0.08" />
@@ -76,6 +80,7 @@
                 android:text="指定缩放达到最大的滑动进度[0f,1f]：" />
 
             <EditText
+                android:id="@+id/et_scaleMax"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="0.75" />
@@ -88,12 +93,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="动画时长(毫米)：" />
+                android:text="动画时长(毫秒)：" />
 
             <EditText
+                android:id="@+id/et_animDuration"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="300" />
+                android:text="3000" />
         </LinearLayout>
 
         <LinearLayout
@@ -106,6 +112,7 @@
                 android:text="最大旋转角度(卡片右上角滑动到卡片最左边时的角度)：" />
 
             <EditText
+                android:id="@+id/et_maxRotationAngle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="20" />
@@ -118,9 +125,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="边界阈值(超过此值，放开手指会自动滑出)：" />
+                android:text="滑动边界阈值百分比(超过此值，放开手指会自动滑出)：" />
 
             <EditText
+                android:id="@+id/et_borderPercent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="0.5" />
@@ -136,6 +144,7 @@
                 android:text="是否支持手指滑动：" />
 
             <EditText
+                android:id="@+id/et_isNeedSwipe"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="true" />
@@ -151,10 +160,18 @@
                 android:text="回退栈大小：" />
 
             <EditText
+                android:id="@+id/et_maxUndoCacheSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="2" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnConfirm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="确定" />
     </LinearLayout>
 </layout>
 

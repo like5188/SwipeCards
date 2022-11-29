@@ -2,6 +2,8 @@ package com.like.swipecards
 
 import android.content.Context
 import android.database.DataSetObserver
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -435,5 +437,46 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         val borderPercent: Float = 0.5f,
         val isNeedSwipe: Boolean = true,
         val maxUndoCacheSize: Int = 2,
-    )
+    ) : Parcelable {
+        constructor(parcel: Parcel) : this(
+            parcel.readInt(),
+            parcel.readInt(),
+            parcel.readInt(),
+            parcel.readFloat(),
+            parcel.readFloat(),
+            parcel.readLong(),
+            parcel.readFloat(),
+            parcel.readFloat(),
+            parcel.readByte() != 0.toByte(),
+            parcel.readInt()
+        ) {
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeInt(maxChildCount)
+            parcel.writeInt(prefetchCount)
+            parcel.writeInt(yOffsetStep)
+            parcel.writeFloat(scaleStep)
+            parcel.writeFloat(scaleMax)
+            parcel.writeLong(animDuration)
+            parcel.writeFloat(maxRotationAngle)
+            parcel.writeFloat(borderPercent)
+            parcel.writeByte(if (isNeedSwipe) 1 else 0)
+            parcel.writeInt(maxUndoCacheSize)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<Config> {
+            override fun createFromParcel(parcel: Parcel): Config {
+                return Config(parcel)
+            }
+
+            override fun newArray(size: Int): Array<Config?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
 }

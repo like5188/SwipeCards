@@ -2,179 +2,209 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="@id/divider"
-            app:layout_constraintStart_toStartOf="@id/divider"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:background="#eeeeee"
+            android:padding="10dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1/4"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="@id/divider0"
-            app:layout_constraintStart_toStartOf="@id/divider0"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="滑动测试demo"
+                android:textColor="#000000"
+                android:textSize="18sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1/2"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="@id/divider1"
-            app:layout_constraintStart_toStartOf="@id/divider1"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/tvSetting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:text="设置"
+                android:textColor="#000000"
+                android:textSize="12sp" />
+        </FrameLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3/4"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="@id/divider2"
-            app:layout_constraintStart_toStartOf="@id/divider2"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="@id/divider3"
-            app:layout_constraintStart_toStartOf="@id/divider3"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="@id/divider"
+                app:layout_constraintStart_toStartOf="@id/divider"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/divider"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="100px"
-            android:background="#0000ff"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1/4"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="@id/divider0"
+                app:layout_constraintStart_toStartOf="@id/divider0"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/divider0"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:background="#ff0000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/divider1"
-            app:layout_constraintStart_toEndOf="@id/divider"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1/2"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="@id/divider1"
+                app:layout_constraintStart_toStartOf="@id/divider1"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/divider1"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:background="#ff0000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3/4"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="@id/divider2"
+                app:layout_constraintStart_toStartOf="@id/divider2"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/divider2"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:background="#ff0000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/divider3"
-            app:layout_constraintStart_toEndOf="@id/divider1"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="@id/divider3"
+                app:layout_constraintStart_toStartOf="@id/divider3"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/divider3"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="100px"
-            android:background="#0000ff"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <View
+                android:id="@+id/divider"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="100px"
+                android:background="#0000ff"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <com.like.swipecards.SwipeCardsAdapterView
-            android:id="@+id/swipeCardsAdapterView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <View
+                android:id="@+id/divider0"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:background="#ff0000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/divider1"
+                app:layout_constraintStart_toEndOf="@id/divider"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/swipeLeft"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="20dp"
-            android:text="左飞出"
-            android:textColor="#ffffff"
-            android:textSize="10sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/clear"
-            app:layout_constraintStart_toStartOf="parent" />
+            <View
+                android:id="@+id/divider1"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:background="#ff0000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/clear"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="20dp"
-            android:text="清除"
-            android:textColor="#ffffff"
-            android:textSize="10sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/refresh"
-            app:layout_constraintStart_toEndOf="@id/swipeLeft" />
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:background="#ff0000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/divider3"
+                app:layout_constraintStart_toEndOf="@id/divider1"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/refresh"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="20dp"
-            android:text="刷新"
-            android:textColor="#ffffff"
-            android:textSize="10sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/undo"
-            app:layout_constraintStart_toEndOf="@id/clear" />
+            <View
+                android:id="@+id/divider3"
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="100px"
+                android:background="#0000ff"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/undo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="20dp"
-            android:text="撤销"
-            android:textColor="#ffffff"
-            android:textSize="10sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/swipeRight"
-            app:layout_constraintStart_toEndOf="@id/refresh" />
+            <com.like.swipecards.SwipeCardsAdapterView
+                android:id="@+id/swipeCardsAdapterView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/swipeRight"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginBottom="20dp"
-            android:text="右飞出"
-            android:textColor="#ffffff"
-            android:textSize="10sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/undo" />
+            <Button
+                android:id="@+id/swipeLeft"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="20dp"
+                android:text="左飞出"
+                android:textColor="#ffffff"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/clear"
+                app:layout_constraintStart_toStartOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <Button
+                android:id="@+id/clear"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="20dp"
+                android:text="清除"
+                android:textColor="#ffffff"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/refresh"
+                app:layout_constraintStart_toEndOf="@id/swipeLeft" />
+
+            <Button
+                android:id="@+id/refresh"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="20dp"
+                android:text="刷新"
+                android:textColor="#ffffff"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/undo"
+                app:layout_constraintStart_toEndOf="@id/clear" />
+
+            <Button
+                android:id="@+id/undo"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="20dp"
+                android:text="撤销"
+                android:textColor="#ffffff"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/swipeRight"
+                app:layout_constraintStart_toEndOf="@id/refresh" />
+
+            <Button
+                android:id="@+id/swipeRight"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="20dp"
+                android:text="右飞出"
+                android:textColor="#ffffff"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/undo" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </layout>
 
