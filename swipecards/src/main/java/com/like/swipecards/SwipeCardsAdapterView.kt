@@ -99,7 +99,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     var scaleStep = 0.08f
 
     /**
-     * 当滑动进度为0.5时，缩放到最大。[0f,1f]
+     * 当滑动进度为这个值时，缩放到最大。[0f,1f]
      */
     var scaleMax = 0.5f
 
