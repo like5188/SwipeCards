@@ -367,7 +367,6 @@ class OnCardViewTouchListener : OnTouchListener {
             -newRectFByRotation.left + parentWidth
         }
         // 求需要在y方向的平移距离
-        val yOffset = originRectF.top - newRectFByRotation.top// 由于旋转造成的y轴方向的偏移
         val translationY = if (event != null) {// 手指触摸滑动
             // 已知点(downRawX,downRawY)和点(curRawX,curRawY)构成的直线，
             // 平移这条直线，使点(downRawX,downRawY)和点(curCardViewX,curCardViewY)重合，
@@ -377,9 +376,10 @@ class OnCardViewTouchListener : OnTouchListener {
             // 根据新的点(curCardViewX,curCardViewY)和点(newFinishRawX,newFinishRawY)得到新的直线方程
             val regression = LinearRegression(floatArrayOf(curCardViewX, newFinishRawX), floatArrayOf(curCardViewY, newFinishRawY))
             // 根据直线方程 y = ax+b 求飞出点的y坐标
-            regression.slope() * translationX + regression.intercept() - yOffset
+            regression.slope() * translationX + regression.intercept()
         } else {// 单击飞出，需要保持最上面那个顶点的y坐标不变，所以就需要设置为旋转导致的y轴方向上的偏移。
-            0f + yOffset
+            val yOffsetByRotation = originRectF.top - newRectFByRotation.top// 由于旋转造成的y轴方向的偏移
+            0f + yOffsetByRotation
         }.toFloat()
         return PointF(translationX, translationY)
     }
