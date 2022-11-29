@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "onClick", Toast.LENGTH_SHORT).show()
                 }
             }
-            setAnimDuration(3000)
+            setAnimDuration(300)
             setMaxRotationAngle(20f)
             setBorderPercent(0.5f)
             setNeedSwipe(true)
