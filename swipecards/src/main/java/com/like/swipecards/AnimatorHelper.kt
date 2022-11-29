@@ -5,8 +5,10 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.PointF
 import android.view.View
+import android.view.ViewPropertyAnimator
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
+import androidx.core.animation.addListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 object AnimatorHelper {
@@ -14,6 +16,24 @@ object AnimatorHelper {
      * 动画是否正在执行
      */
     val isAnimRunning = AtomicBoolean(false)
+    private var mViewPropertyAnimators = mutableListOf<ViewPropertyAnimator>()
+    private var mValueAnimators = mutableListOf<ValueAnimator>()
+
+    fun cancel() {
+        mViewPropertyAnimators.listIterator().forEach {
+            it.setListener(null)
+            it.setUpdateListener(null)
+            it.cancel()
+            mViewPropertyAnimators.remove(it)
+        }
+        mValueAnimators.listIterator().forEach {
+            it.removeAllListeners()
+            it.removeAllUpdateListeners()
+            it.cancel()
+            mValueAnimators.remove(it)
+        }
+        isAnimRunning.set(false)
+    }
 
     /**
      * 执行回弹动画
@@ -29,7 +49,7 @@ object AnimatorHelper {
         onUpdate: ((direction: Int, progress: Float) -> Unit)? = null,
     ) {
         if (isAnimRunning.compareAndSet(false, true)) {
-            view.animate()
+            val animator = view.animate()
                 .setDuration(duration)
                 .setInterpolator(OvershootInterpolator(1.5f))
                 .x(x)
@@ -41,13 +61,15 @@ object AnimatorHelper {
                         onUpdate?.invoke(direction, it)
                     }
                 }
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        onEnd?.invoke(direction)
-                        isAnimRunning.set(false)
-                    }
-                })
-                .start()
+            animator.setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    onEnd?.invoke(direction)
+                    isAnimRunning.set(false)
+                    mViewPropertyAnimators.remove(animator)
+                }
+            })
+            mViewPropertyAnimators.add(animator)
+            animator.start()
         }
     }
 
@@ -87,16 +109,19 @@ object AnimatorHelper {
                         onUpdate?.invoke(d, it)
                     }
                 }
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        onEnd?.invoke(d)
-                        isAnimRunning.set(false)
-                    }
-                })
+            animator.setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    onEnd?.invoke(d)
+                    isAnimRunning.set(false)
+                    mViewPropertyAnimators.remove(animator)
+                }
+            })
             if (byClick) {
                 animator.rotation(if (isLeft) -rotationDegrees else rotationDegrees)
             }
+            mViewPropertyAnimators.add(animator)
             animator.start()
+
         }
     }
 
@@ -118,6 +143,12 @@ object AnimatorHelper {
             addUpdateListener {
                 onUpdate?.invoke(it.animatedValue as Float)
             }
+            addListener(
+                onEnd = {
+                    mValueAnimators.remove(this)
+                }
+            )
+            mValueAnimators.add(this)
             start()
         }
     }

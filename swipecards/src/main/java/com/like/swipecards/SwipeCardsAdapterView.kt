@@ -49,6 +49,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
 
             override fun onInvalidated() {
                 isRefreshData = true
+                AnimatorHelper.cancel()
                 requestLayout()
             }
         }

@@ -170,7 +170,7 @@ private class MyAdapter : SwipeCardsAdapterView.Adapter<SwipeCardsAdapterView.Vi
 
     fun clear() {
         list.clear()
-        notifyDataSetChanged()
+        notifyDataSetInvalidated()
     }
 
     fun clearAndAddAll(collection: Collection<String>) {
