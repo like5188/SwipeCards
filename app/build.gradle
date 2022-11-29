@@ -16,10 +16,39 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
+    signingConfigs {
+        debug {
+            storeFile file("../like.jks")
+            storePassword "like5488"
+            keyAlias "like"
+            keyPassword "like5488"
+        }
         release {
+            storeFile file("../like.jks")
+            storePassword "like5488"
+            keyAlias "like"
+            keyPassword "like5488"
+        }
+    }
+
+    buildTypes {
+        debug {
             minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+            debuggable true
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue "string", "app_name", "SwipeCards-debug"
+        }
+        release {
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources true
+            debuggable true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            resValue "string", "app_name", "SwipeCards"
         }
     }
     compileOptions {

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
                 yOffsetStep = -100,
                 scaleStep = 0.08f,
                 scaleMax = 0.75f,
-                animDuration = 300,
+                animDuration = 3000,
                 maxRotationAngle = 20f,
                 borderPercent = 0.5f,
                 isNeedSwipe = true,
