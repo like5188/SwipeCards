@@ -114,7 +114,83 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      */
     var isNeedSwipe: Boolean = true
 
+    /**
+     * 动画执行时长
+     */
+    var animDuration = 300L
+
+    /**
+     * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
+     */
+    var borderPercent: Float = 0.5f
+
     var onSwipeListener: OnSwipeListener? = null
+
+    /**
+     * 单击触发往左滑出
+     */
+    fun swipeLeft() {
+        onCardViewTouchListener?.swipeLeft()
+    }
+
+    /**
+     * 单击触发往右滑出
+     */
+    fun swipeRight() {
+        onCardViewTouchListener?.swipeRight()
+    }
+
+    fun setAdapter(adapter: T) {
+        if (this::adapter.isInitialized) {
+            this.adapter.unregisterDataSetObserver(dataSetObserver)
+        }
+        this.adapter = adapter
+        this.adapter.registerDataSetObserver(dataSetObserver)
+    }
+
+    fun undo() {
+        if (AnimatorHelper.isAnimRunning.get()) {
+            return
+        }
+        val undoViewStatus = mUndo.pop() ?: return
+        val removeView = if (childCount == maxCount) {
+            // 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个被遮住的视图，当然此视图也必须要移除才对。
+            getChildAt(0).apply {
+                removeViewInLayout(this)
+            }
+        } else {
+            // 此时不存在最底层被遮住的视图，但是 mRecycler 中肯定会有缓存，因为缓存都是用来复用到最底层被遮住的视图了。
+            mRecycler.getLastAddScrapView()
+        } ?: return
+        addViewInLayout(removeView, childCount, removeView.layoutParams, true)
+        // 还原ViewStatus，即View飞出后的状态。
+        removeView.viewStatus = undoViewStatus
+        adapter.undo(removeView, undoViewStatus.data)
+        // 飞回初始位置
+        AnimatorHelper.reset(
+            removeView,
+            animDuration,
+            originTopViewLeft.toFloat(),
+            originTopViewTop.toFloat(),
+            1f,
+            1,
+            onEnd = {
+                resetTopView()// 需要重新设置topView
+            }
+        ) { direction, progress ->
+            // 回退时不需要修正缩放系数，这样效果更好
+            adjustChildren(progress, false)
+            onSwipeListener?.onScroll(direction, progress)
+        }
+    }
+
+    fun clearUndoCache() {
+        mUndo.clear()
+    }
+
+    fun setMaxUndoCacheSize(maxSize: Int) {
+        mUndo.maxCacheSize = maxSize
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         Log.i("TAG", "onMeasure")
@@ -188,8 +264,12 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         onCardViewTouchListener = null
         topView = getChildAt(topViewIndex)?.apply {
             // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
-            onCardViewTouchListener = OnCardViewTouchListener(this, adapter.getItem(0), rotationDegrees,
-                object : OnSwipeListener {
+            onCardViewTouchListener = OnCardViewTouchListener(this, adapter.getItem(0), rotationDegrees).also {
+                // 设置是否支持左右滑
+                it.isNeedSwipe = isNeedSwipe
+                it.animDuration = animDuration
+                it.borderPercent = borderPercent
+                it.onSwipeListener = object : OnSwipeListener {
                     override fun onCardExited(direction: Int, dataObject: Any?) {
                         topView?.let {
                             removeViewInLayout(it)
@@ -226,11 +306,8 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                     }
 
                 }
-            ).also {
-                // 设置是否支持左右滑
-                it.isNeedSwipe = isNeedSwipe
-                this.setOnTouchListener(it)
             }
+            this.setOnTouchListener(onCardViewTouchListener)
         }
     }
 
@@ -267,72 +344,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 scaleY = scale
             }
         }
-    }
-
-    /**
-     * 单击触发往左滑出
-     */
-    fun swipeLeft() {
-        onCardViewTouchListener?.swipeLeft()
-    }
-
-    /**
-     * 单击触发往右滑出
-     */
-    fun swipeRight() {
-        onCardViewTouchListener?.swipeRight()
-    }
-
-    fun setAdapter(adapter: T) {
-        if (this::adapter.isInitialized) {
-            this.adapter.unregisterDataSetObserver(dataSetObserver)
-        }
-        this.adapter = adapter
-        this.adapter.registerDataSetObserver(dataSetObserver)
-    }
-
-    fun undo() {
-        if (AnimatorHelper.isAnimRunning.get()) {
-            return
-        }
-        val undoViewStatus = mUndo.pop() ?: return
-        val removeView = if (childCount == maxCount) {
-            // 此时 mRecycler 中是没有缓存的，所以需要复用最底层那个被遮住的视图，当然此视图也必须要移除才对。
-            getChildAt(0).apply {
-                removeViewInLayout(this)
-            }
-        } else {
-            // 此时不存在最底层被遮住的视图，但是 mRecycler 中肯定会有缓存，因为缓存都是用来复用到最底层被遮住的视图了。
-            mRecycler.getLastAddScrapView()
-        } ?: return
-        addViewInLayout(removeView, childCount, removeView.layoutParams, true)
-        // 还原ViewStatus，即View飞出后的状态。
-        removeView.viewStatus = undoViewStatus
-        adapter.undo(removeView, undoViewStatus.data)
-        // 飞回初始位置
-        AnimatorHelper.reset(
-            removeView,
-            300,
-            originTopViewLeft.toFloat(),
-            originTopViewTop.toFloat(),
-            1f,
-            1,
-            onEnd = {
-                resetTopView()// 需要重新设置topView
-            }
-        ) { direction, progress ->
-            // 回退时不需要修正缩放系数，这样效果更好
-            adjustChildren(progress, false)
-            onSwipeListener?.onScroll(direction, progress)
-        }
-    }
-
-    fun clearUndoCache() {
-        mUndo.clear()
-    }
-
-    fun setMaxUndoCacheSize(maxSize: Int) {
-        mUndo.maxCacheSize = maxSize
     }
 
     override fun onDetachedFromWindow() {

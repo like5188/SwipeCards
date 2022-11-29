@@ -21,8 +21,7 @@ import kotlin.math.tan
 class OnCardViewTouchListener(
     private val cardView: View,
     private val data: Any?,
-    private val rotationDegrees: Float,
-    private val onSwipeListener: OnSwipeListener
+    private val rotationDegrees: Float
 ) : OnTouchListener {
     private val originCardViewX: Float = cardView.x
     private val originCardViewY: Float = cardView.y
@@ -66,21 +65,6 @@ class OnCardViewTouchListener(
      * 触摸的位置。参考 [TOUCH_PART_TOP_HALF]、[TOUCH_PART_BOTTOM_HALF]
      */
     private var touchPart = TOUCH_PART_TOP_HALF
-
-    /**
-     * 是否支持左右滑
-     */
-    var isNeedSwipe = true
-
-    /**
-     * 动画执行时长
-     */
-    var animDuration = 300L
-
-    /**
-     * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
-     */
-    var borderPercent: Float = 0.5f
 
     // 点 src 围绕中心点 pivot 旋转 rotation 角度得到新的点
     private fun getNewPointByRotation(
@@ -151,7 +135,7 @@ class OnCardViewTouchListener(
     }
 
     // 每秒移动的最小像素
-    private var minimumVelocity = 500
+    private var minimumVelocity = 800
     private var downTime: Long = 0L
 
     /**
@@ -166,6 +150,37 @@ class OnCardViewTouchListener(
             val xVelocity = dX / time
             return xVelocity > minimumVelocity
         }
+
+    /**
+     * 是否支持左右滑
+     */
+    var isNeedSwipe = true
+
+    /**
+     * 动画执行时长
+     */
+    var animDuration = 300L
+
+    /**
+     * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
+     */
+    var borderPercent: Float = 0.5f
+
+    var onSwipeListener: OnSwipeListener? = null
+
+    /**
+     * 单击触发往左滑出
+     */
+    fun swipeLeft() {
+        exitWithAnimation(true, getExitPoint(true, null), true, 0f)
+    }
+
+    /**
+     * 单击触发往右滑出
+     */
+    fun swipeRight() {
+        exitWithAnimation(false, getExitPoint(false, null), true, 0f)
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
@@ -231,7 +246,7 @@ class OnCardViewTouchListener(
                     cardView.x = curCardViewX
                     cardView.y = curCardViewY
                     cardView.rotation = rotation
-                    onSwipeListener.onScroll(moveDirection, absMoveProgressPercent)
+                    onSwipeListener?.onScroll(moveDirection, absMoveProgressPercent)
                 }
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP -> {
@@ -270,7 +285,7 @@ class OnCardViewTouchListener(
                 val distanceX = abs(curCardViewX - originCardViewX)
                 val distanceY = abs(curCardViewY - originCardViewY)
                 if (distanceX < 4 && distanceY < 4) {
-                    onSwipeListener.onClick(cardView, data)
+                    onSwipeListener?.onClick(cardView, data)
                 }
                 // 回弹到初始位置
                 AnimatorHelper.reset(
@@ -281,7 +296,7 @@ class OnCardViewTouchListener(
                     absMoveProgressPercent,
                     moveDirection
                 ) { direction, progress ->
-                    onSwipeListener.onScroll(direction, progress)
+                    onSwipeListener?.onScroll(direction, progress)
                 }
             }
         } else {
@@ -290,7 +305,7 @@ class OnCardViewTouchListener(
             val distanceX = abs(event.getX(pointerIndex) - downX)
             val distanceY = abs(event.getY(pointerIndex) - downY)
             if (distanceX < 4 && distanceY < 4) {
-                onSwipeListener.onClick(cardView, data)
+                onSwipeListener?.onClick(cardView, data)
             }
         }
     }
@@ -299,6 +314,7 @@ class OnCardViewTouchListener(
      * 执行飞出屏幕动画，即点(originCardViewX,originCardViewY)移动到 exitPoint 位置。
      *
      * @param byClick   是否单击事件引起的
+     * @param initScale 初始缩放系数，用于控制缩放动画
      */
     private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean, initScale: Float) {
         // 移动方向。包括手指滑动和单击自动移动。
@@ -312,24 +328,10 @@ class OnCardViewTouchListener(
             initScale,
             moveDirection,
             onEnd = {
-                onSwipeListener.onCardExited(it, data)
+                onSwipeListener?.onCardExited(it, data)
             }) { direction, progress ->
-            onSwipeListener.onScroll(direction, progress)
+            onSwipeListener?.onScroll(direction, progress)
         }
-    }
-
-    /**
-     * 单击触发往左滑出
-     */
-    fun swipeLeft() {
-        exitWithAnimation(true, getExitPoint(true, null), true, 0f)
-    }
-
-    /**
-     * 单击触发往右滑出
-     */
-    fun swipeRight() {
-        exitWithAnimation(false, getExitPoint(false, null), true, 0f)
     }
 
     /**
