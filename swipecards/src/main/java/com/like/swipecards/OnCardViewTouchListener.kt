@@ -259,12 +259,12 @@ class OnCardViewTouchListener(
             if ((direction == DIRECTION_TOP_HALF_LEFT || direction == DIRECTION_BOTTOM_HALF_LEFT)// 左滑
                 && (absMoveProgressPercent > borderPercent || isHorizontalQuickSwipe)// 超出边界或者是快速滑动
             ) {
-                exitWithAnimation(true, getExitPoint(true, event), false)
+                exitWithAnimation(true, getExitPoint(true, event), false, absMoveProgressPercent)
             } else if ((direction == DIRECTION_TOP_HALF_RIGHT || direction == DIRECTION_BOTTOM_HALF_RIGHT)// 右滑
                 && (absMoveProgressPercent > borderPercent || isHorizontalQuickSwipe)// 超出边界或者是快速滑动
             ) {
                 // Right Swipe
-                exitWithAnimation(false, getExitPoint(false, event), false)
+                exitWithAnimation(false, getExitPoint(false, event), false, absMoveProgressPercent)
             } else {
                 // 如果能滑动，就根据视图坐标的变化判断点击事件
                 val distanceX = abs(curCardViewX - originCardViewX)
@@ -300,7 +300,7 @@ class OnCardViewTouchListener(
      *
      * @param byClick   是否单击事件引起的
      */
-    private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean) {
+    private fun exitWithAnimation(isLeft: Boolean, exitPoint: PointF, byClick: Boolean, initScale: Float) {
         // 移动方向。包括手指滑动和单击自动移动。
         AnimatorHelper.exit(
             cardView,
@@ -309,7 +309,7 @@ class OnCardViewTouchListener(
             exitPoint,
             byClick,
             rotationDegrees,
-            absMoveProgressPercent,
+            initScale,
             moveDirection,
             onEnd = {
                 onSwipeListener.onCardExited(it, data)
@@ -322,14 +322,14 @@ class OnCardViewTouchListener(
      * 单击触发往左滑出
      */
     fun swipeLeft() {
-        exitWithAnimation(true, getExitPoint(true, null), true)
+        exitWithAnimation(true, getExitPoint(true, null), true, 0f)
     }
 
     /**
      * 单击触发往右滑出
      */
     fun swipeRight() {
-        exitWithAnimation(false, getExitPoint(false, null), true)
+        exitWithAnimation(false, getExitPoint(false, null), true, 0f)
     }
 
     /**
