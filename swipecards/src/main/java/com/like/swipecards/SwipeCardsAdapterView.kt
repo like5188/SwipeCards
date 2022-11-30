@@ -421,7 +421,8 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * @param maxChildCount     存在屏幕中的最大子视图数量。包括"最底层那一个被遮住的视图"。
      * @param prefetchCount     预取数据阈值
      * 当数量等于此值时，触发加载数据的操作。建议 >=[maxChildCount]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
-     * @param yOffsetStep       缩放层叠时的垂直偏移量步长，不包括缩放引起的偏移。所以使用的时候不能直接使用，需要调用[setOriginCardViewHeight]方法后，再使用[yOffsetStepContainsScale]
+     * @param yOffsetStep       缩放层叠时的垂直偏移量步长，不包括缩放引起的偏移。正数表示向下偏移，负数表示向上偏移
+     * 所以使用的时候不能直接使用，需要调用[setOriginCardViewHeight]方法后，再使用[yOffsetStepContainsScale]
      * @param alphaStep         缩放层叠时的透明度步长
      * @param scaleStep         缩放层叠时的缩放步长
      * @param scaleMax          当滑动进度为这个值时，缩放到最大。[0f,1f]
@@ -450,7 +451,12 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             private set
 
         fun setOriginCardViewHeight(height: Int) {
-            yOffsetStepContainsScale = yOffsetStep + height * scaleStep / 2// 加上缩放引起的偏移
+            // 加上缩放引起的偏移
+            yOffsetStepContainsScale = if (yOffsetStep < 0) {
+                yOffsetStep - height * scaleStep / 2// 向上偏移
+            } else {
+                yOffsetStep + height * scaleStep / 2// 向下偏移
+            }
             Log.e("TAG", "yOffsetStepContainsScale=$yOffsetStepContainsScale height=$height")
         }
 
