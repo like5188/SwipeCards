@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
                 maxChildCount = 5,
                 prefetchCount = 5,
                 yOffsetStep = 35,
+                alphaStep = 0.2f,
                 scaleStep = 0.08f,
                 scaleMax = 0.75f,
                 animDuration = 3000,

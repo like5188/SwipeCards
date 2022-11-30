@@ -32,6 +32,7 @@ class SettingActivity : AppCompatActivity() {
         maxChildCount = mBinding.etMaxChildCount.text.toString().toInt(),
         prefetchCount = mBinding.etPrefetchCount.text.toString().toInt(),
         yOffsetStep = mBinding.etYOffsetStep.text.toString().toInt(),
+        alphaStep = mBinding.etAlphaStep.text.toString().toFloat(),
         scaleStep = mBinding.etScaleStep.text.toString().toFloat(),
         scaleMax = mBinding.etScaleMax.text.toString().toFloat(),
         animDuration = mBinding.etAnimDuration.text.toString().toLong(),
