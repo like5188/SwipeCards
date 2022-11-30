@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == 0) {
-            data?.getParcelableExtra<SwipeCardsAdapterView.Config>("config")?.let {
+            (data?.getSerializableExtra("config") as? SwipeCardsAdapterView.Config)?.let {
                 mBinding.swipeCardsAdapterView.config = it
                 refresh()
             }

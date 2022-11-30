@@ -18,7 +18,7 @@ class SettingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding.config = intent?.getParcelableExtra("config")
+        mBinding.config = intent?.getSerializableExtra("config") as? SwipeCardsAdapterView.Config
         mBinding.btnConfirm.setOnClickListener {
             Intent().apply {
                 putExtra("config", getConfig())
