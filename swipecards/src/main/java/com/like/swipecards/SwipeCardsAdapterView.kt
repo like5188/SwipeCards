@@ -425,6 +425,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * 所以使用的时候不能直接使用，需要调用[setOriginCardViewHeight]方法后，再使用[yOffsetStepContainsScale]
      * @param alphaStep         缩放层叠时的透明度步长
      * @param scaleStep         缩放层叠时的缩放步长
+     * 注意：上面三个步长参数都是相对于原始图的。比如原始图为 1，后面的相对于原始图的值为 0.8, 0.6, 0.4, 0.2, 那么步长就是 0.2
      * @param scaleMax          当滑动进度为这个值时，缩放到最大。[0f,1f]
      * @param animDuration      动画执行时长
      * @param maxRotationAngle  比如左滑时：就是卡片左上角滑动到卡片原始 left 时，卡片的旋转角度
