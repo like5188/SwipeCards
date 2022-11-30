@@ -63,6 +63,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             if (originTopViewLeft == 0 && originTopViewTop == 0 && value != null) {
                 originTopViewTop = value.top
                 originTopViewLeft = value.left
+                config.setOriginCardViewHeight(value.height)
             }
             field = value
         }
@@ -256,8 +257,8 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         Log.i("TAG", "onLayout")
         if (childCount == 0) return
         super.onLayout(changed, left, top, right, bottom)
-        adjustChildren()
         resetTopView()
+        adjustChildren()
     }
 
     // 设置OnCardViewTouchListener监听必须在layout完成后，否则OnCardViewTouchListener中获取不到cardView的相关参数。
@@ -293,7 +294,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             }
             // 进行缩放和垂直平移
             getChildAt(index)?.apply {
-                val yOffset = (config.yOffsetStep * (level - absRate)).toInt()
+                val yOffset = (config.yOffsetStepContainsScale * (level - absRate)).toInt()
                 val curYOffset = if (isInit) 0 else top - originTopViewTop
                 offsetTopAndBottom(yOffset - curYOffset)
                 val scale = 1 - config.scaleStep * level + config.scaleStep * absRate
@@ -418,7 +419,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * @param maxChildCount     存在屏幕中的最大子视图数量。包括"最底层那一个被遮住的视图"。
      * @param prefetchCount     预取数据阈值
      * 当数量等于此值时，触发加载数据的操作。建议 >=[maxChildCount]，这样才不会出现缩放时最下面那个界面需要加载，而是先就加载好了的。
-     * @param yOffsetStep       缩放层叠时的垂直偏移量步长
+     * @param yOffsetStep       缩放层叠时的垂直偏移量步长，不包括缩放引起的偏移。所以使用的时候不能直接使用，需要调用[setOriginCardViewHeight]方法后，再使用[yOffsetStepContainsScale]
      * @param scaleStep         缩放层叠时的缩放步长
      * @param scaleMax          当滑动进度为这个值时，缩放到最大。[0f,1f]
      * @param animDuration      动画执行时长
@@ -439,6 +440,14 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         val isNeedSwipe: Boolean = true,
         val maxUndoCacheSize: Int = 2,
     ) : Parcelable {
+        var yOffsetStepContainsScale: Float = 0f
+            private set
+
+        fun setOriginCardViewHeight(height: Int) {
+            yOffsetStepContainsScale = yOffsetStep + height * scaleStep / 2// 加上缩放引起的偏移
+            Log.e("TAG", "yOffsetStepContainsScale=$yOffsetStepContainsScale height=$height")
+        }
+
         constructor(parcel: Parcel) : this(
             parcel.readInt(),
             parcel.readInt(),
