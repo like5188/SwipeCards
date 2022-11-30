@@ -435,7 +435,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     data class Config(
         val maxChildCount: Int = 4,
         val prefetchCount: Int = 4,
-        val yOffsetStep: Int = 100,
+        val yOffsetStep: Int = 35,
         val alphaStep: Float = 0.2f,
         val scaleStep: Float = 0.08f,
         val scaleMax: Float = 0.5f,
