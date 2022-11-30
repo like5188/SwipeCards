@@ -378,8 +378,9 @@ class OnCardViewTouchListener : OnTouchListener {
             // 根据直线方程 y = ax+b 求飞出点的y坐标
             regression.slope() * translationX + regression.intercept()
         } else {// 单击飞出，需要保持最上面那个顶点的y坐标不变，所以就需要设置为旋转导致的y轴方向上的偏移。
-            val yOffsetByRotation = originRectF.top - newRectFByRotation.top// 由于旋转造成的y轴方向的偏移
-            0f + yOffsetByRotation
+//            val yOffsetByRotation = originRectF.top - newRectFByRotation.top// 由于旋转造成的y轴方向的偏移
+//            0f + yOffsetByRotation
+            0f
         }.toFloat()
         return PointF(translationX, translationY)
     }
