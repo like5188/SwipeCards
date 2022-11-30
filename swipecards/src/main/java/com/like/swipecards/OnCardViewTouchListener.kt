@@ -136,10 +136,14 @@ class OnCardViewTouchListener : OnTouchListener {
     private fun getMaxMoveDistanceXByY(y: Float = downRawY): Float {
         // rotationDegrees 对应的弧度
         val rotationRadian: Double = Math.PI / 180 * maxRotationAngle
-        val offset = if (touchPart == TOUCH_PART_TOP_HALF) {
+        val offset = if (isSameRotationWhenTouchTopAndBottom) {
             abs((y - originCardViewRawY) * tan(rotationRadian)).toFloat()
         } else {
-            abs((originCardViewRawY + originCardViewHeight - y) * tan(rotationRadian)).toFloat()
+            if (touchPart == TOUCH_PART_TOP_HALF) {
+                abs((y - originCardViewRawY) * tan(rotationRadian)).toFloat()
+            } else {
+                abs((originCardViewRawY + originCardViewHeight - y) * tan(rotationRadian)).toFloat()
+            }
         }
         return originCardViewWidth - offset// 滑动到 rotationDegrees 时的滑动距离。
     }
@@ -180,6 +184,11 @@ class OnCardViewTouchListener : OnTouchListener {
      * x 轴方向上的边界百分比[0f,1f]，相对于 left 或者 right
      */
     var borderPercent: Float = 0.5f
+
+    /**
+     * 触摸上半部分和下半部分是否使用相同的旋转方向
+     */
+    var isSameRotationWhenTouchTopAndBottom: Boolean = false
 
     var onSwipeListener: OnSwipeListener? = null
 
@@ -252,7 +261,7 @@ class OnCardViewTouchListener : OnTouchListener {
 
                 // 根据滑动距离计算旋转角度
                 var rotation = (curRawX - downRawX) / getMaxMoveDistanceXByY() * maxRotationAngle
-                if (touchPart == TOUCH_PART_BOTTOM_HALF) {
+                if (touchPart == TOUCH_PART_BOTTOM_HALF && !isSameRotationWhenTouchTopAndBottom) {
                     rotation = -rotation
                 }
 

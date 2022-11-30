@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 borderPercent = 0.5f,
                 isNeedSwipe = true,
                 maxUndoCacheSize = 2,
+                isSameRotationWhenTouchTopAndBottom = true,
             )
             onSwipeListener = object : OnSwipeListener {
                 override fun onLoadData() {

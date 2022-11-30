@@ -125,6 +125,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             onCardViewTouchListener.maxRotationAngle = value.maxRotationAngle
             onCardViewTouchListener.borderPercent = value.borderPercent
             onCardViewTouchListener.isNeedSwipe = value.isNeedSwipe
+            onCardViewTouchListener.isSameRotationWhenTouchTopAndBottom = value.isSameRotationWhenTouchTopAndBottom
             mUndo.maxCacheSize = value.maxUndoCacheSize
             field = value
         }
@@ -429,6 +430,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * @param borderPercent     x 轴方向上的边界百分比[0f,1f]，相对于卡片的 left 或者 right
      * @param isNeedSwipe       是否支持左右滑
      * @param maxUndoCacheSize  回退栈大小
+     * @param isSameRotationWhenTouchTopAndBottom   触摸上半部分和下半部分是否使用相同的旋转方向
      */
     data class Config(
         val maxChildCount: Int = 4,
@@ -442,6 +444,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         val borderPercent: Float = 0.5f,
         val isNeedSwipe: Boolean = true,
         val maxUndoCacheSize: Int = 2,
+        val isSameRotationWhenTouchTopAndBottom: Boolean = false
     ) : Serializable {
         var yOffsetStepContainsScale: Float = 0f
             private set

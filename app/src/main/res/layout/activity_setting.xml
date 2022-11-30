@@ -189,6 +189,22 @@
                 android:text="@{String.valueOf(config.maxUndoCacheSize)}" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="触摸上半部分和下半部分是否使用相同的旋转方向：" />
+
+            <EditText
+                android:id="@+id/et_isSameRotationWhenTouchTopAndBottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{String.valueOf(config.isSameRotationWhenTouchTopAndBottom)}" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnConfirm"
             android:layout_width="match_parent"
