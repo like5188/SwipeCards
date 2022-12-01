@@ -3,7 +3,6 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
@@ -84,9 +83,18 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 override fun onCardExited(direction: Int, dataObject: Any?) {
                     topView?.let {
                         removeViewInLayout(it)
-                        mUndo.push(it.viewStatus.apply {
-                            this.data = dataObject
-                        })
+                        // 判断是否需要加入回退栈中
+                        val needUndo = when {
+                            config.undoLeftOrRight == UNDO_ALL -> true
+                            config.undoLeftOrRight == UNDO_LEFT && (direction == DIRECTION_TOP_HALF_LEFT || direction == DIRECTION_BOTTOM_HALF_LEFT) -> true
+                            config.undoLeftOrRight == UNDO_RIGHT && (direction == DIRECTION_TOP_HALF_RIGHT || direction == DIRECTION_BOTTOM_HALF_RIGHT) -> true
+                            else -> false
+                        }
+                        if (needUndo) {
+                            mUndo.push(it.viewStatus.apply {
+                                this.data = dataObject
+                            })
+                        }
                         mRecycler.addScrapView(it.tag as ViewHolder<*>)
                     }
                     onSwipeListener?.onCardExited(direction, dataObject)
@@ -195,7 +203,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        Log.i("TAG", "onMeasure")
         makeAndAddView()
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
         if (childCount == 0) return
@@ -254,7 +261,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        Log.i("TAG", "onLayout")
         if (childCount == 0) return
         super.onLayout(changed, left, top, right, bottom)
         resetTopView()
@@ -386,9 +392,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             if (mScrapViewMap[viewType].isNullOrEmpty()) {
                 mScrapViewMap.remove(viewType)
             }
-            if (scrapView != null) {
-                Log.d("TAG", "从缓存中获取到视图：${scrapView.hashCode()}")
-            }
             return scrapView?.apply {
                 // 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
                 this.itemView.viewStatus = ViewStatus(
@@ -432,6 +435,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
      * @param borderPercent     x 轴方向上的边界百分比[0f,1f]，相对于卡片的 left 或者 right
      * @param isNeedSwipe       是否支持左右滑
      * @param maxUndoCacheSize  回退栈大小
+     * @param undoLeftOrRight   回退某个方向飞出的视图。[UNDO_ALL]、[UNDO_LEFT]、[UNDO_RIGHT]
      * @param isSameRotationWhenTouchTopAndBottom   触摸上半部分和下半部分是否使用相同的旋转方向
      */
     data class Config(
@@ -446,6 +450,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         val borderPercent: Float = 0.5f,
         val isNeedSwipe: Boolean = true,
         val maxUndoCacheSize: Int = 2,
+        val undoLeftOrRight: Int = UNDO_ALL,
         val isSameRotationWhenTouchTopAndBottom: Boolean = false
     ) : Serializable {
         var yOffsetStepContainsScale: Float = 0f
@@ -458,7 +463,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
             } else {
                 yOffsetStep + height * scaleStep / 2// 向下偏移
             }
-            Log.e("TAG", "yOffsetStepContainsScale=$yOffsetStepContainsScale height=$height")
         }
 
     }

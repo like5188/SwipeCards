@@ -1,6 +1,5 @@
 package com.like.swipecards
 
-import android.util.Log
 import java.util.*
 
 /**
@@ -30,7 +29,6 @@ internal class Undo {
     fun pop(): ViewStatus? {
         if (mCache.isEmpty()) return null
         return mCache.pop().apply {
-            Log.d("TAG", "回退：$this")
             onChange?.invoke(mCache.size)
         }
     }

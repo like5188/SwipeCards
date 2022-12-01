@@ -40,6 +40,7 @@ class SettingActivity : AppCompatActivity() {
         borderPercent = mBinding.etBorderPercent.text.toString().toFloat(),
         isNeedSwipe = mBinding.etIsNeedSwipe.text.toString() == "true",
         maxUndoCacheSize = mBinding.etMaxUndoCacheSize.text.toString().toInt(),
+        undoLeftOrRight = mBinding.etMaxUndoCacheSize.text.toString().toInt(),
         isSameRotationWhenTouchTopAndBottom = mBinding.etIsSameRotationWhenTouchTopAndBottom.text.toString() == "true",
     )
 
