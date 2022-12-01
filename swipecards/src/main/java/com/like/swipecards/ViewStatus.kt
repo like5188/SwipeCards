@@ -12,22 +12,19 @@ data class ViewStatus(
     val translationY: Float,
     val rotation: Float,
     val scaleX: Float,
-    val scaleY: Float
+    val scaleY: Float,
+    val alpha: Float
 ) {
     /**
      * 用于绑定到视图的数据，在回退时需要。
      */
     var data: Any? = null
 
-    override fun toString(): String {
-        return "ViewStatus(x=$x, y=$y, translationX=$translationX, translationY=$translationY, rotation=$rotation, scaleX=$scaleX, scaleY=$scaleY, data=$data)"
-    }
-
 }
 
 var View.viewStatus: ViewStatus
     get() = ViewStatus(
-        x, y, translationX, translationY, rotation, scaleX, scaleY
+        x, y, translationX, translationY, rotation, scaleX, scaleY, alpha
     )
     set(value) {
         with(this) {
@@ -38,6 +35,7 @@ var View.viewStatus: ViewStatus
             rotation = value.rotation
             scaleX = value.scaleX
             scaleY = value.scaleY
+            alpha = value.alpha
         }
     }
 
