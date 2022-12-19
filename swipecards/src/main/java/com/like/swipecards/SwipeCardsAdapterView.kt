@@ -316,6 +316,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         super.onDetachedFromWindow()
         mRecycler.clear()
         mUndo.clear()
+        AnimatorHelper.cancel()
     }
 
     class ViewHolder<VB : ViewDataBinding>(val binding: VB) {
