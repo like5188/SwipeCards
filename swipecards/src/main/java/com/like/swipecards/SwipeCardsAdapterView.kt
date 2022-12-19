@@ -3,10 +3,12 @@ package com.like.swipecards
 import android.content.Context
 import android.database.DataSetObserver
 import android.util.AttributeSet
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.FrameLayout
+import androidx.core.util.containsKey
 import androidx.databinding.ViewDataBinding
 import java.io.Serializable
 import kotlin.math.abs
@@ -25,7 +27,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
     defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyle, defStyleRes) {
     private val mRecycler by lazy {
-        Recycler()
+        Recycler(adapter.viewTypeCount, config.maxChildCount)
     }
     private val mUndo by lazy {
         Undo().apply {
@@ -368,18 +370,18 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         }
     }
 
-    private inner class Recycler {
+    private inner class Recycler(viewTypeCount: Int, private val maxChildCount: Int) {
         /**
          * 按 viewType 缓存视图
          * key：viewType；
          * value：视图集合，这个集合每种 viewType 的视图最多只会有[Config.maxChildCount]个。
          *        因为都是添加一个使用一个。最多的时候就是清除或者一个个删除到最后[maxCount]个的时候。
          */
-        private val mScrapViewMap = mutableMapOf<Int, MutableList<ViewHolder<*>>>()
+        private val mScrapViewCache = SparseArray<ArrayList<ViewHolder<*>>>(viewTypeCount)
         private var mLastScrapViewType: Int? = null
 
         fun clear() {
-            mScrapViewMap.clear()
+            mScrapViewCache.clear()
         }
 
         fun getScrapView(position: Int): ViewHolder<*>? {
@@ -388,10 +390,10 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         }
 
         fun getScrapViewByViewType(viewType: Int): ViewHolder<*>? {
-            val scrapViewList = mScrapViewMap[viewType]
+            val scrapViewList = mScrapViewCache[viewType]
             val scrapView = scrapViewList?.removeLastOrNull()
-            if (mScrapViewMap[viewType].isNullOrEmpty()) {
-                mScrapViewMap.remove(viewType)
+            if (mScrapViewCache[viewType].isNullOrEmpty()) {
+                mScrapViewCache.remove(viewType)
             }
             return scrapView?.apply {
                 // 重置 view 的状态，否则在取出缓存使用时，会影响测量和布局。
@@ -406,10 +408,12 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         fun addScrapView(scrap: ViewHolder<*>) {
             val viewType = scrap.itemViewType
             mLastScrapViewType = viewType
-            if (mScrapViewMap.containsKey(viewType)) {
-                mScrapViewMap[viewType]?.add(scrap)
+            if (mScrapViewCache.containsKey(viewType)) {
+                mScrapViewCache[viewType]?.add(scrap)
             } else {
-                mScrapViewMap[viewType] = mutableListOf(scrap)
+                mScrapViewCache[viewType] = ArrayList<ViewHolder<*>>(maxChildCount).apply {
+                    add(scrap)
+                }
             }
         }
 
