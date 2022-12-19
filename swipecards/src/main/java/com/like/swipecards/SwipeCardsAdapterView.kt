@@ -204,6 +204,21 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
         mUndo.clear()
     }
 
+    fun clearCache() {
+        mRecycler.clear()
+    }
+
+    fun clearAnimator() {
+        AnimatorHelper.cancel()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        clearCache()
+        clearUndoCache()
+        clearAnimator()
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         makeAndAddView()
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec)
@@ -312,13 +327,6 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 this.alpha = alpha
             }
         }
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        mRecycler.clear()
-        mUndo.clear()
-        AnimatorHelper.cancel()
     }
 
     class ViewHolder<VB : ViewDataBinding>(val binding: VB) {

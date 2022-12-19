@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
             val list = getData(page++)
             withContext(Dispatchers.Main) {
                 mBinding.swipeCardsAdapterView.clearUndoCache()
+                mBinding.swipeCardsAdapterView.clearAnimator()
                 myAdapter.clearAndAddAll(list)
             }
         }
