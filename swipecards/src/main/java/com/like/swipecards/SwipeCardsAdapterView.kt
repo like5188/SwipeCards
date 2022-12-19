@@ -408,7 +408,7 @@ class SwipeCardsAdapterView<T : SwipeCardsAdapterView.Adapter<*>> @JvmOverloads 
                 this.itemView.viewStatus = ViewStatus(
                     originTopViewLeft.toFloat(),
                     originTopViewTop.toFloat(),
-                    0f, 0f, 0f, 1f, 1f, 0f
+                    0f, 0f, 0f, 1f, 1f, 1f
                 )
             }
         }
